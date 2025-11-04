@@ -276,6 +276,10 @@ body {
   scrollbar-color: #fbbf24 #1d1d1d; /* Dark mode */
 }
 
+html .dark {
+  background-color: #000;
+  transition: background-color 0.1s ease;
+}
 html {
   background-color: #000;
   transition: background-color 0.1s ease;
