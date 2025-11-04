@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import Lenis from '@studio-freight/lenis';
 import { Toaster } from 'sonner';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
 
 // Import pages
 import HomePage from './pages/HomePage';
