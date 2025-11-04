@@ -11,7 +11,9 @@ export default function StudyFavorite() {
 
   useEffect(() => {
     const fetchFav = async () => {
-      const res = await axios.get(`/api/favorites/${userId}`);
+      const res = await axios.get(
+        `https://project-doan1-backend.onrender.com/api/favorites/${userId}`
+      );
       setFlashcards(res.data);
     };
     fetchFav();

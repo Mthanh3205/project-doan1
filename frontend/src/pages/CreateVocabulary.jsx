@@ -6,7 +6,7 @@ import ThemeToggle from '../components/themeToggle';
 import { toast } from 'sonner';
 
 // URL API
-const API_URL = '/api/admin';
+const API_URL = 'https://project-doan1-backend.onrender.com/api/admin';
 
 export default function AdminPage() {
   const [decks, setDecks] = useState([]);

@@ -17,7 +17,7 @@ const VocabularyPage = () => {
     const fetchFlashcards = async () => {
       try {
         const response = await fetch(
-          `https://backend-myproject-xfaf.onrender.com/api/flashcards/${deckId}`
+          `https://project-doan1-backend.onrender.com/api/flashcards/${deckId}`
         );
         if (!response.ok) throw new Error('Không thể tải dữ liệu từ server');
 
@@ -37,7 +37,7 @@ const VocabularyPage = () => {
   useEffect(() => {
     const fetchTopicName = async () => {
       try {
-        const res = await fetch(`https://backend-myproject-xfaf.onrender.com/api/topics/${deckId}`);
+        const res = await fetch(`https://project-doan1-backend.onrender.com/api/topics/${deckId}`);
         if (!res.ok) throw new Error('Không thể lấy thông tin chủ đề');
         const data = await res.json();
         setTopicName(data?.title || 'Chủ đề không tên');

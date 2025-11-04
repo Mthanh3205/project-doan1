@@ -22,7 +22,9 @@ export default function StudyFlashcard() {
   useEffect(() => {
     const fetchFlashcards = async () => {
       try {
-        const res = await axios.get(`/api/vocabulary/deck/${deckId}`);
+        const res = await axios.get(
+          `https://project-doan1-backend.onrender.com/api/vocabulary/deck/${deckId}`
+        );
         if (Array.isArray(res.data)) {
           setFlashcards(res.data);
         } else {
@@ -41,14 +43,14 @@ export default function StudyFlashcard() {
   // 🔹 LẤY DANH SÁCH FAVORITES
   useEffect(() => {
     axios
-      .get(`/api/favorites/${userId}`)
+      .get(`https://project-doan1-backend.onrender.com/api/favorites/${userId}`)
       .then((res) => setFavorites(res.data.map((f) => f.card_id)))
       .catch((err) => console.error('Lỗi lấy favorites:', err));
   }, []);
 
   // 🔹 HÀM THÊM/XÓA YÊU THÍCH
   const toggleFavorite = async (cardId) => {
-    await axios.post('/api/favorites', {
+    await axios.post('https://project-doan1-backend.onrender.com/api/favorites', {
       user_id: userId,
       card_id: cardId,
       deck_id: deckId,

@@ -12,7 +12,9 @@ export default function StudyFavoriteFlashcard() {
   const [flipped, setFlipped] = useState(false);
 
   useEffect(() => {
-    axios.get(`/api/favorites/deck/${deckId}?user=${userId}`).then((res) => setCards(res.data));
+    axios
+      .get(`https://project-doan1-backend.onrender.com/api/favorites/deck/${deckId}?user=${userId}`)
+      .then((res) => setCards(res.data));
   }, [deckId]);
 
   if (!cards.length)

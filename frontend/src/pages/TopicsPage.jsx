@@ -23,7 +23,7 @@ const TopicsPage = () => {
   useEffect(() => {
     const fetchTopics = async () => {
       try {
-        const response = await fetch('/api/topics');
+        const response = await fetch('https://project-doan1-backend.onrender.com/api/topics');
         if (!response.ok) throw new Error('Không thể kết nối server');
 
         const data = await response.json();

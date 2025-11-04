@@ -120,7 +120,7 @@ const Account = () => {
               <img
                 src={
                   userInfo.avatar?.startsWith('/uploads')
-                    ? `${userInfo.avatar}`
+                    ? `https://project-doan1-backend.onrender.com${userInfo.avatar}`
                     : userInfo.avatar || '/avt.jpg'
                 }
                 alt="Profile"
@@ -180,7 +180,7 @@ const Account = () => {
                     <img
                       src={
                         userInfo.avatar?.startsWith('/uploads')
-                          ? `${userInfo.avatar}`
+                          ? `https://project-doan1-backend.onrender.com${userInfo.avatar}`
                           : userInfo.avatar || '/avt.jpg'
                       }
                       alt="Profile"
