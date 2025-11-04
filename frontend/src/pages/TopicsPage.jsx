@@ -18,6 +18,9 @@ function removeVietnameseTones(str) {
 const TopicsPage = () => {
   const [topics, setTopics] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+
   const navigate = useNavigate();
 
   useEffect(() => {
