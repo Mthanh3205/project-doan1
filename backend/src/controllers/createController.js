@@ -1,6 +1,28 @@
 //Create
 import { Topics, Flashcard } from '../models/CreateVoc.js';
 
+// Hàm helper để kiểm tra quyền sở hữu flashcard
+const checkFlashcardOwnership = async (cardId, userId) => {
+  const card = await Flashcard.findByPk(cardId, {
+    include: {
+      model: Topics,
+      as: 'deck', // Đảm bảo alias này khớp với định nghĩa model của bạn
+      attributes: ['user_id'],
+    },
+  });
+
+  if (!card) {
+    return { error: 'No find vocabulary', status: 404 };
+  }
+
+  // Giả sử quan hệ đã được thiết lập và 'card.deck' tồn tại
+  if (!card.deck || card.deck.user_id !== userId) {
+    return { error: 'Bạn không có quyền thực hiện hành động này.', status: 403 };
+  }
+
+  return { authorized: true, card };
+};
+
 //Get all topics
 export const getAllDecks = async (req, res) => {
   try {
@@ -96,9 +118,6 @@ export const deleteDeck = async (req, res) => {
 //CRUD vocabulary
 
 //Create
-// Thay thế hàm createFlashcard cũ bằng hàm này
-
-//Create
 export const createFlashcard = async (req, res) => {
   try {
     // 1. Lấy dữ liệu từ frontend (front_text, back_text,...)
@@ -139,13 +158,26 @@ export const createFlashcard = async (req, res) => {
 //Update
 export const updateFlashcard = async (req, res) => {
   try {
+    const userId = req.user.id;
+    const cardId = req.params.id;
+
+    // SỬA LỖI BẢO MẬT: Kiểm tra quyền sở hữu trước khi cập nhật
+    const { authorized, error, status } = await checkFlashcardOwnership(cardId, userId);
+
+    if (!authorized) {
+      return res.status(status).json({ message: error });
+    }
+
+    // Nếu có quyền, tiến hành cập nhật
     const [updated] = await Flashcard.update(req.body, {
-      where: { card_id: req.params.id },
+      where: { card_id: cardId },
     });
+
     if (updated) {
-      const updatedCard = await Flashcard.findByPk(req.params.id);
+      const updatedCard = await Flashcard.findByPk(cardId);
       res.status(200).json(updatedCard);
     } else {
+      // Trường hợp này hiếm khi xảy ra nếu checkFlashcardOwnership đã chạy
       res.status(404).json({ message: 'No find vocabulary' });
     }
   } catch (error) {
@@ -156,12 +188,25 @@ export const updateFlashcard = async (req, res) => {
 //Delete
 export const deleteFlashcard = async (req, res) => {
   try {
+    const userId = req.user.id;
+    const cardId = req.params.id;
+
+    // SỬA LỖI BẢO MẬT: Kiểm tra quyền sở hữu trước khi xóa
+    const { authorized, error, status } = await checkFlashcardOwnership(cardId, userId);
+
+    if (!authorized) {
+      return res.status(status).json({ message: error });
+    }
+
+    // Nếu có quyền, tiến hành xóa
     const deleted = await Flashcard.destroy({
-      where: { card_id: req.params.id },
+      where: { card_id: cardId },
     });
+
     if (deleted) {
       res.status(204).send();
     } else {
+      // Trường hợp này hiếm khi xảy ra nếu checkFlashcardOwnership đã chạy
       res.status(404).json({ message: 'No find vocabulary' });
     }
   } catch (error) {
