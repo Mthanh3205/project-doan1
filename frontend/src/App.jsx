@@ -15,6 +15,8 @@ import Test from './pages/test';
 import CreateVocabulary from './pages/CreateVocabulary';
 import FavoritePage from './pages/FavoritePage';
 import StudyFavoriteFlashcard from './pages/StudyFavoriteFlashcard';
+//Login thì mới cho sử dụng chức năng trong web
+import ProtectedRoute from './components/ProtectedRoute';
 
 function AppContent() {
   const location = useLocation();
