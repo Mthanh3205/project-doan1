@@ -125,7 +125,11 @@ export default function AdminPage() {
     if (!authHeaders) return;
 
     try {
-      const response = await axios.put(`${API_URL}/flashcards/${cardId}`, updatedData, authHeaders);
+      const response = await axios.put(
+        `https://project-doan1-backend.onrender.com/api/flashcards/${cardId}`,
+        updatedData,
+        authHeaders
+      );
 
       setCards(cards.map((card) => (card.card_id === cardId ? response.data : card)));
       setEditingCardId(null);
@@ -140,7 +144,10 @@ export default function AdminPage() {
     if (!authHeaders) return;
 
     try {
-      await axios.delete(`${API_URL}/flashcards/${cardId}`, authHeaders);
+      await axios.delete(
+        `https://project-doan1-backend.onrender.com/api/flashcards/${cardId}`,
+        authHeaders
+      );
       setCards(cards.filter((card) => card.card_id !== cardId));
       toast.success('Xóa từ vựng thành công!');
     } catch (err) {
@@ -194,7 +201,7 @@ export default function AdminPage() {
         deck_id: selectedDeck.deck_id,
       };
 
-      const response = await axios.post(`${API_URL}/flashcards`, dataToSend, authHeaders);
+      const response = await axios.post(`${API_URL}/flashcards/${cardId}`, dataToSend, authHeaders);
 
       setCards([...cards, response.data]);
       setNewCardData({ front_text: '', back_text: '', pronunciation: '', example: '' });
