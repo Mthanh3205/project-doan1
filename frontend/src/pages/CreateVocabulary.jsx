@@ -145,11 +145,7 @@ export default function AdminPage() {
     if (!authHeaders) return;
 
     try {
-      await axios.delete(
-        // SỬA LỖI Ở ĐÂY: Đã thêm ${API_URL}
-        `${API_URL}/flashcards/${cardId}`,
-        authHeaders
-      );
+      await axios.delete(`${API_URL}/flashcards/${cardId}`, authHeaders);
       setCards(cards.filter((card) => card.card_id !== cardId));
       toast.success('Xóa từ vựng thành công!');
     } catch (err) {

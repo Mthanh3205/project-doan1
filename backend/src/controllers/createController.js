@@ -1,26 +1,34 @@
 //Create
 import { Topics, Flashcard } from '../models/CreateVoc.js';
 
-// Hàm helper để kiểm tra quyền sở hữu flashcard
+// HÀM HELPER ĐÃ SỬA LẠI (AN TOÀN HƠN)
 const checkFlashcardOwnership = async (cardId, userId) => {
-  const card = await Flashcard.findByPk(cardId, {
-    include: {
-      model: Topics,
-      as: 'deck', // Đảm bảo alias này khớp với định nghĩa model của bạn
-      attributes: ['user_id'],
-    },
-  });
+  try {
+    // Bước 1: Tìm flashcard bằng card_id
+    const card = await Flashcard.findByPk(cardId);
 
-  if (!card) {
-    return { error: 'No find vocabulary', status: 404 };
+    if (!card) {
+      return { error: 'Không tìm thấy từ vựng', status: 404 };
+    }
+
+    // Bước 2: Dùng deck_id từ flashcard để tìm chủ đề (deck)
+    const deck = await Topics.findByPk(card.deck_id);
+
+    if (!deck) {
+      // Lỗi này không nên xảy ra nếu CSDL nhất quán
+      return { error: 'Không tìm thấy chủ đề chứa từ vựng này', status: 404 };
+    }
+
+    // Bước 3: So sánh user_id của chủ đề với user_id từ token
+    if (deck.user_id !== userId) {
+      return { error: 'Bạn không có quyền thực hiện hành động này.', status: 403 };
+    }
+
+    // Nếu tất cả đều khớp
+    return { authorized: true };
+  } catch (error) {
+    return { error: 'Lỗi server khi xác thực quyền', status: 500 };
   }
-
-  // Giả sử quan hệ đã được thiết lập và 'card.deck' tồn tại
-  if (!card.deck || card.deck.user_id !== userId) {
-    return { error: 'Bạn không có quyền thực hiện hành động này.', status: 403 };
-  }
-
-  return { authorized: true, card };
 };
 
 //Get all topics
@@ -56,19 +64,13 @@ export const getDeckById = async (req, res) => {
 //Create topic
 export const createDeck = async (req, res) => {
   try {
-    // 1. Lấy title, description từ frontend
     const { title, description } = req.body;
-
-    // 2. Lấy user_id MÀ BACKEND ĐÃ XÁC THỰC ở Bước 5
     const userId = req.user.id;
-
-    // 3. Tạo CSDL với ID đúng
     const newDeck = await Topics.create({
       title: title,
       description: description,
-      user_id: userId, // <-- Đây là ID thật, đã được xác thực
+      user_id: userId,
     });
-
     res.status(201).json(newDeck);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -78,8 +80,9 @@ export const createDeck = async (req, res) => {
 //Update topic
 export const updateDeck = async (req, res) => {
   try {
+    // (Bảo mật) Bạn cũng nên kiểm tra quyền sở hữu deck ở đây
     const [updated] = await Topics.update(req.body, {
-      where: { deck_id: req.params.id },
+      where: { deck_id: req.params.id, user_id: req.user.id }, // Thêm user_id
     });
     if (updated) {
       const updatedDeck = await Topics.findByPk(req.params.id);
@@ -95,12 +98,21 @@ export const updateDeck = async (req, res) => {
 //Delete topic and flashcard
 export const deleteDeck = async (req, res) => {
   try {
-    //first delete flashcard
+    // (Bảo mật) Kiểm tra xem deck này có thuộc về user không
+    const deck = await Topics.findOne({
+      where: { deck_id: req.params.id, user_id: req.user.id },
+    });
+
+    if (!deck) {
+      return res.status(403).json({ message: 'Bạn không có quyền xóa chủ đề này.' });
+    }
+
+    // Nếu có quyền, xóa flashcard
     await Flashcard.destroy({
       where: { deck_id: req.params.id },
     });
 
-    //delete topic
+    // Sau đó xóa topic
     const deleted = await Topics.destroy({
       where: { deck_id: req.params.id },
     });
@@ -120,26 +132,20 @@ export const deleteDeck = async (req, res) => {
 //Create
 export const createFlashcard = async (req, res) => {
   try {
-    // 1. Lấy dữ liệu từ frontend (front_text, back_text,...)
     const { deck_id, front_text, back_text, pronunciation, example, image_url } = req.body;
-
-    // 2. Lấy user_id từ Token (đã được middleware xác thực)
     const userId = req.user.id;
 
-    // 3. KIỂM TRA QUYỀN: Kiểm tra xem chủ đề (deck) này có thuộc về user này không
     const deck = await Topics.findOne({
       where: {
-        deck_id: deck_id, // Chủ đề mà user muốn thêm card vào
-        user_id: userId, // Phải là chủ đề của user này
+        deck_id: deck_id,
+        user_id: userId,
       },
     });
 
-    // 4. Nếu không tìm thấy (deck không tồn tại HOẶC không phải của user này)
     if (!deck) {
       return res.status(403).json({ message: 'Lỗi: Bạn không có quyền thêm vào chủ đề này.' });
     }
 
-    // 5. Nếu có quyền, tạo flashcard
     const newCard = await Flashcard.create({
       deck_id,
       front_text,
@@ -177,7 +183,6 @@ export const updateFlashcard = async (req, res) => {
       const updatedCard = await Flashcard.findByPk(cardId);
       res.status(200).json(updatedCard);
     } else {
-      // Trường hợp này hiếm khi xảy ra nếu checkFlashcardOwnership đã chạy
       res.status(404).json({ message: 'No find vocabulary' });
     }
   } catch (error) {
@@ -206,7 +211,6 @@ export const deleteFlashcard = async (req, res) => {
     if (deleted) {
       res.status(204).send();
     } else {
-      // Trường hợp này hiếm khi xảy ra nếu checkFlashcardOwnership đã chạy
       res.status(404).json({ message: 'No find vocabulary' });
     }
   } catch (error) {
