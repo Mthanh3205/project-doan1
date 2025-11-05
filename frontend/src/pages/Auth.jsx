@@ -21,7 +21,7 @@ const Auth = () => {
   };
 
   //login - signup email
-  const handleSubmit = async (e) => {
+  const handlegoogleIdmit = async (e) => {
     e.preventDefault();
 
     if (isLogin) {
@@ -93,7 +93,7 @@ const Auth = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          googleId: googleUser.sub, // đổi sub -> googleId
+          googleId: googleUser.googleId, // đổi googleId -> googleId
           email: googleUser.email,
           name: googleUser.name,
           picture: googleUser.picture,
@@ -263,9 +263,9 @@ const Auth = () => {
               </div>
             )}
 
-            {/* Submit button */}
+            {/* googleIdmit button */}
             <button
-              onClick={handleSubmit}
+              onClick={handlegoogleIdmit}
               className="w-full transform rounded-xl bg-gradient-to-r from-amber-300 to-amber-400 px-4 py-3 font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:from-amber-300 hover:to-amber-500 hover:shadow-xl"
             >
               {isLogin ? 'Đăng nhập' : 'Đăng ký'}

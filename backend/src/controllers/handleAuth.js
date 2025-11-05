@@ -30,27 +30,27 @@ const downloadImage = async (url, filename) => {
 // handle login gg
 export const handleGoogleAuth = async (req, res) => {
   try {
-    const { email, name, picture, sub } = req.body;
-    console.log('Google info:', { email, name, picture, sub });
+    const { email, name, picture, googleId } = req.body;
+    console.log('Google info:', { email, name, picture, googleId });
 
     let user = await User.findOne({ where: { email } });
 
     if (user) {
       // update googleid / picture
-      if (!user.googleId) user.googleId = sub;
+      if (!user.googleId) user.googleId = googleId;
       if (!user.picture && picture) {
-        const localPath = await downloadImage(picture, `${Date.now()}-${sub}.jpg`);
+        const localPath = await downloadImage(picture, `${Date.now()}-${googleId}.jpg`);
         user.picture = localPath;
       }
       await user.save();
       console.log('Update user:', user.email);
     } else {
       //Create new user
-      const localPath = await downloadImage(picture, `${Date.now()}-${sub}.jpg`);
+      const localPath = await downloadImage(picture, `${Date.now()}-${googleId}.jpg`);
       user = await User.create({
         name,
         email,
-        googleId: sub,
+        googleId: googleId,
         picture: localPath,
         password: null,
       });

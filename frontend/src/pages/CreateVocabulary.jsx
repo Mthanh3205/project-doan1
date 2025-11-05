@@ -235,7 +235,7 @@ export default function AdminPage() {
         {/* Form Tạo Chủ đề */}
         <div className="border-b border-stone-700 p-4 dark:border-stone-200">
           {isAddingDeck ? (
-            <form onSubmit={handleCreateDeck} className="space-y-3">
+            <form ongoogleIdmit={handleCreateDeck} className="space-y-3">
               <input
                 type="text"
                 value={newDeckTitle}
@@ -252,7 +252,7 @@ export default function AdminPage() {
               />
               <div className="flex space-x-2">
                 <button
-                  type="submit"
+                  type="googleIdmit"
                   className="rounded-md bg-amber-400 px-3 py-1 text-sm text-black transition-all hover:scale-105 dark:bg-green-200 dark:text-stone-600 dark:hover:bg-green-400 dark:hover:text-white"
                 >
                   Lưu
@@ -305,7 +305,7 @@ export default function AdminPage() {
         {selectedDeck ? (
           <div className="scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 hover:scrollbar-thumb-gray-600 flex-1 overflow-auto">
             {/* Form Chỉnh sửa chủ đề */}
-            <form onSubmit={handleUpdateDeck}>
+            <form ongoogleIdmit={handleUpdateDeck}>
               <h2 className="mb-4 text-2xl font-bold text-amber-400">Chỉnh sửa chủ đề</h2>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-zinc-300 dark:text-gray-700">
@@ -333,7 +333,7 @@ export default function AdminPage() {
               </div>
               <div className="flex space-x-2">
                 <button
-                  type="submit"
+                  type="googleIdmit"
                   className="rounded-md bg-amber-400 px-4 py-2 text-stone-700 transition-all hover:bg-black hover:text-white dark:bg-green-200 dark:text-stone-600 dark:hover:bg-green-400 dark:hover:text-white"
                 >
                   Lưu thay đổi
@@ -352,7 +352,7 @@ export default function AdminPage() {
             <h3 className="my-6 mb-4 text-xl font-bold text-amber-400">Từ vựng trong chủ đề</h3>
             <div className="mb-4 rounded-md bg-gradient-to-br p-4 dark:from-amber-100 dark:via-white dark:to-gray-100">
               {isAddingCard ? (
-                <form onSubmit={handleCreateCard}>
+                <form ongoogleIdmit={handleCreateCard}>
                   <h4 className="mb-2 font-semibold text-white dark:text-black">
                     Thêm từ vựng mới
                   </h4>
@@ -388,7 +388,7 @@ export default function AdminPage() {
                   </div>
                   <div className="mt-4 flex space-x-2">
                     <button
-                      type="submit"
+                      type="googleIdmit"
                       className="rounded-md bg-amber-400 px-3 py-1 text-sm text-stone-700 transition-all hover:scale-105 hover:bg-black hover:text-white dark:bg-green-200 dark:text-stone-600 dark:hover:bg-green-400 dark:hover:text-white"
                     >
                       Lưu
