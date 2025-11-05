@@ -191,7 +191,45 @@ export default function Header() {
               )}
             </div>
           ))}
-          <div className="border-t border-gray-700 pt-3">
+          <div className="px-2">
+            {!user ? (
+              <button
+                onClick={() => navigate('/Auth')}
+                className="group relative overflow-hidden rounded-4xl border bg-zinc-400 font-medium whitespace-nowrap text-white transition-all duration-300 hover:bg-zinc-200 hover:text-black dark:bg-zinc-200 hover:dark:bg-zinc-500"
+              >
+                <User className="m-1 text-white dark:text-white" />
+              </button>
+            ) : (
+              <div className="relative">
+                <img
+                  src={user.picture || '/avt.jpg'}
+                  alt="avatar"
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="h-9 w-9 cursor-pointer rounded-full transition-transform duration-200 hover:scale-110"
+                />
+                {showMenu && (
+                  <div className="absolute right-0 z-50 mt-4 min-w-max rounded-lg bg-white text-gray-600 shadow-lg">
+                    <div className="rounded-t-lg border-b px-4 py-2 font-semibold hover:bg-zinc-400">
+                      <Link to="/Account">{user.name || 'User'}</Link>
+                    </div>
+                    <button
+                      onClick={() => {
+                        localStorage.removeItem('user');
+                        localStorage.removeItem('token');
+                        setUser(null);
+                        setShowMenu(false);
+                        navigate('/');
+                      }}
+                      className="w-full rounded-b-lg px-4 py-2 text-left hover:bg-zinc-400"
+                    >
+                      Đăng xuất
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          <div className="border-t border-gray-700 px-2 pt-3">
             <ThemeToggle />
           </div>
         </div>

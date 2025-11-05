@@ -70,42 +70,42 @@ function AppContent() {
         <Route
           path="/topics"
           element={
-            // <ProtectedRoute>
-            <TopicsPage />
-            // </ProtectedRoute>
+            <ProtectedRoute>
+              <TopicsPage />
+            </ProtectedRoute>
           }
         />
         <Route path="/vocabulary/:deckId" element={<VocabularyPage />} />
         <Route
           path="/test"
           element={
-            // <ProtectedRoute>
-            <Test />
-            // </ProtectedRoute>
+            <ProtectedRoute>
+              <Test />
+            </ProtectedRoute>
           }
         />
         <Route
           path="/CreateVocabulary"
           element={
-            // <ProtectedRoute>
-            <CreateVocabulary />
-            // </ProtectedRoute>
+            <ProtectedRoute>
+              <CreateVocabulary />
+            </ProtectedRoute>
           }
         />
         <Route
           path="/favorites"
           element={
-            // <ProtectedRoute>
-            <FavoritePage />
-            // </ProtectedRoute>
+            <ProtectedRoute>
+              <FavoritePage />
+            </ProtectedRoute>
           }
         />
         <Route
           path="/study-favorites/:deckId"
           element={
-            // <ProtectedRoute>
-            <StudyFavoriteFlashcard />
-            // </ProtectedRoute>
+            <ProtectedRoute>
+              <StudyFavoriteFlashcard />
+            </ProtectedRoute>
           }
         />
       </Routes>
