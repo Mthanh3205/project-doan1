@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/db.js';
+import Topics from './Topics.js';
 
 const Flashcard = sequelize.define(
   'Flashcard',
@@ -46,5 +47,5 @@ const Flashcard = sequelize.define(
     updatedAt: false,
   }
 );
-
+Flashcard.belongsTo(Topics, { foreignKey: 'deck_id' });
 export default Flashcard;

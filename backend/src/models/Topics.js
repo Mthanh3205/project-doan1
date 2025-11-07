@@ -1,6 +1,7 @@
 //Topics
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/db.js';
+import Flascard from './Flashcard.js';
 
 const Topics = sequelize.define(
   'Topics',
@@ -39,5 +40,5 @@ const Topics = sequelize.define(
     updatedAt: 'updated_at',
   }
 );
-
+Topics.hasMany(Flascard, { foreignKey: 'deck_id' });
 export default Topics;

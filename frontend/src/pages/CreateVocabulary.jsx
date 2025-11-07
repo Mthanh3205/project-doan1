@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import FlashcardItem from '../components/FlashcardItem';
-import { Snowflake } from 'lucide-react';
+// Thêm Menu và X từ lucide-react
+import { Snowflake, Menu, X } from 'lucide-react';
 import ThemeToggle from '../components/themeToggle';
 import { toast } from 'sonner';
 
@@ -14,6 +15,9 @@ export default function AdminPage() {
   const [cards, setCards] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  //Thêm state để quản lý offcanvas
+  const [isOffcanvasOpen, setIsOffcanvasOpen] = useState(false);
 
   const [editingCardId, setEditingCardId] = useState(null);
 
@@ -66,6 +70,8 @@ export default function AdminPage() {
       setSelectedDeck(response.data);
       setCards(response.data.flashcards || []);
       setError(null);
+      //Tự động đóng offcanvas khi chọn deck trên mobile
+      setIsOffcanvasOpen(false);
     } catch (err) {
       setError('Không thể tải chi tiết chủ đề');
       setSelectedDeck(null);
@@ -125,12 +131,7 @@ export default function AdminPage() {
     if (!authHeaders) return;
 
     try {
-      const response = await axios.put(
-        // SỬA LỖI Ở ĐÂY: Đã thêm ${API_URL}
-        `${API_URL}/flashcards/${cardId}`,
-        updatedData,
-        authHeaders
-      );
+      const response = await axios.put(`${API_URL}/flashcards/${cardId}`, updatedData, authHeaders);
 
       setCards(cards.map((card) => (card.card_id === cardId ? response.data : card)));
       setEditingCardId(null);
@@ -219,10 +220,14 @@ export default function AdminPage() {
     return <div className="p-4 text-red-500">{error}</div>;
   }
   return (
-    <div className="flex h-screen">
-      {/*Danh sách chủ đề */}
-      <div className="flex w-1/3 flex-col border-r border-stone-700 bg-[#1d1d1d] bg-gradient-to-br dark:border-white dark:from-amber-100 dark:via-white dark:to-gray-100">
-        <div className="flex flex-wrap items-center justify-center gap-5 bg-black p-3 dark:bg-green-200">
+    <div className="relative flex h-screen overflow-hidden">
+      {/* Offcanvas */}
+      <div
+        className={`fixed inset-y-0 left-0 z-30 h-screen w-full transform transition-transform duration-300 ease-in-out sm:w-80 ${
+          isOffcanvasOpen ? 'translate-x-0' : '-translate-x-full'
+        } flex flex-col border-r border-stone-700 bg-[#1d1d1d] bg-gradient-to-br lg:relative lg:w-1/3 lg:translate-x-0 dark:border-white dark:from-amber-100 dark:via-white dark:to-gray-100`}
+      >
+        <div className="relative flex flex-wrap items-center justify-center gap-5 bg-black p-3 dark:bg-green-200">
           <a href="/" className="flex items-center gap-2 sm:text-left">
             <Snowflake className="h-8 w-8 text-amber-600 sm:h-10 sm:w-10" />
             <span className="bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-2xl font-bold text-transparent italic sm:text-3xl">
@@ -232,6 +237,14 @@ export default function AdminPage() {
           <div className="flex w-full justify-center sm:w-auto sm:justify-end">
             <ThemeToggle />
           </div>
+
+          {/*  Thêm nút X để đóng (chỉ hiển thị trên mobile) */}
+          <button
+            onClick={() => setIsOffcanvasOpen(false)}
+            className="absolute top-2 right-2 rounded-full p-2 text-zinc-200 lg:hidden dark:text-stone-700"
+          >
+            <X size={24} />
+          </button>
         </div>
         <h2 className="sticky top-0 bg-[#1d1d1d] p-4 text-xl font-bold text-zinc-200 dark:border-none dark:bg-white dark:text-stone-700">
           Các chủ đề (Decks)
@@ -305,8 +318,16 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* right content */}
-      <div className="flex w-2/3 flex-col bg-[#1d1d1d] bg-gradient-to-br p-6 dark:from-amber-100 dark:via-white dark:to-gray-100">
+      {/*Responsive cho panel chính */}
+      <div className="flex w-full flex-col bg-[#1d1d1d] bg-gradient-to-br p-6 lg:w-2/3 dark:from-amber-100 dark:via-white dark:to-gray-100">
+        {/* nút Hamburger (chỉ hiển thị trên mobile) */}
+        <button
+          onClick={() => setIsOffcanvasOpen(true)}
+          className="mb-4 text-zinc-200 lg:hidden dark:text-stone-700"
+        >
+          <Menu size={28} />
+        </button>
+
         {selectedDeck ? (
           <div className="scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 hover:scrollbar-thumb-gray-600 flex-1 overflow-auto">
             {/* Form Chỉnh sửa chủ đề */}
@@ -353,7 +374,7 @@ export default function AdminPage() {
               </div>
             </form>
 
-            {/* Form Tạo từ vựng */}
+            {/* Form Tạo từ vựng*/}
             <h3 className="my-6 mb-4 text-xl font-bold text-amber-400">Từ vựng trong chủ đề</h3>
             <div className="mb-4 rounded-md bg-gradient-to-br p-4 dark:from-amber-100 dark:via-white dark:to-gray-100">
               {isAddingCard ? (
@@ -361,7 +382,9 @@ export default function AdminPage() {
                   <h4 className="mb-2 font-semibold text-white dark:text-black">
                     Thêm từ vựng mới
                   </h4>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {' '}
+                    {/*Responsive cho form */}
                     <input
                       name="front_text"
                       value={newCardData.front_text}
@@ -417,7 +440,7 @@ export default function AdminPage() {
               )}
             </div>
 
-            {/* Danh sách từ vựng */}
+            {/* Danh sách từ vựng*/}
             <div className="space-y-4">
               {cards.length > 0 ? (
                 cards.map((card) => (
@@ -444,6 +467,14 @@ export default function AdminPage() {
           </div>
         )}
       </div>
+
+      {/*Thêm Overlay (phần nền mờ) khi offcanvas mở */}
+      {isOffcanvasOpen && (
+        <div
+          onClick={() => setIsOffcanvasOpen(false)}
+          className="fixed inset-0 z-20 bg-black/50 lg:hidden"
+        ></div>
+      )}
     </div>
   );
 }

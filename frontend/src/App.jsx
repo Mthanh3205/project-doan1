@@ -67,7 +67,7 @@ function AppContent() {
         <Route path="/" element={<HomePage />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/auth" element={<Auth />} />
-        <Route path="/study/:deckId" element={<Studyflashcard />} />
+        <Route path="/study/:deckId/:mode" element={<Studyflashcard />} />
         <Route path="/account" element={<Account />} />
         <Route
           path="/topics"

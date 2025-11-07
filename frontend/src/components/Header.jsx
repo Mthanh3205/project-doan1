@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BookOpen, Menu, X, User, Snowflake } from 'lucide-react';
+import { BookOpen, Menu, X, User, Snowflake, Star } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import ThemeToggle from './themeToggle';
 
@@ -22,7 +22,6 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // 🔹 deckId giả định (có thể thay bằng id thật)
   const deckId = 1;
 
   const navItems = [
@@ -36,22 +35,33 @@ export default function Header() {
         { label: 'Xem tất cả từ vựng', href: '/topics' },
       ],
     },
-    { label: 'Flashcards', href: '/favorites' },
+    { label: 'Flashcards', href: '/vocabulary/:deckId' },
     {
       label: 'Chế độ học',
-      href: '/Studyflashcard',
+      href: '#',
       subItems: [
         {
           label: 'Flashcards',
           href: '#',
-          onClick: () => navigate(`/study/${deckId}`),
+          onClick: () => navigate(`/study/${deckId}/flip`),
         },
-        { label: 'Từ vựng nâng cao', href: '#' },
-        { label: 'Từ vựng B1 - B2', href: '#' },
-        { label: 'Xem tất cả từ vựng', href: '/topics' },
+        {
+          label: 'Typing',
+          href: '#',
+          onClick: () => navigate(`/study/${deckId}/typing`),
+        },
+        { label: 'Quiz', href: '#', onClick: () => navigate(`/study/${deckId}/quiz`) },
+        { label: 'Xem tất cả chế độ', href: '/topics' },
       ],
     },
-    { label: 'Yêu thích ⭐', href: '/favorites' },
+    {
+      label: (
+        <div className="flex items-center justify-center gap-2">
+          Yêu thích <Star width={18} height={18} />
+        </div>
+      ),
+      href: '/favorites',
+    },
     { label: 'Tạo mới +', href: '/CreateVocabulary' },
   ];
 
@@ -84,7 +94,7 @@ export default function Header() {
               </Link>
 
               {item.subItems && (
-                <div className="pointer-events-none absolute top-full left-1/2 z-[999] min-w-max -translate-x-1/2 translate-y-2 rounded-xl border border-zinc-600/40 bg-black/30 px-3 py-2 text-white opacity-0 shadow-xl saturate-150 backdrop-blur-xl transition-all delay-150 duration-500 ease-in-out group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100">
+                <div className="pointer-events-none absolute top-full left-1/2 z-[999] min-w-max -translate-x-1/2 translate-y-2 rounded-xl border border-zinc-600/40 bg-black/80 px-3 py-2 text-white opacity-0 shadow-lg saturate-150 backdrop-blur-md transition-all delay-150 duration-500 ease-in-out group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 dark:border-none dark:bg-green-100/90">
                   {item.subItems.map((sub) => (
                     <Link
                       key={sub.label}
@@ -96,7 +106,7 @@ export default function Header() {
                         }
                         setIsOpen(false);
                       }}
-                      className="relative block rounded-md px-4 py-2 text-base whitespace-nowrap text-white transition-all duration-300 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-amber-400 after:transition-all after:duration-500 after:content-[''] hover:translate-x-1 hover:text-amber-400 hover:after:w-full"
+                      className="relative block rounded-md px-4 py-2 text-base whitespace-nowrap text-white transition-all duration-300 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-amber-400 after:transition-all after:duration-500 after:content-[''] hover:translate-x-1 hover:text-amber-400 hover:after:w-full dark:text-stone-700"
                     >
                       {sub.label}
                     </Link>

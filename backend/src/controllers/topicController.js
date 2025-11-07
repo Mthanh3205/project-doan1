@@ -1,9 +1,25 @@
 //Topics
 import Topics from '../models/Topics.js';
+import Flashcard from '../models/Flashcard.js';
+import sequelize from '../config/db.js';
 
 const getAllTopics = async (req, res) => {
   try {
-    const allTopics = await Topics.findAll();
+    const allTopics = await Topics.findAll({
+      attributes: {
+        include: [[sequelize.fn('COUNT', sequelize.col('Flashcard.card_id')), 'word_count']],
+      },
+      include: [
+        {
+          model: Cards,
+          attributes: [],
+        },
+      ],
+
+      group: ['Topics.deck_id'],
+      order: [['created_at', 'DESC']],
+    });
+
     return res.json(allTopics);
   } catch (err) {
     console.error('Lỗi khi truy vấn topics:', err);
