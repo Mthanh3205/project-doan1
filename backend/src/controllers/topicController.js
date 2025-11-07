@@ -1,6 +1,5 @@
 //Topics
-import Topics from '../models/Topics.js';
-import Flashcard from '../models/Flashcard.js';
+import Topics, { Flashcard } from '../models/index.js';
 import sequelize from '../config/db.js';
 
 const getAllTopics = async (req, res) => {
@@ -11,7 +10,7 @@ const getAllTopics = async (req, res) => {
       },
       include: [
         {
-          model: Cards,
+          model: Flashcard,
           attributes: [],
         },
       ],
