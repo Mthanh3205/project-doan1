@@ -16,7 +16,15 @@ import CreateVocabulary from './pages/CreateVocabulary';
 import FavoritePage from './pages/FavoritePage';
 import StudyFavoriteFlashcard from './pages/StudyFavoriteFlashcard';
 import ProgressPage from './pages/ProgressPage';
-import AdminPage from './pages/AdminPage';
+// import AdminPage from './pages/AdminPage';
+
+//import admin
+import AdminLayout from './components/admin/AdminLayout';
+import DashboardOverview from './pages/admin/DashboardOverview';
+import ManageUsers from './pages/admin/ManageUsers';
+import ManageTopics from './pages/admin/ManageTopics';
+import ManageWords from './pages/admin/ManageWords';
+import AdminSettings from './pages/admin/AdminSettings';
 
 //Login thì mới cho sử dụng chức năng trong web
 import ProtectedRoute from './components/ProtectedRoute';
@@ -88,7 +96,15 @@ function AppContent() {
 
           {/* admin */}
           <Route element={<AdminProtectedRoute />}>
-            <Route path="/admin" element={<AdminPage />} />
+            {/* <Route path="/admin" element={<AdminPage />} /> */}
+            <Route path="/admin" element={<AdminLayout />}>
+              {/* index=true nghĩa là đây là trang mặc định của /admin */}
+              <Route index element={<DashboardOverview />} />
+              <Route path="users" element={<ManageUsers />} />
+              <Route path="topics" element={<ManageTopics />} />
+              <Route path="words" element={<ManageWords />} />
+              <Route path="settings" element={<AdminSettings />} />
+            </Route>
           </Route>
         </Routes>
       </div>

@@ -62,8 +62,8 @@ const AdminPage = () => {
 
   return (
     <div className="container mx-auto p-8">
-      <h1 className="mb-6 text-3xl font-bold">Quản lý Người dùng</h1>
-      <p className="mb-4">Tổng số tài khoản: {users.length}</p>
+      <h1 className="mb-6 text-3xl font-bold text-amber-500">Quản lý Người dùng</h1>
+      <p className="mb-4 text-stone-700">Tổng số tài khoản: {users.length}</p>
 
       <div className="overflow-x-auto rounded-lg shadow-lg">
         <table className="min-w-full divide-y divide-gray-200 bg-white dark:bg-gray-800">
