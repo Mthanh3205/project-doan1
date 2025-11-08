@@ -18,6 +18,7 @@ import StudyFavoriteFlashcard from './pages/StudyFavoriteFlashcard';
 import ProgressPage from './pages/ProgressPage';
 import AdminUserList from './pages/AdminUserList';
 import AdminProtectedRoute from './components/AdminProtectedRoute';
+import AdminPage from './pages/AdminPage';
 
 //Login thì mới cho sử dụng chức năng trong web
 import ProtectedRoute from './components/ProtectedRoute';
@@ -88,7 +89,7 @@ function AppContent() {
           path="/admin"
           element={
             <AdminProtectedRoute>
-              <AdminUserList />
+              <AdminPage />
             </AdminProtectedRoute>
           }
         />
