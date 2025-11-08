@@ -1,7 +1,5 @@
 //Topics
 import { Topics, Flashcard, UserProgress, sequelize } from '../models/index.js';
-import sequelize from '../config/db.js';
-
 const getAllTopics = async (req, res) => {
   try {
     // Chạy một câu SQL thô an toàn
