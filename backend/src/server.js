@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import sequelize from './config/db.js';
+import session from 'express-session';
 
 // Load biến môi trường
 dotenv.config();
@@ -22,6 +23,16 @@ app.use(
   })
 );
 app.use(express.json());
+
+app.use(
+  session({
+    secret: '123456789',
+    resave: false,
+    saveUninitialized: true,
+    rolling: true,
+    cookie: { maxAge: 30 * 1000 },
+  })
+);
 
 // Import Models
 import './models/User.js';
@@ -48,6 +59,15 @@ app.use('/api/vocabulary', routeVocabulary);
 app.use('/api/admin', routeAdmin);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/progress', progressRoutes);
+
+// Route logout
+app.post('/api/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) return res.status(500).json({ message: 'Logout failed' });
+    res.clearCookie('connect.sid');
+    res.status(200).json({ message: 'Logged out successfully' });
+  });
+});
 
 // Kết nối DB và chạy server
 const startServer = async () => {

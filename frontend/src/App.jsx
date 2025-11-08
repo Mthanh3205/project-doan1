@@ -18,52 +18,15 @@ import StudyFavoriteFlashcard from './pages/StudyFavoriteFlashcard';
 import ProgressPage from './pages/ProgressPage';
 //Login thì mới cho sử dụng chức năng trong web
 import ProtectedRoute from './components/ProtectedRoute';
-
+//Cuộn mượt
+import SmoothScroll from './components/SmoothScroll';
+//Autologout
+import AutoLogout from './components/AutoLogout';
 function AppContent() {
-  const location = useLocation();
-
-  useEffect(() => {
-    if (location.pathname === '/CreateVocabulary') {
-      if (window.lenisInstance) {
-        window.lenisInstance.destroy();
-        window.lenisInstance = null;
-      }
-      document.documentElement.style.overflow = 'hidden';
-      document.body.style.overflow = 'hidden';
-
-      return;
-    }
-
-    document.documentElement.style.overflow = '';
-    document.body.style.overflow = '';
-
-    const lenis = new Lenis({
-      lerp: 0.03,
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-      smoothTouch: false,
-    });
-
-    window.lenisInstance = lenis;
-
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-
-    requestAnimationFrame(raf);
-
-    return () => {
-      if (lenis) {
-        lenis.destroy();
-        window.lenisInstance = null;
-      }
-    };
-  }, [location.pathname]);
-
   return (
-    <div className="min-h-screen bg-black text-white transition-colors duration-300 dark:bg-stone-100">
+    <div className="min-h-screen bg-transparent text-white transition-colors duration-300">
+      <AutoLogout />
+      <SmoothScroll />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="*" element={<NotFound />} />
