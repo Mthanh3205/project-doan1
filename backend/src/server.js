@@ -38,6 +38,7 @@ import routeVocabulary from './routes/routeVocabulary.js';
 import routeAdmin from './routes/routeAdmin.js';
 import favoriteRoutes from './routes/favoriteRoutes.js';
 import progressRoutes from './routes/progressRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
 
 // Khai báo các route
 app.use('/api/auth', routeAuth);
@@ -48,6 +49,7 @@ app.use('/api/vocabulary', routeVocabulary);
 app.use('/api/admin', routeAdmin);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/progress', progressRoutes);
+app.use('/api/');
 
 // Kết nối DB và chạy server
 const startServer = async () => {

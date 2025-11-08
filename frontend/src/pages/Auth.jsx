@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, Chrome, Home, Snowflake } from 'lucide-react';
 import GoogleButton from '@/components/ui/GoogleButton';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom'; // 1. XÓA BỎ useNavigate
+import { useAuth } from '../context/AuthContext'; // 2. IMPORT useAuth
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -12,6 +13,8 @@ const Auth = () => {
     password: '',
     confirmPassword: '',
   });
+
+  const { login } = useAuth(); // 3. LẤY HÀM LOGIN TỪ CONTEXT
 
   const handleInputChange = (e) => {
     setFormData({
@@ -39,23 +42,37 @@ const Auth = () => {
         const data = await res.json();
 
         if (res.ok) {
-          sessionStorage.setItem('token', data.token);
-          sessionStorage.setItem('user', JSON.stringify(data.user));
-          console.log('User:', data.user);
-          navigate('/');
+          // 4. SỬA LẠI LOGIC ĐĂNG NHẬP
+          // Gộp user và token lại (dựa theo AuthContext của bạn)
+          const userData = { ...data.user, token: data.token };
+
+          console.log(
+            'Auth.jsx: Đăng nhập Email thành công. Dữ liệu sắp gửi cho Context:',
+            userData
+          );
+
+          // Chỉ cần gọi hàm login, nó sẽ tự lưu và tự điều hướng
+          login(userData);
+
+          // XÓA 3 DÒNG CŨ NÀY
+          // sessionStorage.setItem('token', data.token);
+          // sessionStorage.setItem('user', JSON.stringify(data.user));
+          // navigate('/');
         } else {
           alert(data.message || 'Đăng nhập thất bại!');
         }
       } catch (err) {
         console.error('Lỗi backend:', err);
-        res.status(500).json({ message: 'Lỗi server', error: err.message });
+        // Dòng này bị lỗi, không thể gọi res.status ở frontend
+        // res.status(500).json({ message: 'Lỗi server', error: err.message });
+        alert('Lỗi kết nối server');
       }
     } else {
+      // ... (Phần đăng ký giữ nguyên)
       if (formData.password !== formData.confirmPassword) {
         alert('Mật khẩu xác nhận không khớp!');
         return;
       }
-
       try {
         const res = await fetch('https://project-doan1-backend.onrender.com/api/auth/register', {
           method: 'POST',
@@ -66,23 +83,21 @@ const Auth = () => {
             password: formData.password,
           }),
         });
-
         const data = await res.json();
-
         if (res.ok) {
-          alert('Đăng ký thành công!');
-          console.log('User saved:', data.user);
+          alert('Đăng ký thành công! Vui lòng đăng nhập.');
+          setIsLogin(true); // Tự động chuyển sang tab login
         } else {
           alert(data.message || 'Đăng ký thất bại!');
         }
       } catch (err) {
         console.error('Lỗi backend:', err);
-        res.status(500).json({ message: 'Lỗi server', error: err.message });
+        alert('Lỗi kết nối server');
       }
     }
   };
 
-  const navigate = useNavigate();
+  // const navigate = useNavigate(); // ĐÃ XÓA
 
   //login gg
   const handleLogin = async (googleUser) => {
@@ -94,7 +109,7 @@ const Auth = () => {
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          googleId: googleUser.googleId, // đổi googleId -> googleId
+          googleId: googleUser.googleId,
           email: googleUser.email,
           name: googleUser.name,
           picture: googleUser.picture,
@@ -106,9 +121,22 @@ const Auth = () => {
       console.log('Response backend:', data);
 
       if (data.token) {
-        sessionStorage.setItem('token', data.token);
-        sessionStorage.setItem('user', JSON.stringify(data.user)); //lưu luôn user vào sessionStorage
-        navigate('/');
+        // 5. SỬA LẠI LOGIC ĐĂNG NHẬP GOOGLE
+        // Gộp user và token lại
+        const userData = { ...data.user, token: data.token };
+
+        console.log(
+          'Auth.jsx: Đăng nhập Google thành công. Dữ liệu sắp gửi cho Context:',
+          userData
+        );
+
+        // Gọi hàm login từ context
+        login(userData);
+
+        // XÓA 3 DÒNG CŨ NÀY
+        // sessionStorage.setItem('token', data.token);
+        // sessionStorage.setItem('user', JSON.stringify(data.user));
+        // navigate('/');
       } else {
         alert('Login thất bại!');
       }

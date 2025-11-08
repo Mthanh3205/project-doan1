@@ -16,6 +16,9 @@ import CreateVocabulary from './pages/CreateVocabulary';
 import FavoritePage from './pages/FavoritePage';
 import StudyFavoriteFlashcard from './pages/StudyFavoriteFlashcard';
 import ProgressPage from './pages/ProgressPage';
+import AdminUserList from './pages/AdminUserList';
+import AdminProtectedRoute from './components/AdminProtectedRoute';
+
 //Login thì mới cho sử dụng chức năng trong web
 import ProtectedRoute from './components/ProtectedRoute';
 //Cuộn mượt
@@ -79,6 +82,16 @@ function AppContent() {
             </ProtectedRoute>
           }
         />
+
+        {/* admin */}
+        <Route
+          path="/admin"
+          element={
+            <AdminProtectedRoute>
+              <AdminUserList />
+            </AdminProtectedRoute>
+          }
+        />
       </Routes>
     </div>
   );
@@ -88,9 +101,7 @@ function App() {
   return (
     <>
       <Toaster />
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
+      <AppContent />
     </>
   );
 }
