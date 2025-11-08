@@ -1,7 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Check, X, ArrowRight, Keyboard, ArrowRightLeft } from 'lucide-react';
+import axios from 'axios';
 
-function TypingMode({ card, index, nextCard }) {
+function TypingMode({ card, index, nextCard, userId }) {
   // Translate
   const [typingDirection, setTypingDirection] = useState('vi-en');
 
@@ -26,7 +27,7 @@ function TypingMode({ card, index, nextCard }) {
   const correctAnswer = typingDirection === 'vi-en' ? card.back_text : card.front_text;
 
   // HÀM KIỂM TRA ĐÁP ÁN
-  const checkAnswer = () => {
+  const checkAnswer = useCallback(async () => {
     if (!userInput) {
       setMessage('Vui lòng nhập câu trả lời.');
       return;
@@ -39,11 +40,25 @@ function TypingMode({ card, index, nextCard }) {
     if (normalizedInput === normalizedCorrect) {
       setIsCorrect(true);
       setMessage('Chính xác! Ghi nhớ tốt.');
+
+      // --- 4. GỌI API ĐỂ LƯU TIẾN TRÌNH ---
+      try {
+        await axios.post('https://project-doan1-backend.onrender.com/api/progress/mark', {
+          userId: userId,
+          cardId: card.card_id,
+          deckId: card.deck_id, // Đảm bảo API trả về 'deck_id' trong object 'card'
+          mode: 'typing',
+        });
+      } catch (err) {
+        console.error('Lỗi khi lưu tiến trình typing:', err);
+        // Không chặn người dùng, chỉ log lỗi
+      }
+      // --- KẾT THÚC GỌI API ---
     } else {
       setIsCorrect(false);
       setMessage('Chưa chính xác. Thử lại hoặc xem đáp án.');
     }
-  };
+  }, [userInput, correctAnswer, userId, card]); // 5. Thêm `userId` và `card` vào dependencies
 
   // HÀM CHUYỂN THẺ
   const handleNext = () => {
@@ -87,7 +102,7 @@ function TypingMode({ card, index, nextCard }) {
           onClick={() => setTypingDirection('vi-en')}
           className={`rounded-full px-4 py-1 text-sm font-semibold transition-colors ${
             typingDirection === 'vi-en'
-              ? 'bg-indigo-600 text-white shadow'
+              ? 'bg-[#1d1d1d] text-white shadow'
               : 'text-gray-600 hover:bg-stone-300 dark:text-gray-300 dark:hover:bg-gray-600'
           }`}
         >
@@ -97,7 +112,7 @@ function TypingMode({ card, index, nextCard }) {
           onClick={() => setTypingDirection('en-vi')}
           className={`rounded-full px-4 py-1 text-sm font-semibold transition-colors ${
             typingDirection === 'en-vi'
-              ? 'bg-indigo-600 text-white shadow'
+              ? 'bg-[#1d1d1d] text-white shadow'
               : 'text-gray-600 hover:bg-stone-300 dark:text-gray-300 dark:hover:bg-gray-600'
           }`}
         >
@@ -106,11 +121,11 @@ function TypingMode({ card, index, nextCard }) {
       </div>
 
       {/*Cập nhật để hiển thị câu hỏi động*/}
-      <div className="w-full max-w-lg rounded-xl bg-amber-50 p-8 text-center shadow-lg dark:bg-gray-100">
-        <p className="mb-2 text-gray-500">
+      <div className="w-full max-w-lg rounded-xl bg-[#1d1d1d] p-8 text-center shadow-lg dark:bg-green-100">
+        <p className="mb-2 text-gray-300 dark:text-stone-700">
           {typingDirection === 'vi-en' ? 'Dịch sang Tiếng Anh:' : 'Dịch sang Tiếng Việt:'}
         </p>
-        <h3 className="text-4xl font-black text-gray-900">{questionText}</h3>
+        <h3 className="text-4xl font-black text-white dark:text-gray-900">{questionText}</h3>
       </div>
 
       <div className="mt-8 w-full max-w-lg">
@@ -120,11 +135,11 @@ function TypingMode({ card, index, nextCard }) {
           onChange={(e) => setUserInput(e.target.value)}
           placeholder="Nhập đáp án tại đây..."
           disabled={isChecked && isCorrect}
-          className={`w-full rounded-xl border-4 p-4 text-xl transition-colors focus:outline-none dark:bg-white dark:text-gray-900 ${
+          className={`w-full rounded-xl bg-[#1d1d1d] p-4 text-xl text-zinc-200 transition-colors placeholder:text-zinc-200 focus:outline-none dark:border-1 dark:bg-white dark:text-gray-900 dark:placeholder:text-stone-700 ${
             isChecked
               ? isCorrect
-                ? 'border-green-500 bg-green-50'
-                : 'border-red-500 bg-red-50'
+                ? 'border-green-500 dark:bg-green-50'
+                : 'border-red-500 dark:bg-red-50'
               : 'border-stone-300 focus:border-amber-400 dark:border-gray-300'
           }`}
         />
@@ -134,7 +149,7 @@ function TypingMode({ card, index, nextCard }) {
         {!isChecked && (
           <button
             onClick={checkAnswer}
-            className="flex-1 rounded-full bg-indigo-600 py-3 text-lg font-semibold text-white shadow-md transition-all hover:bg-indigo-700"
+            className="mt-4 flex-1 rounded-full border py-3 text-lg font-semibold text-zinc-100 transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
           >
             Kiểm tra (Enter)
           </button>
@@ -154,11 +169,11 @@ function TypingMode({ card, index, nextCard }) {
               onClick={handleNext}
               className={`rounded-full py-3 text-lg font-semibold text-white shadow-lg transition-all ${
                 isCorrect
-                  ? 'flex-1 bg-green-600 hover:bg-green-700'
+                  ? 'flex-1 bg-amber-400 hover:bg-amber-500 dark:bg-green-600 dark:hover:bg-green-700'
                   : 'w-2/3 bg-amber-600 hover:bg-amber-700'
               }`}
             >
-              Tiếp theo <ArrowRight className="ml-1 inline" size={20} />
+              Tiếp theo
             </button>
           </>
         )}
@@ -176,7 +191,7 @@ function TypingMode({ card, index, nextCard }) {
           </p>
         )}
         {showAnswer && !isCorrect && (
-          <p className="mt-2 text-xl font-medium text-stone-700 dark:text-stone-700">
+          <p className="mt-2 text-xl font-medium text-stone-500 dark:text-stone-500">
             Đáp án đúng: <span className="font-bold underline">{correctAnswer}</span>
           </p>
         )}

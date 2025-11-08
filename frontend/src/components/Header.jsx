@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BookOpen, Menu, X, User, Snowflake, Star } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation, matchPath } from 'react-router-dom';
 import ThemeToggle from './themeToggle';
 
 export default function Header() {
@@ -10,6 +10,8 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
 
   const navigate = useNavigate();
+
+  const location = useLocation(); // Để lấy URL hiện tại
 
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
@@ -22,7 +24,11 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const deckId = 1;
+  //Kiểm tra xem URL hiện tại có khớp với trang học không
+  const studyPageMatch = matchPath('/study/:deckId/:mode', location.pathname);
+
+  //Nếu đang ở trang học, lấy deckId từ URL. Nếu không, dùng tạm ID 1.
+  const currentDeckId = studyPageMatch ? studyPageMatch.params.deckId : 1;
 
   const navItems = [
     {
@@ -38,20 +44,28 @@ export default function Header() {
     { label: 'Flashcards', href: '/vocabulary/:deckId' },
     {
       label: 'Chế độ học',
-      href: '#',
+      href: '/',
       subItems: [
         {
           label: 'Flashcards',
           href: '#',
-          onClick: () => navigate(`/study/${deckId}/flip`),
+          onClick: () => navigate(`/study/${currentDeckId}/flip`),
         },
         {
           label: 'Typing',
           href: '#',
-          onClick: () => navigate(`/study/${deckId}/typing`),
+          onClick: () => navigate(`/study/${currentDeckId}/typing`),
         },
-        { label: 'Quiz', href: '#', onClick: () => navigate(`/study/${deckId}/quiz`) },
-        { label: 'Xem tất cả chế độ', href: '/topics' },
+        {
+          label: 'Quiz',
+          href: '#',
+          onClick: () => navigate(`/study/${currentDeckId}/quiz`),
+        },
+        {
+          label: 'Matching',
+          href: '#',
+          onClick: () => navigate(`/study/${currentDeckId}/matching`),
+        },
       ],
     },
     {
@@ -73,6 +87,9 @@ export default function Header() {
           : 'bg-black backdrop-blur-sm dark:bg-green-100'
       }`}
     >
+      {/* ... Toàn bộ phần JSX còn lại (Logo, Desktop Nav, Mobile Nav...) giữ nguyên ... */}
+      {/* ... Bạn không cần thay đổi gì ở phần JSX bên dưới ... */}
+
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">

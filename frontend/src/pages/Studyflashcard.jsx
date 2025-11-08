@@ -6,9 +6,11 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Star } from 'lucide-react';
 
+//import component study mode
 import FlipCardMode from '../components/learning/FlipCardMode';
 import TypingMode from '../components/learning/TypingMode';
 import MultipleChoiceMode from '../components/learning/MultipleChoiceMode';
+import MatchingMode from '../components/learning/MatchingMode';
 
 export default function StudyFlashcard() {
   const { deckId, mode } = useParams();
@@ -174,15 +176,19 @@ export default function StudyFlashcard() {
             />
           )}
 
-          {mode === 'typing' && <TypingMode card={card} index={index} nextCard={nextCard} />}
+          {mode === 'typing' && (
+            <TypingMode card={card} index={index} nextCard={nextCard} userId={userId} />
+          )}
           {mode === 'quiz' && (
             <MultipleChoiceMode
               card={card}
               index={index}
               nextCard={nextCard}
-              flashcards={flashcards} // <-- Truyền toàn bộ mảng flashcards
+              flashcards={flashcards}
+              userId={userId}
             />
           )}
+          {mode === 'matching' && <MatchingMode flashcards={flashcards} userId={userId} />}
 
           <div className="flex flex-col gap-6">
             <div className="rounded-3xl bg-[#1d1d1d] p-6 text-stone-300 shadow-md dark:bg-green-100 dark:text-gray-800">

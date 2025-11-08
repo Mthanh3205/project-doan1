@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Check, X, ArrowRight, HelpCircle, ArrowRightLeft } from 'lucide-react';
+import axios from 'axios';
 
 /**
  * Hàm hỗ trợ: Lấy N phần tử ngẫu nhiên từ một mảng
@@ -28,57 +29,66 @@ function getRandomElements(arr, n) {
   return result.slice(end + 1);
 }
 
-export default function MultipleChoiceMode({ card, flashcards, index, nextCard }) {
+export default function MultipleChoiceMode({ card, flashcards, index, nextCard, userId }) {
   const [options, setOptions] = useState([]);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isChecked, setIsChecked] = useState(false);
-  const [direction, setDirection] = useState('vi-en'); // 'vi-en' or 'en-vi'
+  const [direction, setDirection] = useState('vi-en');
 
-  // Xác định câu hỏi và câu trả lời dựa trên chiều dịch
   const questionText = direction === 'vi-en' ? card.front_text : card.back_text;
   const correctAnswer = direction === 'vi-en' ? card.back_text : card.front_text;
 
-  // --- HÀM TẠO CÂU HỎI ---
-  // Chạy lại mỗi khi thẻ (index) hoặc chiều dịch (direction) thay đổi
+  // HÀM TẠO CÂU HỎI
+
   useEffect(() => {
-    // 1. Reset trạng thái
     setSelectedAnswer(null);
     setIsChecked(false);
 
-    // 2. Lấy danh sách các câu trả lời sai (distractors)
     const distractorPool = flashcards
-      // Lọc bỏ thẻ hiện tại
+
       .filter((f) => f.card_id !== card.card_id)
-      // Lấy text của mặt sau (hoặc mặt trước, tùy chiều dịch)
+
       .map((f) => (direction === 'vi-en' ? f.back_text : f.front_text));
 
-    // 3. Lấy 3 câu trả lời sai ngẫu nhiên
     const incorrectAnswers = getRandomElements(distractorPool, 3);
 
-    // 4. Kết hợp và xáo trộn 1 câu đúng + 3 câu sai
     const allOptions = [...incorrectAnswers, correctAnswer];
     // Xáo trộn đơn giản
     allOptions.sort(() => 0.5 - Math.random());
 
     setOptions(allOptions);
-  }, [card, flashcards, index, direction, correctAnswer]); // Phải có correctAnswer trong dependencies
+  }, [card, flashcards, index, direction, correctAnswer]);
 
-  // --- HÀM XỬ LÝ KHI CHỌN ĐÁP ÁN ---
-  const handleSelectAnswer = (option) => {
-    // Nếu đã kiểm tra (đã trả lời) thì không cho chọn lại
+  // HÀM XỬ LÝ KHI CHỌN ĐÁP ÁN
+  const handleSelectAnswer = async (option) => {
+    // Thêm 'async'
     if (isChecked) return;
+    setIsChecked(true);
+    setSelectedAnswer(option);
 
-    setIsChecked(true); // Đánh dấu là đã trả lời
-    setSelectedAnswer(option); // Lưu lại đáp án đã chọn
+    // KIỂM TRA ĐÚNG VÀ GỌI API
+    if (option === correctAnswer) {
+      try {
+        await axios.post('https://project-doan1-backend.onrender.com/api/progress/mark', {
+          userId: userId,
+          cardId: card.card_id,
+          deckId: card.deck_id, // Đảm bảo API trả về 'deck_id' trong object 'card'
+          mode: 'quiz',
+        });
+      } catch (err) {
+        console.error('Lỗi khi lưu tiến trình quiz:', err);
+      }
+    }
+    // --- KẾT THÚC GỌI API ---
   };
 
-  // --- HÀM XỬ LÝ CHUYỂN THẺ ---
+  // HÀM XỬ LÝ CHUYỂN THẺ
   const handleNext = () => {
     nextCard();
     // useEffect ở trên sẽ tự động chạy lại để tạo câu hỏi mới
   };
 
-  // --- HÀM XỬ LÝ PHÍM TẮT (Enter để qua thẻ tiếp) ---
+  // HÀM XỬ LÝ PHÍM TẮT (Enter để qua thẻ tiếp)
   const handleKeyDown = useCallback(
     (event) => {
       if (event.target.tagName === 'TEXTAREA' || event.target.tagName === 'INPUT') {
@@ -98,7 +108,7 @@ export default function MultipleChoiceMode({ card, flashcards, index, nextCard }
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
-  // --- LOGIC TÔ MÀU CHO CÁC NÚT LỰA CHỌN ---
+  // LOGIC TÔ MÀU CHO CÁC NÚT LỰA CHỌN
   const getButtonClass = (option) => {
     // Nếu chưa trả lời
     if (!isChecked) {
@@ -111,7 +121,7 @@ export default function MultipleChoiceMode({ card, flashcards, index, nextCard }
 
     if (isCorrect) {
       // Luôn tô xanh lá cho đáp án đúng
-      return 'bg-green-100 border-green-500 text-green-800 shadow-md';
+      return 'bg-white dark:bg-gray-900 dark:text-zinc-200 border-green-500 text-stone-800 shadow-md';
     }
     if (isSelected && !isCorrect) {
       // Tô đỏ cho đáp án sai mà người dùng đã chọn
@@ -128,12 +138,12 @@ export default function MultipleChoiceMode({ card, flashcards, index, nextCard }
       </h2>
 
       {/* Nút chuyển chiều dịch */}
-      <div className="mb-6 flex rounded-full bg-stone-200 p-1 dark:bg-gray-700">
+      <div className="mb-6 flex rounded-full bg-stone-200 p-1">
         <button
           onClick={() => setDirection('vi-en')}
           className={`rounded-full px-4 py-1 text-sm font-semibold transition-colors ${
             direction === 'vi-en'
-              ? 'bg-purple-600 text-white shadow'
+              ? 'bg-[#1d1d1d] text-white shadow'
               : 'text-gray-600 hover:bg-stone-300 dark:text-gray-300 dark:hover:bg-gray-600'
           }`}
         >
@@ -143,7 +153,7 @@ export default function MultipleChoiceMode({ card, flashcards, index, nextCard }
           onClick={() => setDirection('en-vi')}
           className={`rounded-full px-4 py-1 text-sm font-semibold transition-colors ${
             direction === 'en-vi'
-              ? 'bg-purple-600 text-white shadow'
+              ? 'bg-[#1d1d1d] text-white shadow'
               : 'text-gray-600 hover:bg-stone-300 dark:text-gray-300 dark:hover:bg-gray-600'
           }`}
         >
@@ -152,11 +162,11 @@ export default function MultipleChoiceMode({ card, flashcards, index, nextCard }
       </div>
 
       {/* HỘP CÂU HỎI */}
-      <div className="w-full max-w-lg rounded-xl bg-amber-50 p-8 text-center shadow-lg dark:bg-gray-100">
-        <p className="mb-2 text-gray-500">
+      <div className="w-full max-w-lg rounded-xl bg-[#1d1d1d] p-8 text-center shadow-lg dark:bg-green-100">
+        <p className="mb-2 text-gray-300 dark:text-stone-700">
           {direction === 'vi-en' ? 'Nghĩa của từ này là gì?' : 'Từ nào có nghĩa là:'}
         </p>
-        <h3 className="text-4xl font-black text-gray-900">{questionText}</h3>
+        <h3 className="text-4xl font-black text-white dark:text-gray-900">{questionText}</h3>
       </div>
 
       {/* LƯỚI CÁC LỰA CHỌN */}
@@ -166,7 +176,7 @@ export default function MultipleChoiceMode({ card, flashcards, index, nextCard }
             key={idx}
             onClick={() => handleSelectAnswer(option)}
             disabled={isChecked}
-            className={`rounded-xl border-4 p-5 text-center text-xl font-semibold transition-all ${getButtonClass(
+            className={`rounded-xl bg-[#1d1d1d] p-5 text-center text-xl font-semibold shadow-md transition-all dark:bg-gray-100 ${getButtonClass(
               option
             )}`}
           >
@@ -193,10 +203,9 @@ export default function MultipleChoiceMode({ card, flashcards, index, nextCard }
             {/* Nút "Tiếp theo" */}
             <button
               onClick={handleNext}
-              className="mt-4 w-full rounded-full bg-indigo-600 py-3 text-lg font-semibold text-white shadow-md transition-all hover:bg-indigo-700"
+              className="mt-4 w-full rounded-full border py-3 text-lg font-semibold text-zinc-100 transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
             >
               Tiếp theo
-              <ArrowRight className="ml-1 inline" size={20} />
             </button>
           </>
         )}
