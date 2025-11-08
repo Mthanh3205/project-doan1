@@ -92,6 +92,7 @@ const Auth = () => {
       const res = await fetch('https://project-doan1-backend.onrender.com/api/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           googleId: googleUser.googleId, // đổi googleId -> googleId
           email: googleUser.email,
