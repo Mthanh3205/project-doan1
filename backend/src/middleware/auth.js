@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-// HÀM 1: XÁC THỰC (Code gốc của bạn)
+//XÁC THỰC
 export const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -18,7 +18,7 @@ export const authenticateToken = (req, res, next) => {
   });
 };
 
-// HÀM 2: PHÂN QUYỀN ADMIN (Hàm chúng ta đã thêm)
+//PHÂN QUYỀN ADMIN
 export const admin = (req, res, next) => {
   if (req.user && req.user.email && req.user.email.endsWith('.admin')) {
     next(); // Là admin, cho đi tiếp
@@ -26,5 +26,3 @@ export const admin = (req, res, next) => {
     res.status(403).json({ message: 'Không có quyền truy cập' });
   }
 };
-
-// ** File này TUYỆT ĐỐI không chứa bất kỳ thẻ <...> nào **

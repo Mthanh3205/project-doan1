@@ -1,4 +1,3 @@
-// File: context/AuthContext.jsx
 import { createContext, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,23 +12,18 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   const login = (userData) => {
-    // --- BẮT ĐẦU DEBUG ---
     console.log('Dữ liệu user khi đăng nhập:', userData);
-    // ---------------------
 
     setUser(userData);
     sessionStorage.setItem('user', JSON.stringify(userData));
 
-    // (Giả sử trường email của bạn là 'email')
     if (userData.email && userData.email.endsWith('.admin')) {
-      // --- BẮT ĐẦU DEBUG ---
       console.log('AuthContext: Phát hiện admin, đang chuyển đến /admin');
-      // ---------------------
+
       navigate('/admin');
     } else {
-      // --- BẮT ĐẦU DEBUG ---
       console.log('AuthContext: Không phải admin, đang chuyển đến /');
-      // ---------------------
+
       navigate('/');
     }
   };
@@ -37,7 +31,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     sessionStorage.removeItem('user');
-    navigate('/Auth');
+    navigate('/');
   };
 
   return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;

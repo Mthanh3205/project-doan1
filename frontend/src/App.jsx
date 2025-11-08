@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Toaster } from 'sonner';
 import { Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 
 // Import pages
 import HomePage from './pages/HomePage';
@@ -15,72 +16,83 @@ import CreateVocabulary from './pages/CreateVocabulary';
 import FavoritePage from './pages/FavoritePage';
 import StudyFavoriteFlashcard from './pages/StudyFavoriteFlashcard';
 import ProgressPage from './pages/ProgressPage';
+import AdminPage from './pages/AdminPage';
 
 //Login thì mới cho sử dụng chức năng trong web
 import ProtectedRoute from './components/ProtectedRoute';
+//Route bảo vệ admin
+import AdminProtectedRoute from './components/AdminProtectedRoute';
+
 //Cuộn mượt
 import SmoothScroll from './components/SmoothScroll';
 function AppContent() {
   return (
-    <div className="min-h-screen bg-transparent text-white transition-colors duration-300">
-      <SmoothScroll />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="*" element={<NotFound />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/study/:deckId/:mode" element={<Studyflashcard />} />
-        <Route path="/account" element={<Account />} />
-        <Route
-          path="/topics"
-          element={
-            <ProtectedRoute>
-              <TopicsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="/vocabulary/:deckId" element={<VocabularyPage />} />
-        <Route
-          path="/test"
-          element={
-            <ProtectedRoute>
-              <Test />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/CreateVocabulary"
-          element={
-            <ProtectedRoute>
-              <CreateVocabulary />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/favorites"
-          element={
-            <ProtectedRoute>
-              <FavoritePage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/study-favorites/:deckId"
-          element={
-            <ProtectedRoute>
-              <StudyFavoriteFlashcard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/progress"
-          element={
-            <ProtectedRoute>
-              <ProgressPage />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </div>
+    <AuthProvider>
+      <div className="min-h-screen bg-transparent text-white transition-colors duration-300">
+        <SmoothScroll />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="*" element={<NotFound />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/study/:deckId/:mode" element={<Studyflashcard />} />
+          <Route path="/account" element={<Account />} />
+          <Route
+            path="/topics"
+            element={
+              <ProtectedRoute>
+                <TopicsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/vocabulary/:deckId" element={<VocabularyPage />} />
+          <Route
+            path="/test"
+            element={
+              <ProtectedRoute>
+                <Test />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/CreateVocabulary"
+            element={
+              <ProtectedRoute>
+                <CreateVocabulary />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/favorites"
+            element={
+              <ProtectedRoute>
+                <FavoritePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/study-favorites/:deckId"
+            element={
+              <ProtectedRoute>
+                <StudyFavoriteFlashcard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/progress"
+            element={
+              <ProtectedRoute>
+                <ProgressPage />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* admin */}
+          <Route element={<AdminProtectedRoute />}>
+            <Route path="/admin" element={<AdminPage />} />
+          </Route>
+        </Routes>
+      </div>
+    </AuthProvider>
   );
 }
 

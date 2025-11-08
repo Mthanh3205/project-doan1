@@ -2,21 +2,18 @@ import { useEffect, useState } from 'react';
 import { BookOpen, Menu, X, User, Snowflake, Star } from 'lucide-react';
 import { Link, useNavigate, useLocation, matchPath } from 'react-router-dom';
 import ThemeToggle from './themeToggle';
+import { useAuth } from '../context/AuthContext';
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
-  const [user, setUser] = useState(null);
+
   const [showMenu, setShowMenu] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
+  const { user, logout } = useAuth();
+
   const navigate = useNavigate();
-
   const location = useLocation(); // Để lấy URL hiện tại
-
-  useEffect(() => {
-    const storedUser = sessionStorage.getItem('user');
-    if (storedUser) setUser(JSON.parse(storedUser));
-  }, []);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -27,7 +24,6 @@ export default function Header() {
   //Kiểm tra xem URL hiện tại có khớp với trang học không
   const studyPageMatch = matchPath('/study/:deckId/:mode', location.pathname);
 
-  //Nếu đang ở trang học, lấy deckId từ URL. Nếu không, dùng tạm ID 1.
   const currentDeckId = studyPageMatch ? studyPageMatch.params.deckId : 1;
 
   const navItems = [
@@ -87,9 +83,6 @@ export default function Header() {
           : 'bg-black backdrop-blur-sm dark:bg-green-100'
       }`}
     >
-      {/* ... Toàn bộ phần JSX còn lại (Logo, Desktop Nav, Mobile Nav...) giữ nguyên ... */}
-      {/* ... Bạn không cần thay đổi gì ở phần JSX bên dưới ... */}
-
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2">
@@ -159,11 +152,8 @@ export default function Header() {
                   </div>
                   <button
                     onClick={() => {
-                      sessionStorage.removeItem('user');
-                      sessionStorage.removeItem('token');
-                      setUser(null);
+                      logout();
                       setShowMenu(false);
-                      navigate('/');
                     }}
                     className="w-full rounded-b-lg px-4 py-2 text-left hover:bg-zinc-400"
                   >
@@ -221,7 +211,10 @@ export default function Header() {
           <div className="px-2">
             {!user ? (
               <button
-                onClick={() => navigate('/Auth')}
+                onClick={() => {
+                  navigate('/Auth');
+                  setIsOpen(false); // Đóng menu khi điều hướng
+                }}
                 className="group relative overflow-hidden rounded-4xl border bg-zinc-400 font-medium whitespace-nowrap text-white transition-all duration-300 hover:bg-zinc-200 hover:text-black dark:bg-zinc-200 hover:dark:bg-zinc-500"
               >
                 <User className="m-1 text-white dark:text-white" />
@@ -235,17 +228,23 @@ export default function Header() {
                   className="h-9 w-9 cursor-pointer rounded-full transition-transform duration-200 hover:scale-110"
                 />
                 {showMenu && (
-                  <div className="absolute right-0 z-50 mt-4 min-w-max rounded-lg bg-white text-gray-600 shadow-lg">
+                  <div className="absolute left-0 z-50 mt-4 min-w-max rounded-lg bg-white text-gray-600 shadow-lg">
                     <div className="rounded-t-lg border-b px-4 py-2 font-semibold hover:bg-zinc-400">
-                      <Link to="/Account">{user.name || 'User'}</Link>
+                      <Link
+                        to="/Account"
+                        onClick={() => {
+                          setShowMenu(false);
+                          setIsOpen(false);
+                        }}
+                      >
+                        {user.name || 'User'}
+                      </Link>
                     </div>
                     <button
                       onClick={() => {
-                        sessionStorage.removeItem('user');
-                        sessionStorage.removeItem('token');
-                        setUser(null);
+                        logout();
                         setShowMenu(false);
-                        navigate('/');
+                        setIsOpen(false);
                       }}
                       className="w-full rounded-b-lg px-4 py-2 text-left hover:bg-zinc-400"
                     >
