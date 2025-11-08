@@ -12,7 +12,11 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(
   cors({
-    origin: ['https://myprojects.id.vn', 'https://project-doan1-frontend.onrender.com'],
+    origin: [
+      'https://myprojects.id.vn',
+      'https://project-doan1-frontend.onrender.com',
+      'https://localhost:5173',
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   })
