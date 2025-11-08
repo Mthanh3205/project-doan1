@@ -49,7 +49,6 @@ app.use('/api/vocabulary', routeVocabulary);
 app.use('/api/admin', routeAdmin);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/progress', progressRoutes);
-app.use('/api/');
 
 // Kết nối DB và chạy server
 const startServer = async () => {
