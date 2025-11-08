@@ -1,21 +1,40 @@
 // File: models/index.js
 import sequelize from '../config/db.js';
+
+// 1. Import tất cả các model
 import Topics from './Topics.js';
-import Flashcard from './Flashcard.js'; // (Đảm bảo tên file Flashcard.js là đúng)
+import Flashcard from './Flashcard.js';
+import User from './User.js'; // (Giả sử file model người dùng của bạn là User.js)
+import UserProgress from './UserProgress.js';
 
-// ---- ĐỊNH NGHĨA TẤT CẢ QUAN HỆ TẠI ĐÂY ----
-
-// Một Topic (Deck) có nhiều Flashcard (Card)
+// 2. Định nghĩa tất cả các mối quan hệ
+// Quan hệ giữa Topics (Decks) và Flashcard (Cards)
 Topics.hasMany(Flashcard, {
-  foreignKey: 'deck_id', // Khóa ngoại trong bảng 'cards'
+  foreignKey: 'deck_id',
+  as: 'flashcards', // Đặt tên đại diện (tùy chọn)
 });
-
-// Một Flashcard (Card) thuộc về một Topic (Deck)
 Flashcard.belongsTo(Topics, {
-  foreignKey: 'deck_id', // Khóa ngoại trong bảng 'cards'
+  foreignKey: 'deck_id',
 });
 
-// ---------------------------------------------
+// Quan hệ cho Bảng UserProgress
+// UserProgress thuộc về 1 User
+User.hasMany(UserProgress, { foreignKey: 'user_id' });
+UserProgress.belongsTo(User, { foreignKey: 'user_id' });
 
-// Export tất cả model và kết nối sequelize
-export { sequelize, Topics, Flashcard };
+// UserProgress thuộc về 1 Flashcard
+Flashcard.hasMany(UserProgress, { foreignKey: 'card_id' });
+UserProgress.belongsTo(Flashcard, { foreignKey: 'card_id' });
+
+// UserProgress thuộc về 1 Topic (Deck)
+Topics.hasMany(UserProgress, { foreignKey: 'deck_id' });
+UserProgress.belongsTo(Topics, { foreignKey: 'deck_id' });
+
+// 3. Export tất cả mọi thứ
+export {
+  sequelize, // Export đối tượng sequelize
+  Topics,
+  Flashcard,
+  User,
+  UserProgress,
+};

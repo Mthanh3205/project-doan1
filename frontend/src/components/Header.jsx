@@ -41,7 +41,7 @@ export default function Header() {
         { label: 'Xem tất cả từ vựng', href: '/topics' },
       ],
     },
-    { label: 'Flashcards', href: '/vocabulary/:deckId' },
+    { label: 'Tiến trình', href: '/progress' },
     {
       label: 'Chế độ học',
       href: '/',

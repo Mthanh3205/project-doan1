@@ -1,5 +1,4 @@
-// File: controllers/progressController.js
-import UserProgress from '../models/UserProgress.js';
+import { Topics, Flashcard, UserProgress, sequelize } from '../models/index.js';
 
 const markAsLearned = async (req, res) => {
   const { userId, cardId, deckId, mode } = req.body;
@@ -31,7 +30,48 @@ const markAsLearned = async (req, res) => {
   }
 };
 
+const getProgressByMode = async (req, res) => {
+  const { userId } = req.params;
+  if (!userId) {
+    return res.status(400).json({ error: 'Thiếu User ID' });
+  }
+
+  try {
+    const [results, metadata] = await sequelize.query(
+      `
+      SELECT 
+        d.deck_id,
+        d.title AS deck_name,
+ Đếm tổng số thẻ trong bộ (dùng sub-query)
+        (SELECT COUNT(*) FROM "cards" c WHERE c.deck_id = d.deck_id) AS total_cards,
+        
+ Đếm số thẻ đã học của user này cho từng mode
+        COUNT(DISTINCT CASE WHEN up.mode = 'flip' THEN up.card_id END) AS flip_learned,
+        COUNT(DISTINCT CASE WHEN up.mode = 'typing' THEN up.card_id END) AS typing_learned,
+        COUNT(DISTINCT CASE WHEN up.mode = 'quiz' THEN up.card_id END) AS quiz_learned,
+        COUNT(DISTINCT CASE WHEN up.mode = 'matching' THEN up.card_id END) AS matching_learned
+      FROM 
+        "decks" d
+      -- Join với bảng progress CHỈ của user này
+      LEFT JOIN 
+        "user_progress" up ON d.deck_id = up.deck_id AND up.user_id = ?
+      GROUP BY 
+        d.deck_id, d.title
+      ORDER BY 
+        d.created_at;
+    `,
+      {
+        replacements: [userId],
+      }
+    );
+
+    return res.json(results);
+  } catch (err) {
+    console.error('Lỗi khi lấy tiến trình chi tiết:', err);
+    return res.status(500).json({ error: 'Lỗi phía server' });
+  }
+};
 export default {
   markAsLearned,
-  // (Thêm hàm getProgressByMode cho trang tiến trình của bạn ở đây)
+  getProgressByMode,
 };

@@ -1,5 +1,5 @@
 //Topics
-import { Topics, Flashcard } from '../models/index.js';
+import { Topics, Flashcard, UserProgress, sequelize } from '../models/index.js';
 import sequelize from '../config/db.js';
 
 const getAllTopics = async (req, res) => {

@@ -15,6 +15,7 @@ import Test from './pages/test';
 import CreateVocabulary from './pages/CreateVocabulary';
 import FavoritePage from './pages/FavoritePage';
 import StudyFavoriteFlashcard from './pages/StudyFavoriteFlashcard';
+import ProgressPage from './pages/ProgressPage';
 //Login thì mới cho sử dụng chức năng trong web
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -107,6 +108,14 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <StudyFavoriteFlashcard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/progress"
+          element={
+            <ProtectedRoute>
+              <ProgressPage />
             </ProtectedRoute>
           }
         />
