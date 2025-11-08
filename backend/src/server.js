@@ -30,7 +30,11 @@ app.use(
     resave: false,
     saveUninitialized: true,
     rolling: true,
-    cookie: { maxAge: 30 * 1000 },
+    cookie: {
+      maxAge: 30 * 1000, // 30 giây session timeout
+      secure: true, // Chỉ gửi cookie qua HTTPS
+      sameSite: 'none',
+    },
   })
 );
 
@@ -64,7 +68,10 @@ app.use('/api/progress', progressRoutes);
 app.post('/api/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) return res.status(500).json({ message: 'Logout failed' });
-    res.clearCookie('connect.sid');
+    res.clearCookie('connect.sid', {
+      secure: true,
+      sameSite: 'none',
+    });
     res.status(200).json({ message: 'Logged out successfully' });
   });
 });

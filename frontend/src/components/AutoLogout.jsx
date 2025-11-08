@@ -9,7 +9,7 @@ const AutoLogout = () => {
       // Gọi backend logout
       navigator.sendBeacon(
         'https://project-doan1-backend.onrender.com/api/logout',
-        JSON.stringify({ logout: true })
+        new Blob([JSON.stringify({ logout: true })], { type: 'application/json' })
       );
     };
 
