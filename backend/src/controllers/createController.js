@@ -1,5 +1,5 @@
 //Create
-import { Topics, Flashcard } from '../models/CreateVoc.js';
+import { Topics, Flashcard, UserProgress, sequelize } from '../models/index.js';
 
 // HÀM HELPER ĐÃ SỬA LẠI (AN TOÀN HƠN)
 const checkFlashcardOwnership = async (cardId, userId) => {
