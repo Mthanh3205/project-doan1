@@ -1,37 +1,30 @@
-import { createContext, useContext, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // 1. Import useNavigate
+import jwt from 'jsonwebtoken';
 
-const AuthContext = createContext();
+// HÀM 1: XÁC THỰC (Code gốc của bạn)
+export const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const saved = sessionStorage.getItem('user');
-    return saved ? JSON.parse(saved) : null;
-  });
+  if (token == null) {
+    return res.status(401).json({ message: 'Bạn chưa đăng nhập (Không tìm thấy token)' });
+  }
 
-  const navigate = useNavigate(); // 2. Khởi tạo navigate
-
-  const login = (userData) => {
-    setUser(userData); // userData có id, name, email, avatar, token
-    sessionStorage.setItem('user', JSON.stringify(userData));
-
-    // 3. THÊM LOGIC ĐIỀU HƯỚNG MỚI TẠI ĐÂY
-    if (userData.email && userData.email.endsWith('.admin')) {
-      console.log('AuthContext: Phát hiện admin, đang chuyển đến /admin');
-      navigate('/admin'); // Chuyển đến trang Admin
-    } else {
-      console.log('AuthContext: Không phải admin, đang chuyển đến /');
-      navigate('/'); // Chuyển đến trang chủ
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      return res.status(403).json({ message: 'Token không hợp lệ hoặc đã hết hạn' });
     }
-  };
-
-  const logout = () => {
-    setUser(null);
-    sessionStorage.removeItem('user');
-    navigate('/Auth'); // Đưa người dùng về trang đăng nhập
-  };
-
-  return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
+    req.user = user;
+    next();
+  });
 };
 
-export const useAuth = () => useContext(AuthContext);
+// HÀM 2: PHÂN QUYỀN ADMIN (Hàm chúng ta đã thêm)
+export const admin = (req, res, next) => {
+  if (req.user && req.user.email && req.user.email.endsWith('.admin')) {
+    next(); // Là admin, cho đi tiếp
+  } else {
+    res.status(403).json({ message: 'Không có quyền truy cập' });
+  }
+};
+
+// ** File này TUYỆT ĐỐI không chứa bất kỳ thẻ <...> nào **

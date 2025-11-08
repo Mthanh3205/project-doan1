@@ -38,7 +38,6 @@ import routeVocabulary from './routes/routeVocabulary.js';
 import routeAdmin from './routes/routeAdmin.js';
 import favoriteRoutes from './routes/favoriteRoutes.js';
 import progressRoutes from './routes/progressRoutes.js';
-import adminRoutes from './routes/adminRoutes.js';
 
 // Khai báo các route
 app.use('/api/auth', routeAuth);

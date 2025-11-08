@@ -11,8 +11,7 @@ import {
   deleteFlashcard,
 } from '../controllers/createController.js';
 
-import adminController from '../controllers/adminController.js';
-import { authenticateToken, admin } from '../middleware/auth.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -28,5 +27,4 @@ router.post('/flashcards', authenticateToken, createFlashcard);
 router.put('/flashcards/:id', authenticateToken, updateFlashcard);
 router.delete('/flashcards/:id', authenticateToken, deleteFlashcard);
 
-router.get('/users', authenticateToken, admin, adminController.getAllUsers);
 export default router;

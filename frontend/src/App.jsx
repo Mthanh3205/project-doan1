@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
-import Lenis from '@studio-freight/lenis';
 import { Toaster } from 'sonner';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 
 // Import pages
 import HomePage from './pages/HomePage';
@@ -16,9 +15,6 @@ import CreateVocabulary from './pages/CreateVocabulary';
 import FavoritePage from './pages/FavoritePage';
 import StudyFavoriteFlashcard from './pages/StudyFavoriteFlashcard';
 import ProgressPage from './pages/ProgressPage';
-import AdminUserList from './pages/AdminUserList';
-import AdminProtectedRoute from './components/AdminProtectedRoute';
-import AdminPage from './pages/AdminPage';
 
 //Login thì mới cho sử dụng chức năng trong web
 import ProtectedRoute from './components/ProtectedRoute';
@@ -81,16 +77,6 @@ function AppContent() {
             <ProtectedRoute>
               <ProgressPage />
             </ProtectedRoute>
-          }
-        />
-
-        {/* admin */}
-        <Route
-          path="/admin"
-          element={
-            <AdminProtectedRoute>
-              <AdminPage />
-            </AdminProtectedRoute>
           }
         />
       </Routes>
