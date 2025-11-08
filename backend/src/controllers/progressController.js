@@ -42,23 +42,24 @@ const getProgressByMode = async (req, res) => {
       SELECT 
         d.deck_id,
         d.title AS deck_name,
- Đếm tổng số thẻ trong bộ (dùng sub-query)
-        (SELECT COUNT(*) FROM "cards" c WHERE c.deck_id = d.deck_id) AS total_cards,
+        d.created_at, -- 1. THÊM CỘT NÀY VÀO SELECT
         
- Đếm số thẻ đã học của user này cho từng mode
+        (SELECT COUNT(*) FROM "flashcards" c WHERE c.deck_id = d.deck_id) AS total_cards,
+        
         COUNT(DISTINCT CASE WHEN up.mode = 'flip' THEN up.card_id END) AS flip_learned,
         COUNT(DISTINCT CASE WHEN up.mode = 'typing' THEN up.card_id END) AS typing_learned,
         COUNT(DISTINCT CASE WHEN up.mode = 'quiz' THEN up.card_id END) AS quiz_learned,
         COUNT(DISTINCT CASE WHEN up.mode = 'matching' THEN up.card_id END) AS matching_learned
       FROM 
         "decks" d
-      -- Join với bảng progress CHỈ của user này
       LEFT JOIN 
         "user_progress" up ON d.deck_id = up.deck_id AND up.user_id = ?
       GROUP BY 
-        d.deck_id, d.title
+        d.deck_id, 
+        d.title, 
+        d.created_at -- 2. THÊM CỘT NÀY VÀO GROUP BY
       ORDER BY 
-        d.created_at;
+        d.created_at; -- (Giờ thì dòng này đã hợp lệ)
     `,
       {
         replacements: [userId],
