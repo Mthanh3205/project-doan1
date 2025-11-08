@@ -24,12 +24,11 @@ const Favorite = sequelize.define(
     },
   },
   {
-    tableName: 'favorites', // 👈 trùng tên bảng trong DB
-    timestamps: false, // 👈 tắt tự động tạo createdAt & updatedAt
+    tableName: 'favorites',
+    timestamps: false,
   }
 );
 
-// ✅ Liên kết chính xác với bảng Cards
 Favorite.belongsTo(Cards, { foreignKey: 'card_id', as: 'card' });
 Cards.hasMany(Favorite, { foreignKey: 'card_id', as: 'card' });
 

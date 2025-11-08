@@ -14,7 +14,7 @@ export default function Header() {
   const location = useLocation(); // Để lấy URL hiện tại
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
+    const storedUser = sessionStorage.getItem('user');
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
@@ -159,8 +159,8 @@ export default function Header() {
                   </div>
                   <button
                     onClick={() => {
-                      localStorage.removeItem('user');
-                      localStorage.removeItem('token');
+                      sessionStorage.removeItem('user');
+                      sessionStorage.removeItem('token');
                       setUser(null);
                       setShowMenu(false);
                       navigate('/');
@@ -241,8 +241,8 @@ export default function Header() {
                     </div>
                     <button
                       onClick={() => {
-                        localStorage.removeItem('user');
-                        localStorage.removeItem('token');
+                        sessionStorage.removeItem('user');
+                        sessionStorage.removeItem('token');
                         setUser(null);
                         setShowMenu(false);
                         navigate('/');

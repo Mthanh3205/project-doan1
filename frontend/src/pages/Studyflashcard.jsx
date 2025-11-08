@@ -27,8 +27,8 @@ export default function StudyFlashcard() {
   const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
-    //Lấy user data từ localStorage
-    const storedUser = localStorage.getItem('user');
+    //Lấy user data từ sessionStorage
+    const storedUser = sessionStorage.getItem('user');
 
     if (storedUser) {
       const user = JSON.parse(storedUser);

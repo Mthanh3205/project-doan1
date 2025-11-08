@@ -20,9 +20,9 @@ const Account = () => {
     isLoggedIn: false,
   });
 
-  // fetch data user from localStorage
+  // fetch data user from sessionStorage
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
+    const storedUser = sessionStorage.getItem('user');
 
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
@@ -50,7 +50,7 @@ const Account = () => {
 
   const handleSave = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = sessionStorage.getItem('token');
       if (!token) return;
 
       const res = await fetch('/api/auth/google', {

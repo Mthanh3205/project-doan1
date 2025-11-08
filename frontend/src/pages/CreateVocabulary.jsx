@@ -37,7 +37,7 @@ export default function AdminPage() {
 
   //Get token
   const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (!token) {
       toast.error('Không tìm thấy token. Vui lòng đăng nhập lại.');
       return null;

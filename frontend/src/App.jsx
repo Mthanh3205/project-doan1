@@ -20,12 +20,9 @@ import ProgressPage from './pages/ProgressPage';
 import ProtectedRoute from './components/ProtectedRoute';
 //Cuộn mượt
 import SmoothScroll from './components/SmoothScroll';
-//Autologout
-import AutoLogout from './components/AutoLogout';
 function AppContent() {
   return (
     <div className="min-h-screen bg-transparent text-white transition-colors duration-300">
-      <AutoLogout />
       <SmoothScroll />
       <Routes>
         <Route path="/" element={<HomePage />} />

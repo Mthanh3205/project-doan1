@@ -46,9 +46,9 @@ export default function ProgressPage() {
   const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
 
-  // 1. Lấy userId từ localStorage
+  // 1. Lấy userId từ sessionStorage
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
+    const storedUser = sessionStorage.getItem('user');
     if (storedUser) {
       const user = JSON.parse(storedUser);
       setUserId(user.id);

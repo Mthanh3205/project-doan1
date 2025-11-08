@@ -39,8 +39,8 @@ const Auth = () => {
         const data = await res.json();
 
         if (res.ok) {
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('user', JSON.stringify(data.user));
+          sessionStorage.setItem('token', data.token);
+          sessionStorage.setItem('user', JSON.stringify(data.user));
           console.log('User:', data.user);
           navigate('/');
         } else {
@@ -106,8 +106,8 @@ const Auth = () => {
       console.log('Response backend:', data);
 
       if (data.token) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user)); //lưu luôn user vào localStorage
+        sessionStorage.setItem('token', data.token);
+        sessionStorage.setItem('user', JSON.stringify(data.user)); //lưu luôn user vào sessionStorage
         navigate('/');
       } else {
         alert('Login thất bại!');
