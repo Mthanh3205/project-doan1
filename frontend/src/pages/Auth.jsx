@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, Chrome, Home, Snowflake } from 'lucide-react';
 import GoogleButton from '@/components/ui/GoogleButton';
-// import { useNavigate } from 'react-router-dom'; // 1. XÓA BỎ useNavigate
-import { useAuth } from '../context/AuthContext'; // 2. IMPORT useAuth
+
+import { useAuth } from '../context/AuthContext';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -14,7 +14,7 @@ const Auth = () => {
     confirmPassword: '',
   });
 
-  const { login } = useAuth(); // 3. LẤY HÀM LOGIN TỪ CONTEXT
+  const { login } = useAuth();
 
   const handleInputChange = (e) => {
     setFormData({
@@ -23,12 +23,11 @@ const Auth = () => {
     });
   };
 
-  //login - signup email
-  const handlegoogleIdmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (isLogin) {
-      // Gửi yêu cầu đăng nhập
+      //ĐĂNG NHẬP EMAIL
       try {
         const res = await fetch('https://project-doan1-backend.onrender.com/api/auth/login', {
           method: 'POST',
@@ -42,33 +41,20 @@ const Auth = () => {
         const data = await res.json();
 
         if (res.ok) {
-          // 4. SỬA LẠI LOGIC ĐĂNG NHẬP
-          // Gộp user và token lại (dựa theo AuthContext của bạn)
-          const userData = { ...data.user, token: data.token };
+          sessionStorage.setItem('token', data.token);
 
-          console.log(
-            'Auth.jsx: Đăng nhập Email thành công. Dữ liệu sắp gửi cho Context:',
-            userData
-          );
+          login(data.user);
 
-          // Chỉ cần gọi hàm login, nó sẽ tự lưu và tự điều hướng
-          login(userData);
-
-          // XÓA 3 DÒNG CŨ NÀY
-          // sessionStorage.setItem('token', data.token);
-          // sessionStorage.setItem('user', JSON.stringify(data.user));
-          // navigate('/');
+          console.log('Auth.jsx: Đăng nhập Email thành công.', data);
         } else {
           alert(data.message || 'Đăng nhập thất bại!');
         }
       } catch (err) {
         console.error('Lỗi backend:', err);
-        // Dòng này bị lỗi, không thể gọi res.status ở frontend
-        // res.status(500).json({ message: 'Lỗi server', error: err.message });
         alert('Lỗi kết nối server');
       }
     } else {
-      // ... (Phần đăng ký giữ nguyên)
+      //ĐĂNG KÝ
       if (formData.password !== formData.confirmPassword) {
         alert('Mật khẩu xác nhận không khớp!');
         return;
@@ -97,9 +83,7 @@ const Auth = () => {
     }
   };
 
-  // const navigate = useNavigate(); // ĐÃ XÓA
-
-  //login gg
+  //GOOGLE
   const handleLogin = async (googleUser) => {
     console.log('Google userInfo:', googleUser);
 
@@ -121,22 +105,11 @@ const Auth = () => {
       console.log('Response backend:', data);
 
       if (data.token) {
-        // 5. SỬA LẠI LOGIC ĐĂNG NHẬP GOOGLE
-        // Gộp user và token lại
-        const userData = { ...data.user, token: data.token };
+        sessionStorage.setItem('token', data.token);
 
-        console.log(
-          'Auth.jsx: Đăng nhập Google thành công. Dữ liệu sắp gửi cho Context:',
-          userData
-        );
+        login(data.user);
 
-        // Gọi hàm login từ context
-        login(userData);
-
-        // XÓA 3 DÒNG CŨ NÀY
-        // sessionStorage.setItem('token', data.token);
-        // sessionStorage.setItem('user', JSON.stringify(data.user));
-        // navigate('/');
+        console.log('Auth.jsx: Đăng nhập Google thành công.', data);
       } else {
         alert('Login thất bại!');
       }
@@ -261,7 +234,6 @@ const Auth = () => {
               </div>
             </div>
 
-            {/* Confirm Password field (only for register) */}
             {!isLogin && (
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-300">Xác nhận mật khẩu</label>
@@ -280,7 +252,6 @@ const Auth = () => {
               </div>
             )}
 
-            {/* Forgot password link (only for login) */}
             {isLogin && (
               <div className="text-right">
                 <button
@@ -292,9 +263,9 @@ const Auth = () => {
               </div>
             )}
 
-            {/* googleIdmit button */}
+            {/* Submit button */}
             <button
-              onClick={handlegoogleIdmit}
+              onClick={handleSubmit}
               className="w-full transform rounded-xl bg-gradient-to-r from-amber-300 to-amber-400 px-4 py-3 font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:from-amber-300 hover:to-amber-500 hover:shadow-xl"
             >
               {isLogin ? 'Đăng nhập' : 'Đăng ký'}
