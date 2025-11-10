@@ -16,7 +16,7 @@ export const getAllUsers = async (req, res) => {
       attributes: { exclude: ['password'] },
       limit: limit,
       offset: offset,
-      order: [['createdAt', 'DESC']],
+      order: [['createdAt', 'ASC']],
     });
 
     res.json({
@@ -30,26 +30,54 @@ export const getAllUsers = async (req, res) => {
     res.status(500).json({ message: 'Lỗi server' });
   }
 };
+// File: controllers/adminController.js
+
+import User from '../models/User.js';
+import Topics from '../models/Topics.js';
+import Flashcard from '../models/Flashcard.js';
+// ... (các hàm getAllUsers, getAllTopics, getAllWords giữ nguyên) ...
+
+/**
+ * @desc    Lấy số liệu thống kê tổng quan cho Dashboard
+ * @route   GET /api/admin/stats
+ * @access  Private/Admin
+ */
 export const getDashboardStats = async (req, res) => {
   try {
-    // Đếm tổng số lượng (dùng .count() của Sequelize rất hiệu quả)
+    // --- PHẦN SỐ ĐẾM (ĐÃ CÓ) ---
     const userCount = await User.count();
-
-    // Đếm tổng số chủ đề (dùng model Topics bạn đã cung cấp)
     const topicCount = await Topics.count();
-
-    // Đếm tổng số từ vựng (giả sử bạn có model Flashcard)
     const wordCount = await Flashcard.count();
+    const feedbackCount = 0; // (Bạn có thể thêm logic đếm Góp ý ở đây)
 
-    // (Bạn có thể thêm các số liệu đếm khác ở đây)
+    // --- PHẦN MỚI: LẤY 5 MỤC GẦN ĐÂY ---
+
+    // Lấy 5 người dùng mới nhất
+    const recentUsers = await User.findAll({
+      limit: 5,
+      order: [['createdAt', 'DESC']], // Sắp xếp theo ngày tạo
+      attributes: { exclude: ['password', 'googleId'] }, // Không gửi password
+    });
+
+    // Lấy 5 chủ đề mới nhất
+    const recentTopics = await Topics.findAll({
+      limit: 5,
+      order: [['created_at', 'DESC']], // Sắp xếp theo ngày tạo
+    });
+
+    // --- KẾT THÚC PHẦN MỚI ---
 
     // Trả về một object JSON chứa tất cả số liệu
     res.json({
+      // Số đếm
       userCount,
       topicCount,
       wordCount,
-      // (ví dụ)
-      // feedbackCount: 10
+      feedbackCount,
+
+      // Danh sách
+      recentUsers, // <-- Dữ liệu mới
+      recentTopics, // <-- Dữ liệu mới
     });
   } catch (error) {
     console.error('Lỗi khi lấy số liệu thống kê dashboard:', error);
@@ -65,7 +93,7 @@ export const getAllTopics = async (req, res) => {
     const { count, rows } = await Topics.findAndCountAll({
       limit: limit,
       offset: offset,
-      order: [['created_at', 'DESC']],
+      order: [['deck_id', 'ASC']],
     });
 
     res.json({
@@ -88,7 +116,7 @@ export const getAllWords = async (req, res) => {
     const { count, rows } = await Flashcard.findAndCountAll({
       limit: limit,
       offset: offset,
-      order: [['created_at', 'DESC']],
+      order: [['card_id', 'ASC']],
     });
 
     res.json({
