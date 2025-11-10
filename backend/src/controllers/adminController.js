@@ -7,20 +7,30 @@ import Flashcard from '../models/Flashcard.js';
  */
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.findAll({
-      attributes: {
-        exclude: ['password'],
-      },
-      order: [['createdAt', 'DESC']],
+    // Lấy page và limit từ query string, gán giá trị mặc định
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10; // Mặc định 10 user/trang
+    const offset = (page - 1) * limit;
+
+    // Sử dụng findAndCountAll để lấy cả tổng số lượng và danh sách
+    const { count, rows } = await User.findAndCountAll({
+      attributes: { exclude: ['password'] }, // Không bao giờ trả về password
+      limit: limit,
+      offset: offset,
+      order: [['createdAt', 'DESC']], // Sắp xếp theo ngày tạo
     });
 
-    res.json(users);
+    res.json({
+      totalUsers: count, // <-- Đây là tổng số lượng bạn cần
+      totalPages: Math.ceil(count / limit),
+      currentPage: page,
+      users: rows, // Đây là danh sách user cho trang hiện tại
+    });
   } catch (error) {
     console.error('Lỗi khi lấy danh sách người dùng:', error);
     res.status(500).json({ message: 'Lỗi server' });
   }
 };
-
 export const getDashboardStats = async (req, res) => {
   try {
     // Đếm tổng số lượng (dùng .count() của Sequelize rất hiệu quả)

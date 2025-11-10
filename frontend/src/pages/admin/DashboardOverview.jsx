@@ -1,7 +1,9 @@
-import { Users, BookCopy, FileText, CheckCircle } from 'lucide-react';
-import { useState, useEffect } from 'react';
+// File: src/pages/admin/DashboardOverview.jsx
 
-// Component Thẻ Thống Kê
+import { Users, BookCopy, FileText, CheckCircle } from 'lucide-react';
+import { useState, useEffect } from 'react'; // Đảm bảo đã import
+
+// Component Thẻ Thống Kê (Không đổi)
 const StatCard = ({ icon, title, value, bgColor }) => (
   <div
     className={`flex items-center space-x-4 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800 ${bgColor}`}
@@ -9,11 +11,13 @@ const StatCard = ({ icon, title, value, bgColor }) => (
     <div className="rounded-full bg-white/30 p-3">{icon}</div>
     <div>
       <p className="text-sm font-medium text-gray-100">{title}</p>
-      <p className="text-2xl font-bold text-white">{value}</p>
+      {/* Thêm 'h-8' để giữ chiều cao ổn định khi loading */}
+      <p className="h-8 text-2xl font-bold text-white">{value}</p>
     </div>
   </div>
 );
 
+// Component Trang Tổng Quan (Đã sửa lỗi build)
 export default function DashboardOverview() {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -28,7 +32,7 @@ export default function DashboardOverview() {
         }
 
         const res = await fetch(
-          'https://project-doan1-backend.onrender.com/api/admin/stats', // <-- Gọi API mới
+          'https://project-doan1-backend.onrender.com/api/admin/stats', // <-- Gọi API
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -57,10 +61,13 @@ export default function DashboardOverview() {
     return <div className="text-red-500">Lỗi: {error}</div>;
   }
 
-  // Hiển thị giá trị loading (hoặc 0)
-  const userValue = loading || !stats ? '...' : stats.userCount;
-  const topicValue = loading || !stats ? '...' : stats.topicCount;
-  const wordValue = loading || !stats ? '...' : stats.wordCount;
+  // --- ĐÃ SỬA LỖI BUILD ---
+  // Tạo các biến để hiển thị (hiển thị '--' khi đang tải)
+  const userValue = loading || !stats ? '--' : stats.userCount;
+  const topicValue = loading || !stats ? '--' : stats.topicCount;
+  const wordValue = loading || !stats ? '--' : stats.word_count;
+  const feedbackValue = loading || !stats ? '--' : stats.feedbackCount || 0;
+
   return (
     <div>
       <h1 className="mb-6 text-3xl font-bold">Tổng quan</h1>
@@ -70,30 +77,33 @@ export default function DashboardOverview() {
         <StatCard
           icon={<Users size={28} className="text-white" />}
           title="Tổng số Người dùng"
-          value="1,250"
+          value={userValue}
           bgColor="bg-gradient-to-r from-blue-500 to-blue-400"
         />
+
         <StatCard
           icon={<BookCopy size={28} className="text-white" />}
           title="Tổng số Chủ đề"
-          value="340"
+          value={topicValue}
           bgColor="bg-gradient-to-r from-green-500 to-green-400"
         />
+
         <StatCard
           icon={<FileText size={28} className="text-white" />}
           title="Tổng số Từ vựng"
-          value="12,800"
+          value={wordValue}
           bgColor="bg-gradient-to-r from-yellow-500 to-yellow-400"
         />
+
         <StatCard
           icon={<CheckCircle size={28} className="text-white" />}
           title="Góp ý đã xử lý"
-          value="75"
+          value={feedbackValue}
           bgColor="bg-gradient-to-r from-indigo-500 to-indigo-400"
         />
       </div>
 
-      {/* Khu vực Biểu đồ*/}
+      {/* Khu vực Biểu đồ (Không đổi) */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
           <h2 className="mb-4 text-xl font-semibold">Người dùng mới (7 ngày)</h2>
