@@ -30,18 +30,7 @@ export const getAllUsers = async (req, res) => {
     res.status(500).json({ message: 'Lỗi server' });
   }
 };
-// File: controllers/adminController.js
 
-import User from '../models/User.js';
-import Topics from '../models/Topics.js';
-import Flashcard from '../models/Flashcard.js';
-// ... (các hàm getAllUsers, getAllTopics, getAllWords giữ nguyên) ...
-
-/**
- * @desc    Lấy số liệu thống kê tổng quan cho Dashboard
- * @route   GET /api/admin/stats
- * @access  Private/Admin
- */
 export const getDashboardStats = async (req, res) => {
   try {
     // --- PHẦN SỐ ĐẾM (ĐÃ CÓ) ---
