@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import Topics from '../models/Topics.js';
 import Flashcard from '../models/Flashcard.js';
 /**
  * @desc    Lấy tất cả người dùng (cho Admin)
@@ -7,24 +8,22 @@ import Flashcard from '../models/Flashcard.js';
  */
 export const getAllUsers = async (req, res) => {
   try {
-    // Lấy page và limit từ query string, gán giá trị mặc định
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10; // Mặc định 10 user/trang
+    const limit = parseInt(req.query.limit, 10) || 10;
     const offset = (page - 1) * limit;
 
-    // Sử dụng findAndCountAll để lấy cả tổng số lượng và danh sách
     const { count, rows } = await User.findAndCountAll({
-      attributes: { exclude: ['password'] }, // Không bao giờ trả về password
+      attributes: { exclude: ['password'] },
       limit: limit,
       offset: offset,
-      order: [['createdAt', 'DESC']], // Sắp xếp theo ngày tạo
+      order: [['createdAt', 'DESC']],
     });
 
     res.json({
-      totalUsers: count, // <-- Đây là tổng số lượng bạn cần
+      totalUsers: count,
       totalPages: Math.ceil(count / limit),
       currentPage: page,
-      users: rows, // Đây là danh sách user cho trang hiện tại
+      users: rows,
     });
   } catch (error) {
     console.error('Lỗi khi lấy danh sách người dùng:', error);
@@ -54,6 +53,52 @@ export const getDashboardStats = async (req, res) => {
     });
   } catch (error) {
     console.error('Lỗi khi lấy số liệu thống kê dashboard:', error);
+    res.status(500).json({ message: 'Lỗi server' });
+  }
+};
+export const getAllTopics = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await Topics.findAndCountAll({
+      limit: limit,
+      offset: offset,
+      order: [['created_at', 'DESC']],
+    });
+
+    res.json({
+      totalTopics: count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page,
+      topics: rows,
+    });
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách chủ đề:', error);
+    res.status(500).json({ message: 'Lỗi server' });
+  }
+};
+export const getAllWords = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await Flashcard.findAndCountAll({
+      limit: limit,
+      offset: offset,
+      order: [['created_at', 'DESC']],
+    });
+
+    res.json({
+      totalWords: count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page,
+      words: rows,
+    });
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách từ vựng:', error);
     res.status(500).json({ message: 'Lỗi server' });
   }
 };

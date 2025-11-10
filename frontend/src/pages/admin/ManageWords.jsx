@@ -1,8 +1,53 @@
-// src/pages/admin/ManageWords.jsx
+// File: src/pages/admin/ManageWords.jsx
 
-import { Plus } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function ManageWords() {
+  const [data, setData] = useState({
+    words: [],
+    totalWords: 0,
+    totalPages: 1,
+    currentPage: 1,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+
+  useEffect(() => {
+    const fetchWords = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const token = sessionStorage.getItem('token');
+        if (!token) throw new Error('Không tìm thấy token');
+
+        const res = await fetch(
+          `https://project-doan1-backend.onrender.com/api/admin/words?page=${page}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        if (!res.ok) throw new Error('Không thể tải danh sách từ vựng');
+
+        const jsonData = await res.json();
+        setData(jsonData);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWords();
+  }, [page]);
+
+  const handlePrevPage = () => setPage((prev) => Math.max(prev - 1, 1));
+  const handleNextPage = () => setPage((prev) => Math.min(prev + 1, data.totalPages));
+
+  if (error) return <div className="text-red-500">Lỗi: {error}</div>;
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
@@ -13,22 +58,29 @@ export default function ManageWords() {
         </button>
       </div>
 
+      <div className="mb-4 text-lg dark:text-gray-300">
+        Tổng số từ vựng:
+        <span className="ml-2 font-bold text-yellow-500 dark:text-yellow-400">
+          {loading ? '--' : data.totalWords}
+        </span>
+      </div>
+
       <div className="w-full overflow-hidden rounded-lg shadow-md">
         <div className="overflow-x-auto bg-white dark:bg-gray-800">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
-                  Từ vựng
+                  Từ (Front)
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
-                  Phiên âm
+                  Nghĩa (Back)
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
-                  Nghĩa
+                  Phát âm
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
-                  Chủ đề
+                  Deck ID
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
                   Hành động
@@ -36,23 +88,52 @@ export default function ManageWords() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {/* Data mẫu */}
-              <tr className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                <td className="px-6 py-4 whitespace-nowrap">Apple</td>
-                <td className="px-6 py-4 whitespace-nowrap">/ˈæp.əl/</td>
-                <td className="px-6 py-4 whitespace-nowrap">Quả táo</td>
-                <td className="px-6 py-4 whitespace-nowrap">Trái cây</td>
-                <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
-                  <button className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
-                    Sửa
-                  </button>
-                  <button className="ml-4 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                    Xóa
-                  </button>
-                </td>
-              </tr>
+              {loading ? (
+                <tr>
+                  <td colSpan="5" className="p-4 text-center">
+                    Đang tải...
+                  </td>
+                </tr>
+              ) : (
+                data.words.map((word) => (
+                  <tr key={word.card_id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                    <td className="px-6 py-4 whitespace-nowrap">{word.front_text}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{word.back_text}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{word.pronunciation || 'N/A'}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{word.deck_id}</td>
+                    <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+                      <button className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
+                        Sửa
+                      </button>
+                      <button className="ml-4 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
+                        Xóa
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
+        </div>
+
+        <div className="flex items-center justify-between border-t bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+          <button
+            onClick={handlePrevPage}
+            disabled={page === 1 || loading}
+            className="rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-700 disabled:opacity-50 dark:bg-gray-700 dark:text-gray-300"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <span className="text-sm text-gray-700 dark:text-gray-300">
+            Trang {data.currentPage} / {data.totalPages}
+          </span>
+          <button
+            onClick={handleNextPage}
+            disabled={page === data.totalPages || loading}
+            className="rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-700 disabled:opacity-50 dark:bg-gray-700 dark:text-gray-300"
+          >
+            <ChevronRight size={16} />
+          </button>
         </div>
       </div>
     </div>
