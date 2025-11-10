@@ -14,6 +14,52 @@ const StatCard = ({ icon, title, value, bgColor }) => (
 );
 
 export default function DashboardOverview() {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const token = sessionStorage.getItem('token');
+        if (!token) {
+          throw new Error('Không tìm thấy token');
+        }
+
+        const res = await fetch(
+          'https://project-doan1-backend.onrender.com/api/admin/stats', // <-- Gọi API mới
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!res.ok) {
+          throw new Error('Không thể tải dữ liệu thống kê');
+        }
+
+        const data = await res.json();
+        setStats(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []); // Chạy 1 lần
+
+  // Hiển thị loading hoặc lỗi
+  if (error) {
+    return <div className="text-red-500">Lỗi: {error}</div>;
+  }
+
+  // Hiển thị giá trị loading (hoặc 0)
+  const userValue = loading || !stats ? '...' : stats.userCount;
+  const topicValue = loading || !stats ? '...' : stats.topicCount;
+  const wordValue = loading || !stats ? '...' : stats.wordCount;
   return (
     <div>
       <h1 className="mb-6 text-3xl font-bold">Tổng quan</h1>
