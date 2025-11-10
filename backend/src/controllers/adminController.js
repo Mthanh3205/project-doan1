@@ -1,5 +1,5 @@
 import User from '../models/User.js';
-import Flashcard from '../models/index.js';
+import Flashcard from '../models/Flashcard.js';
 /**
  * @desc    Lấy tất cả người dùng (cho Admin)
  * @route   GET /api/admin/users
