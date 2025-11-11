@@ -42,7 +42,7 @@ const getProgressByMode = async (req, res) => {
       SELECT 
         d.deck_id,
         d.title AS deck_name,
-        d.created_at, -- 1. THÊM CỘT NÀY VÀO SELECT
+        d.created_at,
         
         (SELECT COUNT(*) FROM "flashcards" c WHERE c.deck_id = d.deck_id) AS total_cards,
         
@@ -52,14 +52,15 @@ const getProgressByMode = async (req, res) => {
         COUNT(DISTINCT CASE WHEN up.mode = 'matching' THEN up.card_id END) AS matching_learned
       FROM 
         "decks" d
-      LEFT JOIN 
+      -- THAY ĐỔI TỪ 'LEFT JOIN' THÀNH 'INNER JOIN' (hoặc 'JOIN')
+      INNER JOIN 
         "user_progress" up ON d.deck_id = up.deck_id AND up.user_id = ?
       GROUP BY 
         d.deck_id, 
         d.title, 
-        d.created_at -- 2. THÊM CỘT NÀY VÀO GROUP BY
+        d.created_at
       ORDER BY 
-        d.created_at; -- (Giờ thì dòng này đã hợp lệ)
+        d.created_at;
     `,
       {
         replacements: [userId],
@@ -72,6 +73,7 @@ const getProgressByMode = async (req, res) => {
     return res.status(500).json({ error: 'Lỗi phía server' });
   }
 };
+
 export default {
   markAsLearned,
   getProgressByMode,

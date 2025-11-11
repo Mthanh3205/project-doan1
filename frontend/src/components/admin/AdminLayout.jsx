@@ -5,7 +5,7 @@ import AdminHeader from './AdminHeader';
 
 export default function AdminLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
+  const [isCollapsed, setIsCollapsed] = useState(false);
   useEffect(() => {
     document.body.classList.add('h-full', 'overflow-hidden');
 
@@ -17,7 +17,12 @@ export default function AdminLayout() {
   return (
     <div className="flex min-h-screen bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
       {/* sidebar */}
-      <AdminSidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
+      <AdminSidebar
+        isOpen={isSidebarOpen}
+        setIsOpen={setIsSidebarOpen}
+        isCollapsed={isCollapsed}
+        setIsCollapsed={setIsCollapsed}
+      />
 
       {/* main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
