@@ -224,12 +224,14 @@
 
 @tailwind utilities;
 html,
-body {
+body,
+#root {
   height: auto;
   margin: 0;
   padding: 0;
   overflow: visible; /* để Lenis điều khiển */
 }
+
 /* Custom color scrollbar */
 
 ::-webkit-scrollbar {

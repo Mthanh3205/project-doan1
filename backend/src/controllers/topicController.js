@@ -1,8 +1,7 @@
-//Topics
+//Topics - hiển thị tất cả các chủ đề mà admin tạo
 import { Topics, Flashcard, UserProgress, sequelize } from '../models/index.js';
 const getAllTopics = async (req, res) => {
   try {
-    // Chạy một câu SQL thô an toàn
     const [allTopics, metadata] = await sequelize.query(`
       SELECT 
         "Topics"."deck_id", 
@@ -16,6 +15,8 @@ const getAllTopics = async (req, res) => {
         "decks" AS "Topics"
       LEFT JOIN 
         "flashcards" AS "Flashcard" ON "Topics"."deck_id" = "Flashcard"."deck_id"
+      WHERE 
+        "topics"."user_id"=1
       GROUP BY 
         "Topics"."deck_id", 
         "Topics"."user_id", 
@@ -38,7 +39,12 @@ const getAllTopics = async (req, res) => {
 const getTopicById = async (req, res) => {
   try {
     const { deckId } = req.params;
-    const topic = await Topics.findByPk(deckId); // Sequelize: tìm theo khóa chính
+    const topic = await Topics.findOne({
+      where:{
+        deck_id: deckId,
+        user_id: 1
+      }
+    });
 
     if (!topic) {
       return res.status(404).json({ message: 'Không tìm thấy topic' });

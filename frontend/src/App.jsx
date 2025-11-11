@@ -18,12 +18,12 @@ import StudyFavoriteFlashcard from './pages/StudyFavoriteFlashcard';
 import ProgressPage from './pages/ProgressPage';
 // import AdminPage from './pages/AdminPage';
 
+import { DeckProvider } from './context/DeckContext';
 //import admin
 import AdminLayout from './components/admin/AdminLayout';
 import DashboardOverview from './pages/admin/DashboardOverview';
 import ManageUsers from './pages/admin/ManageUsers';
-import ManageTopics from './pages/admin/ManageTopics';
-import ManageWords from './pages/admin/ManageWords';
+import ManageTopicsWords from './pages/admin/ManageTopicsWords';
 import AdminSettings from './pages/admin/AdminSettings';
 
 //Login thì mới cho sử dụng chức năng trong web
@@ -36,78 +36,81 @@ import SmoothScroll from './components/SmoothScroll';
 function AppContent() {
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-transparent text-white transition-colors duration-300">
-        <SmoothScroll />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="*" element={<NotFound />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/study/:deckId/:mode" element={<Studyflashcard />} />
-          <Route path="/account" element={<Account />} />
-          <Route
-            path="/topics"
-            element={
-              <ProtectedRoute>
-                <TopicsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/vocabulary/:deckId" element={<VocabularyPage />} />
-          <Route
-            path="/test"
-            element={
-              <ProtectedRoute>
-                <Test />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/CreateVocabulary"
-            element={
-              <ProtectedRoute>
-                <CreateVocabulary />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/favorites"
-            element={
-              <ProtectedRoute>
-                <FavoritePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/study-favorites/:deckId"
-            element={
-              <ProtectedRoute>
-                <StudyFavoriteFlashcard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/progress"
-            element={
-              <ProtectedRoute>
-                <ProgressPage />
-              </ProtectedRoute>
-            }
-          />
+      <DeckProvider>
+        <div className="min-h-screen bg-transparent text-white transition-colors duration-300">
+          <SmoothScroll />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="*" element={<NotFound />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/study/:deckId/:mode" element={<Studyflashcard />} />
+            <Route path="/account" element={<Account />} />
+            <Route
+              path="/topics"
+              element={
+                <ProtectedRoute>
+                  <TopicsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/vocabulary/:deckId" element={<VocabularyPage />} />
+            <Route
+              path="/test"
+              element={
+                <ProtectedRoute>
+                  <Test />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/CreateVocabulary"
+              element={
+                <ProtectedRoute>
+                  <CreateVocabulary />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/favorites"
+              element={
+                <ProtectedRoute>
+                  <FavoritePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/study-favorites/:deckId"
+              element={
+                <ProtectedRoute>
+                  <StudyFavoriteFlashcard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/progress"
+              element={
+                <ProtectedRoute>
+                  <ProgressPage />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* admin */}
-          <Route element={<AdminProtectedRoute />}>
-            {/* <Route path="/admin" element={<AdminPage />} /> */}
-            <Route path="/admin" element={<AdminLayout />}>
-              {/* index=true nghĩa là đây là trang mặc định của /admin */}
-              <Route index element={<DashboardOverview />} />
-              <Route path="users" element={<ManageUsers />} />
-              <Route path="topics" element={<ManageTopics />} />
-              <Route path="words" element={<ManageWords />} />
-              <Route path="settings" element={<AdminSettings />} />
+            {/* admin */}
+            <Route element={<AdminProtectedRoute />}>
+              {/* <Route path="/admin" element={<AdminPage />} /> */}
+              <Route path="/admin" element={<AdminLayout />}>
+                {/* index=true nghĩa là đây là trang mặc định của /admin */}
+                <Route index element={<DashboardOverview />} />
+                <Route path="users" element={<ManageUsers />} />
+                {/* <Route path="topics" element={<ManageTopics />} />
+              <Route path="words" element={<ManageWords />} /> */}
+                <Route path="topics" element={<ManageTopicsWords />} />
+                <Route path="settings" element={<AdminSettings />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
-      </div>
+          </Routes>
+        </div>
+      </DeckProvider>
     </AuthProvider>
   );
 }
