@@ -1,6 +1,8 @@
 //Topics
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/db.js';
+import Cards from './Cards.js';
+import Favorite from './Favorite.js';
 
 const Topics = sequelize.define(
   'Topics',
@@ -39,5 +41,8 @@ const Topics = sequelize.define(
     updatedAt: 'updated_at',
   }
 );
+
+Topics.hasMany(Cards, { foreignKey: 'deck_id', as: 'flashcards' });
+Topics.hasMany(Favorite, { foreignKey: 'deck_id', as: 'topicFavorites' });
 
 export default Topics;
