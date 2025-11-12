@@ -27,9 +27,9 @@ function ModeBar({ name, icon, learned, total }) {
             {percentage}%
           </span>
         </div>
-        <div className="mt-1 h-2 w-full rounded-full bg-gray-900">
+        <div className="mt-1 h-2 w-full bg-gray-900">
           <div
-            className={`h-2 rounded-full ${percentage === 100 ? 'bg-green-500' : 'bg-amber-500'}`}
+            className={`h-2 ${percentage === 100 ? 'bg-green-500' : 'bg-amber-500'}`}
             style={{ width: `${percentage}%` }}
           ></div>
         </div>
@@ -128,7 +128,7 @@ export default function ProgressPage() {
               return (
                 <div
                   key={item.deck_id}
-                  className="rounded-xl bg-[#1d1d1d] p-6 text-white shadow-lg dark:bg-green-100 dark:text-gray-900"
+                  className="bg-[#1d1d1d] p-6 text-white shadow-lg dark:bg-green-100 dark:text-gray-900"
                 >
                   {/* Tiêu đề và tổng quan */}
                   <div className="flex flex-col justify-between border-b border-gray-700 pb-4 md:flex-row md:items-center dark:border-green-200">
@@ -154,9 +154,9 @@ export default function ProgressPage() {
                           )}
                         </span>
                       </div>
-                      <div className="mt-1 h-2.5 w-full rounded-full bg-gray-700 dark:bg-green-200">
+                      <div className="mt-1 h-2.5 w-full bg-gray-700 dark:bg-green-200">
                         <div
-                          className={`h-2.5 rounded-full ${overallPercent === 100 ? 'bg-green-500' : 'bg-amber-500 dark:bg-green-600'}`}
+                          className={`h-2.5 ${overallPercent === 100 ? 'bg-green-500' : 'bg-amber-500 dark:bg-green-600'}`}
                           style={{ width: `${overallPercent}%` }}
                         ></div>
                       </div>
@@ -195,7 +195,7 @@ export default function ProgressPage() {
                   <div className="mt-5 border-t border-gray-700 pt-5 text-right dark:border-green-200">
                     <Link
                       to={`/study/${item.deck_id}/flip`} // Luôn trỏ về trang học
-                      className="flex-1 rounded-full border px-6 py-2 text-center font-semibold text-zinc-100 transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
+                      className="flex-1 border px-6 py-2 text-center font-semibold text-zinc-100 transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
                     >
                       {overallPercent === 100 ? 'Ôn tập' : 'Học tiếp'}
                     </Link>
@@ -205,14 +205,14 @@ export default function ProgressPage() {
             })
           ) : (
             // Trường hợp chưa học gì
-            <div className="rounded-xl bg-[#1d1d1d] p-10 text-center text-white shadow-lg dark:bg-green-100 dark:text-gray-900">
+            <div className="bg-[#1d1d1d] p-10 text-center text-white shadow-lg dark:bg-green-100 dark:text-gray-900">
               <h3 className="text-xl font-semibold">Bạn chưa có tiến trình học</h3>
               <p className="mt-2 text-gray-400 dark:text-gray-600">
                 Hãy bắt đầu một chủ đề để theo dõi tiến trình của bạn tại đây.
               </p>
               <Link
                 to="/topics"
-                className="mt-6 inline-block rounded-full bg-amber-500 px-6 py-2 font-semibold text-white shadow-md transition-colors hover:bg-amber-600"
+                className="mt-6 inline-block bg-amber-500 px-6 py-2 font-semibold text-white shadow-md transition-colors hover:bg-amber-600"
               >
                 Chọn chủ đề
               </Link>

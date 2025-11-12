@@ -6,10 +6,8 @@ import { Link } from 'react-router-dom'; // <-- 1. Import Link
 
 // Component Thẻ Thống Kê (Không đổi)
 const StatCard = ({ icon, title, value, bgColor }) => (
-  <div
-    className={`flex items-center space-x-4 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800 ${bgColor}`}
-  >
-    <div className="rounded-full bg-white/30 p-3">{icon}</div>
+  <div className={`flex items-center space-x-4 bg-white p-6 shadow-md dark:bg-gray-800 ${bgColor}`}>
+    <div className="bg-white/30 p-3">{icon}</div>
     <div>
       <p className="text-sm font-medium text-gray-100">{title}</p>
       <p className="h-8 text-2xl font-bold text-white">{value}</p>
@@ -91,13 +89,13 @@ export default function DashboardOverview() {
 
       {/* Khu vực Biểu đồ (Không đổi) */}
       <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+        <div className="bg-white p-6 shadow-md dark:bg-gray-800">
           <h2 className="mb-4 text-xl font-semibold">Người dùng mới (7 ngày)</h2>
           <div className="flex h-64 items-center justify-center text-gray-400">
             [Biểu đồ đường ở đây]
           </div>
         </div>
-        <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+        <div className="bg-white p-6 shadow-md dark:bg-gray-800">
           <h2 className="mb-4 text-xl font-semibold">Phân bố Chủ đề</h2>
           <div className="flex h-64 items-center justify-center text-gray-400">
             [Biểu đồ tròn ở đây]
@@ -108,7 +106,7 @@ export default function DashboardOverview() {
       {/* --- PHẦN MỚI: BẢNG DỮ LIỆU GẦN ĐÂY --- */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Bảng Người dùng mới */}
-        <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+        <div className="bg-white p-6 shadow-md dark:bg-gray-800">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-semibold">Người dùng mới nhất</h2>
             <Link to="users" className="text-sm text-blue-500 hover:underline">
@@ -141,7 +139,7 @@ export default function DashboardOverview() {
         </div>
 
         {/* Bảng Chủ đề mới */}
-        <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+        <div className="bg-white p-6 shadow-md dark:bg-gray-800">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-semibold">Chủ đề mới nhất</h2>
             <Link to="topics" className="text-sm text-blue-500 hover:underline">

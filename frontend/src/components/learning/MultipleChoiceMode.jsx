@@ -138,10 +138,10 @@ export default function MultipleChoiceMode({ card, flashcards, index, nextCard, 
       </h2>
 
       {/* Nút chuyển chiều dịch */}
-      <div className="mb-6 flex rounded-full bg-stone-200 p-1">
+      <div className="mb-6 flex bg-stone-200 p-1">
         <button
           onClick={() => setDirection('vi-en')}
-          className={`rounded-full px-4 py-1 text-sm font-semibold transition-colors ${
+          className={`px-4 py-1 text-sm font-semibold transition-colors ${
             direction === 'vi-en'
               ? 'bg-[#1d1d1d] text-white shadow'
               : 'text-gray-600 hover:bg-stone-300 dark:text-gray-300 dark:hover:bg-gray-600'
@@ -151,7 +151,7 @@ export default function MultipleChoiceMode({ card, flashcards, index, nextCard, 
         </button>
         <button
           onClick={() => setDirection('en-vi')}
-          className={`rounded-full px-4 py-1 text-sm font-semibold transition-colors ${
+          className={`px-4 py-1 text-sm font-semibold transition-colors ${
             direction === 'en-vi'
               ? 'bg-[#1d1d1d] text-white shadow'
               : 'text-gray-600 hover:bg-stone-300 dark:text-gray-300 dark:hover:bg-gray-600'
@@ -162,7 +162,7 @@ export default function MultipleChoiceMode({ card, flashcards, index, nextCard, 
       </div>
 
       {/* HỘP CÂU HỎI */}
-      <div className="w-full max-w-lg rounded-xl bg-[#1d1d1d] p-8 text-center shadow-lg dark:bg-green-100">
+      <div className="w-full max-w-lg bg-[#1d1d1d] p-8 text-center shadow-lg dark:bg-green-100">
         <p className="mb-2 text-gray-300 dark:text-stone-700">
           {direction === 'vi-en' ? 'Nghĩa của từ này là gì?' : 'Từ nào có nghĩa là:'}
         </p>
@@ -176,7 +176,7 @@ export default function MultipleChoiceMode({ card, flashcards, index, nextCard, 
             key={idx}
             onClick={() => handleSelectAnswer(option)}
             disabled={isChecked}
-            className={`rounded-xl bg-[#1d1d1d] p-5 text-center text-xl font-semibold shadow-md transition-all dark:bg-gray-100 ${getButtonClass(
+            className={`bg-[#1d1d1d] p-5 text-center text-xl font-semibold shadow-md transition-all dark:bg-gray-100 ${getButtonClass(
               option
             )}`}
           >
@@ -203,7 +203,7 @@ export default function MultipleChoiceMode({ card, flashcards, index, nextCard, 
             {/* Nút "Tiếp theo" */}
             <button
               onClick={handleNext}
-              className="mt-4 w-full rounded-full border py-3 text-lg font-semibold text-zinc-100 transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
+              className="mt-4 w-full border py-3 text-lg font-semibold text-zinc-100 transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
             >
               Tiếp theo
             </button>

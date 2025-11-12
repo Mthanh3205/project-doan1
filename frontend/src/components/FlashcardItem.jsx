@@ -43,7 +43,7 @@ export default function FlashcardItem({
     return (
       <form
         onSubmit={handleSubmit}
-        className="mx-3 rounded-md border bg-[#1d1d1d] p-4 text-zinc-300 shadow-sm dark:border-none dark:bg-white dark:text-stone-600"
+        className="mx-3 border bg-[#1d1d1d] p-4 text-zinc-300 shadow-sm dark:border-none dark:bg-white dark:text-stone-600"
       >
         <div className="mb-2">
           <label className="text-sm font-medium">Front:</label>
@@ -52,7 +52,7 @@ export default function FlashcardItem({
             name="front_text"
             value={formData.front_text}
             onChange={handleChange}
-            className="mt-1 block w-full rounded-md border border-gray-500 px-2 py-1 outline-none dark:border-stone-200"
+            className="mt-1 block w-full border border-gray-500 px-2 py-1 outline-none dark:border-stone-200"
           />
         </div>
         <div className="mb-2">
@@ -62,7 +62,7 @@ export default function FlashcardItem({
             name="back_text"
             value={formData.back_text}
             onChange={handleChange}
-            className="mt-1 block w-full rounded-md border border-gray-500 px-2 py-1 outline-none dark:border-stone-200"
+            className="mt-1 block w-full border border-gray-500 px-2 py-1 outline-none dark:border-stone-200"
           />
         </div>
         <div className="mb-2">
@@ -72,7 +72,7 @@ export default function FlashcardItem({
             name="pronunciation"
             value={formData.pronunciation}
             onChange={handleChange}
-            className="mt-1 block w-full rounded-md border border-gray-500 px-2 py-1 outline-none dark:border-stone-200"
+            className="mt-1 block w-full border border-gray-500 px-2 py-1 outline-none dark:border-stone-200"
           />
         </div>
         <div className="mb-2">
@@ -82,20 +82,20 @@ export default function FlashcardItem({
             value={formData.example}
             onChange={handleChange}
             rows="2"
-            className="mt-1 block w-full rounded-md border border-gray-500 px-2 py-1 outline-none dark:border-stone-200"
+            className="mt-1 block w-full border border-gray-500 px-2 py-1 outline-none dark:border-stone-200"
           ></textarea>
         </div>
         <div className="mt-4 space-x-2">
           <button
             type="submit"
-            className="rounded-md bg-amber-400 px-3 py-1 text-sm text-stone-600 transition-all hover:scale-105 hover:bg-black hover:text-white dark:bg-green-200 dark:text-stone-600 dark:hover:bg-green-400 dark:hover:text-white"
+            className="bg-amber-400 px-3 py-1 text-sm text-stone-600 transition-all hover:scale-105 hover:bg-black hover:text-white dark:bg-green-200 dark:text-stone-600 dark:hover:bg-green-400 dark:hover:text-white"
           >
             Lưu
           </button>
           <button
             type="button"
             onClick={onCancel} // Gọi hàm onCancel được truyền từ cha
-            className="rounded-md bg-gray-600 px-3 py-1 text-sm text-white transition-all hover:scale-105 hover:bg-black"
+            className="bg-gray-600 px-3 py-1 text-sm text-white transition-all hover:scale-105 hover:bg-black"
           >
             Hủy
           </button>
@@ -106,7 +106,7 @@ export default function FlashcardItem({
 
   // GIAO DIỆN KHI CHỈ HIỂN THỊ (Mặc định)
   return (
-    <div className="mx-5 rounded-md bg-[#121212] p-4 text-zinc-300 shadow-sm dark:border-none dark:bg-green-100 dark:text-stone-600">
+    <div className="mx-5 bg-[#121212] p-4 text-zinc-300 shadow-sm dark:border-none dark:bg-green-100 dark:text-stone-600">
       <p>
         <strong>Front:</strong> {card.front_text}
       </p>

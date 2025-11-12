@@ -35,13 +35,13 @@ const HomePage = () => {
             <div className="mt-8 flex gap-4">
               <a
                 href="/test"
-                className="rounded-full border px-6 py-3 font-semibold transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
+                className="border px-6 py-3 font-semibold transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
               >
                 Bắt đầu học ngay
               </a>
               <a
                 href="/courses"
-                className="rounded-full border px-6 py-3 font-semibold transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
+                className="border px-6 py-3 font-semibold transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
               >
                 Xem các khóa học
               </a>
@@ -71,7 +71,7 @@ const HomePage = () => {
               ].map((f, i) => (
                 <div
                   key={i}
-                  className="rounded-2xl bg-[#1d1d1d] p-6 text-center shadow-lg transition-all duration-300 hover:-translate-y-2 dark:bg-transparent"
+                  className="bg-[#1d1d1d] p-6 text-center shadow-lg transition-all duration-300 hover:-translate-y-2 dark:bg-transparent"
                 >
                   <h3 className="mb-3 text-xl font-semibold text-amber-400">{f.title}</h3>
                   <p className="text-gray-300 dark:text-black">{f.desc}</p>
@@ -99,7 +99,7 @@ const HomePage = () => {
             </p>
             <a
               href="/Auth"
-              className="rounded-full border px-6 py-3 font-semibold text-white transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:hover:bg-white dark:hover:text-black"
+              className="border px-6 py-3 font-semibold text-white transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:hover:bg-white dark:hover:text-black"
             >
               Đăng ký ngay
             </a>

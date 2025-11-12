@@ -98,13 +98,13 @@ export default function Header() {
             <div key={item.label} className="group relative">
               <Link
                 to={item.href}
-                className="relative inline-block w-35 rounded-2xl bg-[#1d1d1d] text-center font-semibold text-gray-300 shadow-lg transition-all duration-300 after:absolute after:bottom-0 after:left-1/2 after:h-[2px] after:w-0 after:-translate-x-1/2 after:bg-amber-400 after:transition-all after:duration-500 after:content-[''] hover:-translate-y-1 hover:text-amber-400 hover:after:w-full dark:bg-zinc-200 dark:text-gray-800 dark:hover:text-orange-500"
+                className="relative inline-block w-35 text-center font-semibold text-gray-300 shadow-lg transition-all duration-300 after:absolute after:bottom-0 after:left-1/2 after:h-[2px] after:w-0 after:-translate-x-1/2 after:bg-amber-400 after:transition-all after:duration-500 after:content-[''] hover:-translate-y-1 hover:text-amber-400 hover:after:w-full dark:text-gray-800 dark:hover:text-orange-500"
               >
                 {item.label}
               </Link>
 
               {item.subItems && (
-                <div className="pointer-events-none absolute top-full left-1/2 z-[999] min-w-max -translate-x-1/2 translate-y-2 rounded-xl border border-zinc-600/40 bg-black/80 px-3 py-2 text-white opacity-0 shadow-lg saturate-150 backdrop-blur-md transition-all delay-150 duration-500 ease-in-out group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 dark:border-none dark:bg-green-100/90">
+                <div className="pointer-events-none absolute top-full left-1/2 z-[999] min-w-max -translate-x-1/2 translate-y-2 border border-zinc-600/40 bg-black/80 px-3 py-2 text-white opacity-0 shadow-lg saturate-150 backdrop-blur-md transition-all delay-150 duration-500 ease-in-out group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100 dark:border-none dark:bg-green-100/90">
                   {item.subItems.map((sub) => (
                     <Link
                       key={sub.label}
@@ -116,7 +116,7 @@ export default function Header() {
                         }
                         setIsOpen(false);
                       }}
-                      className="relative block rounded-md px-4 py-2 text-base whitespace-nowrap text-white transition-all duration-300 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-amber-400 after:transition-all after:duration-500 after:content-[''] hover:translate-x-1 hover:text-amber-400 hover:after:w-full dark:text-stone-700"
+                      className="relative block px-4 py-2 text-base whitespace-nowrap text-white transition-all duration-300 after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-amber-400 after:transition-all after:duration-500 after:content-[''] hover:translate-x-1 hover:text-amber-400 hover:after:w-full dark:text-stone-700"
                     >
                       {sub.label}
                     </Link>
@@ -133,7 +133,7 @@ export default function Header() {
           {!user ? (
             <button
               onClick={() => navigate('/Auth')}
-              className="group relative overflow-hidden rounded-4xl border bg-zinc-400 font-medium whitespace-nowrap text-white transition-all duration-300 hover:bg-zinc-200 hover:text-black dark:bg-zinc-200 hover:dark:bg-zinc-500"
+              className="group relative overflow-hidden rounded-full border bg-zinc-400 font-medium whitespace-nowrap text-white transition-all duration-300 hover:bg-zinc-200 hover:text-black dark:bg-zinc-200 hover:dark:bg-zinc-500"
             >
               <User className="m-1 text-white dark:text-white" />
             </button>
@@ -146,8 +146,8 @@ export default function Header() {
                 className="h-9 w-9 cursor-pointer rounded-full transition-transform duration-200 hover:scale-110"
               />
               {showMenu && (
-                <div className="absolute right-0 z-50 mt-4 min-w-max rounded-lg bg-white text-gray-600 shadow-lg">
-                  <div className="rounded-t-lg border-b px-4 py-2 font-semibold hover:bg-zinc-400">
+                <div className="absolute right-0 z-50 mt-4 min-w-max bg-white text-gray-600 shadow-lg">
+                  <div className="border-b px-4 py-2 font-semibold hover:bg-zinc-400">
                     <Link to="/Account">{user.name || 'User'}</Link>
                   </div>
                   <button
@@ -155,7 +155,7 @@ export default function Header() {
                       logout();
                       setShowMenu(false);
                     }}
-                    className="w-full rounded-b-lg px-4 py-2 text-left hover:bg-zinc-400"
+                    className="w-full px-4 py-2 text-left hover:bg-zinc-400"
                   >
                     Đăng xuất
                   </button>
@@ -181,7 +181,7 @@ export default function Header() {
             <div key={item.label}>
               <Link
                 to={item.href}
-                className="block rounded-lg px-2 py-2 font-semibold text-gray-200 hover:bg-zinc-800 hover:text-amber-400 dark:text-black"
+                className="block px-2 py-2 font-semibold text-gray-200 hover:bg-zinc-800 hover:text-amber-400 dark:text-black"
                 onClick={() => setIsOpen(false)}
               >
                 {item.label}
@@ -199,7 +199,7 @@ export default function Header() {
                         }
                         setIsOpen(false);
                       }}
-                      className="block rounded-lg px-2 py-1 text-sm text-gray-400 hover:text-amber-300 dark:text-stone-600"
+                      className="block px-2 py-1 text-sm text-gray-400 hover:text-amber-300 dark:text-stone-600"
                     >
                       • {sub.label}
                     </Link>
@@ -215,7 +215,7 @@ export default function Header() {
                   navigate('/Auth');
                   setIsOpen(false); // Đóng menu khi điều hướng
                 }}
-                className="group relative overflow-hidden rounded-4xl border bg-zinc-400 font-medium whitespace-nowrap text-white transition-all duration-300 hover:bg-zinc-200 hover:text-black dark:bg-zinc-200 hover:dark:bg-zinc-500"
+                className="group relative overflow-hidden border bg-zinc-400 font-medium whitespace-nowrap text-white transition-all duration-300 hover:bg-zinc-200 hover:text-black dark:bg-zinc-200 hover:dark:bg-zinc-500"
               >
                 <User className="m-1 text-white dark:text-white" />
               </button>
@@ -225,11 +225,11 @@ export default function Header() {
                   src={user.picture || '/avt.jpg'}
                   alt="avatar"
                   onClick={() => setShowMenu(!showMenu)}
-                  className="h-9 w-9 cursor-pointer rounded-full transition-transform duration-200 hover:scale-110"
+                  className="h-9 w-9 cursor-pointer transition-transform duration-200 hover:scale-110"
                 />
                 {showMenu && (
-                  <div className="absolute left-0 z-50 mt-4 min-w-max rounded-lg bg-white text-gray-600 shadow-lg">
-                    <div className="rounded-t-lg border-b px-4 py-2 font-semibold hover:bg-zinc-400">
+                  <div className="absolute left-0 z-50 mt-4 min-w-max bg-white text-gray-600 shadow-lg">
+                    <div className="border-b px-4 py-2 font-semibold hover:bg-zinc-400">
                       <Link
                         to="/Account"
                         onClick={() => {
@@ -246,7 +246,7 @@ export default function Header() {
                         setShowMenu(false);
                         setIsOpen(false);
                       }}
-                      className="w-full rounded-b-lg px-4 py-2 text-left hover:bg-zinc-400"
+                      className="w-full px-4 py-2 text-left hover:bg-zinc-400"
                     >
                       Đăng xuất
                     </button>

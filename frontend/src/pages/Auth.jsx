@@ -133,7 +133,7 @@ const Auth = () => {
     <div className="flex min-h-screen items-center justify-center bg-[#121212] bg-gradient-to-br p-4 dark:from-amber-100 dark:via-white dark:to-gray-100">
       <div className="relative w-full max-w-md">
         {/* Main card */}
-        <div className="bg-[rgba(255, 255, 255, 0.05)] rounded-2xl border border-white/20 p-8 shadow-2xl backdrop-blur-lg">
+        <div className="bg-[rgba(255, 255, 255, 0.05)] border border-white/20 p-8 shadow-2xl backdrop-blur-lg">
           {/* Header */}
           <div className="mb-8 text-center">
             <div className="bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text pb-8 text-4xl font-bold text-transparent italic">
@@ -142,7 +142,7 @@ const Auth = () => {
                 <span>FlashCard</span>
               </a>
             </div>
-            <div className="mx-auto mb-4 flex h-7 w-16 transform items-center justify-center rounded-2xl border border-white/20 bg-white/10 bg-gradient-to-r px-4 py-3 font-semibold text-slate-300 placeholder-slate-400 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl focus:border-transparent focus:ring-2 focus:outline-none dark:bg-green-200">
+            <div className="mx-auto mb-4 flex h-7 w-16 transform items-center justify-center border border-white/20 bg-white/10 bg-gradient-to-r px-4 py-3 font-semibold text-slate-300 placeholder-slate-400 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl focus:border-transparent focus:ring-2 focus:outline-none dark:bg-green-200">
               <a href="/">
                 <Home className="h-8 w-8 text-white hover:text-gray-300 hover:shadow-2xl dark:text-stone-700 dark:hover:text-stone-400" />
               </a>
@@ -185,7 +185,7 @@ const Auth = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="w-full rounded-xl border border-white/20 bg-white/10 py-3 pr-4 pl-12 text-white placeholder-slate-400 transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-stone-600"
+                    className="w-full border border-white/20 bg-white/10 py-3 pr-4 pl-12 text-white placeholder-slate-400 transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-stone-600"
                     placeholder="Nhập họ và tên"
                     required={!isLogin}
                   />
@@ -203,7 +203,7 @@ const Auth = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full rounded-xl border border-white/20 bg-white/10 py-3 pr-4 pl-12 text-white placeholder-slate-400 shadow-lg transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-green-100 dark:text-stone-600"
+                  className="w-full border border-white/20 bg-white/10 py-3 pr-4 pl-12 text-white placeholder-slate-400 shadow-lg transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-green-100 dark:text-stone-600"
                   placeholder="Nhập mail của bạn"
                   required
                 />
@@ -221,7 +221,7 @@ const Auth = () => {
                     name="password"
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="w-full rounded-xl border border-white/20 bg-white/10 py-3 pr-12 pl-12 text-white placeholder-slate-400 shadow-lg transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-green-100 dark:text-stone-600"
+                    className="w-full border border-white/20 bg-white/10 py-3 pr-12 pl-12 text-white placeholder-slate-400 shadow-lg transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-green-100 dark:text-stone-600"
                     placeholder="Nhập mật khẩu"
                     required
                   />
@@ -247,7 +247,7 @@ const Auth = () => {
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleInputChange}
-                      className="w-full rounded-xl border border-white/20 bg-white/10 py-3 pr-4 pl-12 text-white placeholder-slate-400 transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-stone-600"
+                      className="w-full border border-white/20 bg-white/10 py-3 pr-4 pl-12 text-white placeholder-slate-400 transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-stone-600"
                       placeholder="Nhập lại mật khẩu"
                       required={!isLogin}
                     />
@@ -270,7 +270,7 @@ const Auth = () => {
             {/* Submit button */}
             <button
               onClick={handleSubmit}
-              className="w-full transform rounded-xl bg-gradient-to-r from-amber-300 to-amber-400 px-4 py-3 font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:from-amber-300 hover:to-amber-500 hover:shadow-xl"
+              className="w-full transform bg-gradient-to-r from-amber-300 to-amber-400 px-4 py-3 font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:from-amber-300 hover:to-amber-500 hover:shadow-xl"
             >
               {isLogin ? 'Đăng nhập' : 'Đăng ký'}
             </button>

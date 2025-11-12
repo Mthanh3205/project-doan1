@@ -39,13 +39,13 @@ export default function StudyFavoriteFlashcard() {
                 flipped ? '[transform:rotateY(180deg)]' : ''
               }`}
             >
-              <div className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl bg-[#1d1d1d] p-6 text-center [backface-visibility:hidden] dark:bg-white">
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#1d1d1d] p-6 text-center [backface-visibility:hidden] dark:bg-white">
                 <p className="mb-3 text-2xl font-bold text-amber-400 dark:text-green-700">
                   {card.front_text}
                 </p>
                 <p className="text-sm text-gray-400">(Nhấn để xem nghĩa)</p>
               </div>
-              <div className="absolute inset-0 flex [transform:rotateY(180deg)] flex-col items-center justify-center rounded-2xl bg-[#1d1d1d] p-6 text-center [backface-visibility:hidden] dark:bg-white">
+              <div className="absolute inset-0 flex [transform:rotateY(180deg)] flex-col items-center justify-center bg-[#1d1d1d] p-6 text-center [backface-visibility:hidden] dark:bg-white">
                 <p className="text-xl font-bold text-amber-400 dark:text-green-700">
                   {card.back_text}
                 </p>
@@ -59,7 +59,7 @@ export default function StudyFavoriteFlashcard() {
                 setFlipped(false);
                 setIndex((prev) => (prev - 1 + cards.length) % cards.length);
               }}
-              className="rounded-full bg-amber-400 px-6 py-2 font-semibold text-stone-600 hover:scale-110 dark:bg-green-200"
+              className="bg-amber-400 px-6 py-2 font-semibold text-stone-600 hover:scale-110 dark:bg-green-200"
             >
               Quay lại
             </button>
@@ -68,7 +68,7 @@ export default function StudyFavoriteFlashcard() {
                 setFlipped(false);
                 setIndex((prev) => (prev + 1) % cards.length);
               }}
-              className="rounded-full bg-stone-700 px-6 py-2 font-semibold text-white hover:scale-110"
+              className="bg-stone-700 px-6 py-2 font-semibold text-white hover:scale-110"
             >
               Tiếp theo
             </button>

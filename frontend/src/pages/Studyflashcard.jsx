@@ -191,16 +191,16 @@ export default function StudyFlashcard() {
           {mode === 'matching' && <MatchingMode flashcards={flashcards} userId={userId} />}
 
           <div className="flex flex-col gap-6">
-            <div className="rounded-3xl bg-[#1d1d1d] p-6 text-stone-300 shadow-md dark:bg-green-100 dark:text-gray-800">
+            <div className="bg-[#1d1d1d] p-6 text-stone-300 shadow-md dark:bg-green-100 dark:text-gray-800">
               <h3 className="mb-2 text-lg font-semibold text-green-700">Mẹo học từ</h3>
               <p className="text-sm">Hãy đọc to từ vựng và ví dụ nhiều lần để ghi nhớ nhanh hơn.</p>
             </div>
 
-            <div className="rounded-3xl bg-[#1d1d1d] p-6 text-white shadow-md dark:bg-green-100">
+            <div className="bg-[#1d1d1d] p-6 text-white shadow-md dark:bg-green-100">
               <h3 className="mb-2 text-lg font-semibold text-stone-500">Ghi chú</h3>
               <textarea
                 placeholder="Ghi chú của bạn..."
-                className="w-full rounded-lg border border-stone-800 bg-[#1d1d1d] p-3 text-sm text-white shadow-lg placeholder:text-stone-300 focus:outline-none dark:border-stone-200 dark:bg-white dark:text-stone-600 dark:placeholder:text-stone-500"
+                className="w-full border border-stone-800 bg-[#1d1d1d] p-3 text-sm text-white shadow-lg placeholder:text-stone-300 focus:outline-none dark:border-stone-200 dark:bg-white dark:text-stone-600 dark:placeholder:text-stone-500"
                 rows="5"
               />
             </div>
@@ -212,7 +212,7 @@ export default function StudyFlashcard() {
             <div className="mt-2">
               <Link
                 to="/topics"
-                className="flex justify-center rounded-full border px-6 py-3 font-semibold text-zinc-100 transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
+                className="flex justify-center border px-6 py-3 font-semibold text-zinc-100 transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
               >
                 Chọn chủ đề khác
               </Link>

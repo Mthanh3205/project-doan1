@@ -97,10 +97,10 @@ function TypingMode({ card, index, nextCard, userId }) {
       </h2>
 
       {/* Nút chuyển chiều dịch*/}
-      <div className="mb-6 flex rounded-full bg-stone-200 p-1 dark:bg-gray-700">
+      <div className="mb-6 flex bg-stone-200 p-1 dark:bg-gray-700">
         <button
           onClick={() => setTypingDirection('vi-en')}
-          className={`rounded-full px-4 py-1 text-sm font-semibold transition-colors ${
+          className={`px-4 py-1 text-sm font-semibold transition-colors ${
             typingDirection === 'vi-en'
               ? 'bg-[#1d1d1d] text-white shadow'
               : 'text-gray-600 hover:bg-stone-300 dark:text-gray-300 dark:hover:bg-gray-600'
@@ -110,7 +110,7 @@ function TypingMode({ card, index, nextCard, userId }) {
         </button>
         <button
           onClick={() => setTypingDirection('en-vi')}
-          className={`rounded-full px-4 py-1 text-sm font-semibold transition-colors ${
+          className={`px-4 py-1 text-sm font-semibold transition-colors ${
             typingDirection === 'en-vi'
               ? 'bg-[#1d1d1d] text-white shadow'
               : 'text-gray-600 hover:bg-stone-300 dark:text-gray-300 dark:hover:bg-gray-600'
@@ -121,7 +121,7 @@ function TypingMode({ card, index, nextCard, userId }) {
       </div>
 
       {/*Cập nhật để hiển thị câu hỏi động*/}
-      <div className="w-full max-w-lg rounded-xl bg-[#1d1d1d] p-8 text-center shadow-lg dark:bg-green-100">
+      <div className="w-full max-w-lg bg-[#1d1d1d] p-8 text-center shadow-lg dark:bg-green-100">
         <p className="mb-2 text-gray-300 dark:text-stone-700">
           {typingDirection === 'vi-en' ? 'Dịch sang Tiếng Anh:' : 'Dịch sang Tiếng Việt:'}
         </p>
@@ -135,7 +135,7 @@ function TypingMode({ card, index, nextCard, userId }) {
           onChange={(e) => setUserInput(e.target.value)}
           placeholder="Nhập đáp án tại đây..."
           disabled={isChecked && isCorrect}
-          className={`w-full rounded-xl bg-[#1d1d1d] p-4 text-xl text-zinc-200 transition-colors placeholder:text-zinc-200 focus:outline-none dark:border-1 dark:bg-white dark:text-gray-900 dark:placeholder:text-stone-700 ${
+          className={`w-full bg-[#1d1d1d] p-4 text-xl text-zinc-200 transition-colors placeholder:text-zinc-200 focus:outline-none dark:border-1 dark:bg-white dark:text-gray-900 dark:placeholder:text-stone-700 ${
             isChecked
               ? isCorrect
                 ? 'border-green-500 dark:bg-green-50'
@@ -149,7 +149,7 @@ function TypingMode({ card, index, nextCard, userId }) {
         {!isChecked && (
           <button
             onClick={checkAnswer}
-            className="mt-4 flex-1 rounded-full border py-3 text-lg font-semibold text-zinc-100 transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
+            className="mt-4 flex-1 border py-3 text-lg font-semibold text-zinc-100 transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
           >
             Kiểm tra (Enter)
           </button>
@@ -160,14 +160,14 @@ function TypingMode({ card, index, nextCard, userId }) {
             {!isCorrect && (
               <button
                 onClick={() => setShowAnswer(true)}
-                className="w-1/3 rounded-full bg-stone-500 py-3 text-lg font-semibold text-white shadow-md transition-all hover:bg-stone-600"
+                className="w-1/3 bg-stone-500 py-3 text-lg font-semibold text-white shadow-md transition-all hover:bg-stone-600"
               >
                 Xem đáp án
               </button>
             )}
             <button
               onClick={handleNext}
-              className={`rounded-full py-3 text-lg font-semibold text-white shadow-lg transition-all ${
+              className={`py-3 text-lg font-semibold text-white shadow-lg transition-all ${
                 isCorrect
                   ? 'flex-1 bg-amber-400 hover:bg-amber-500 dark:bg-green-600 dark:hover:bg-green-700'
                   : 'w-2/3 bg-amber-600 hover:bg-amber-700'

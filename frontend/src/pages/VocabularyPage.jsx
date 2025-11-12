@@ -69,20 +69,20 @@ const VocabularyPage = () => {
         <div className="mb-10 flex flex-wrap justify-center gap-4 text-2xl md:text-lg lg:text-xl xl:text-2xl">
           <button
             onClick={() => navigate(`/study/${deckId}/flip`)}
-            className="rounded-full border border-amber-500 px-6 py-3 font-semibold transition-all duration-300 hover:scale-105 hover:bg-amber-500 hover:text-white dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
+            className="border border-amber-500 px-6 py-3 font-semibold transition-all duration-300 hover:scale-105 hover:bg-amber-500 hover:text-white dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
           >
             Bắt đầu học ngay
           </button>
-          <a
-            href="/courses"
-            className="rounded-full border border-amber-500 px-6 py-3 font-semibold transition-all duration-300 hover:scale-105 hover:bg-amber-500 hover:text-white dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
+          <button
+            onClick={() => navigate(`/study/${deckId}/quiz`)}
+            className="border border-amber-500 px-6 py-3 font-semibold transition-all duration-300 hover:scale-105 hover:bg-amber-500 hover:text-white dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
           >
             Thêm vào lớp học
-          </a>
+          </button>
         </div>
 
         {/* BẢNG TỪ VỰNG */}
-        <div className="relative overflow-x-auto rounded-lg shadow-lg">
+        <div className="relative overflow-x-auto shadow-lg">
           <table className="w-full text-left text-sm text-gray-300 dark:text-stone-700">
             <thead className="bg-black text-xs text-orange-400 uppercase dark:bg-green-200 dark:text-stone-700">
               <tr>

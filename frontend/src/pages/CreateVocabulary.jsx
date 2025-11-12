@@ -167,7 +167,7 @@ export default function CreateVocabulary() {
 
           <button
             onClick={() => setIsOffcanvasOpen(false)}
-            className="absolute top-2 right-2 rounded-full p-2 text-zinc-200 lg:hidden dark:text-stone-700"
+            className="absolute top-2 right-2 p-2 text-zinc-200 lg:hidden dark:text-stone-700"
           >
             <X size={24} />
           </button>
@@ -185,26 +185,26 @@ export default function CreateVocabulary() {
                 value={newDeckTitle}
                 onChange={(e) => setNewDeckTitle(e.target.value)}
                 placeholder="Nhập tiêu đề chủ đề mới..."
-                className="w-full rounded-md bg-[#121212] px-3 py-2 text-white shadow-lg outline-none dark:bg-white/30 dark:text-stone-600 dark:placeholder:text-stone-600"
+                className="w-full bg-[#121212] px-3 py-2 text-white shadow-lg outline-none dark:bg-white/30 dark:text-stone-600 dark:placeholder:text-stone-600"
               />
               <textarea
                 value={newDeckDescription}
                 onChange={(e) => setNewDeckDescription(e.target.value)}
                 placeholder="Thêm mô tả (không bắt buộc)..."
                 rows="3"
-                className="w-full rounded-md bg-[#121212] px-3 py-2 text-white shadow-lg outline-none dark:bg-white/30 dark:text-stone-600 dark:placeholder:text-stone-600"
+                className="w-full bg-[#121212] px-3 py-2 text-white shadow-lg outline-none dark:bg-white/30 dark:text-stone-600 dark:placeholder:text-stone-600"
               />
               <div className="flex space-x-2">
                 <button
                   type="submit"
-                  className="rounded-md bg-amber-400 px-3 py-1 text-sm text-black transition-all hover:scale-105 dark:bg-green-200 dark:text-stone-600 dark:hover:bg-green-400 dark:hover:text-white"
+                  className="bg-amber-400 px-3 py-1 text-sm text-black transition-all hover:scale-105 dark:bg-green-200 dark:text-stone-600 dark:hover:bg-green-400 dark:hover:text-white"
                 >
                   Lưu
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsAddingDeck(false)}
-                  className="rounded-md bg-gray-600 px-3 py-1 text-sm text-white transition-all hover:scale-105 hover:bg-black"
+                  className="bg-gray-600 px-3 py-1 text-sm text-white transition-all hover:scale-105 hover:bg-black"
                 >
                   Hủy
                 </button>
@@ -213,7 +213,7 @@ export default function CreateVocabulary() {
           ) : (
             <button
               onClick={() => setIsAddingDeck(true)}
-              className="w-full rounded-md border border-white px-4 py-2 text-white transition-all duration-300 hover:scale-105 hover:bg-amber-400 hover:text-black dark:bg-green-100 dark:text-zinc-500 dark:hover:text-black"
+              className="w-full border border-white px-4 py-2 text-white transition-all duration-300 hover:scale-105 hover:bg-amber-400 hover:text-black dark:bg-green-100 dark:text-zinc-500 dark:hover:text-black"
             >
               + Tạo chủ đề mới
             </button>
@@ -286,20 +286,20 @@ export default function CreateVocabulary() {
                   onChange={(e) =>
                     setSelectedDeck({ ...selectedDeck, description: e.target.value })
                   }
-                  className="mt-1 block w-full rounded-md bg-[#121212] bg-gradient-to-br px-3 py-2 text-zinc-200 shadow-lg outline-none dark:from-amber-100 dark:via-white dark:to-gray-100 dark:text-zinc-500"
+                  className="mt-1 block w-full bg-[#121212] bg-gradient-to-br px-3 py-2 text-zinc-200 shadow-lg outline-none dark:from-amber-100 dark:via-white dark:to-gray-100 dark:text-zinc-500"
                 ></textarea>
               </div>
               <div className="flex space-x-2">
                 <button
                   type="submit"
-                  className="rounded-md bg-amber-400 px-4 py-2 text-stone-700 transition-all hover:bg-black hover:text-white dark:bg-green-200 dark:text-stone-600 dark:hover:bg-green-400 dark:hover:text-white"
+                  className="bg-amber-400 px-4 py-2 text-stone-700 transition-all hover:bg-black hover:text-white dark:bg-green-200 dark:text-stone-600 dark:hover:bg-green-400 dark:hover:text-white"
                 >
                   Lưu thay đổi
                 </button>
                 <button
                   type="button"
                   onClick={handleDeleteDeck}
-                  className="rounded-md bg-gray-600 px-4 py-2 text-white hover:bg-black"
+                  className="bg-gray-600 px-4 py-2 text-white hover:bg-black"
                 >
                   Xóa chủ đề
                 </button>
@@ -308,7 +308,7 @@ export default function CreateVocabulary() {
 
             {/* Form Tạo từ vựng*/}
             <h3 className="my-6 mb-4 text-xl font-bold text-amber-400">Từ vựng trong chủ đề</h3>
-            <div className="mb-4 rounded-md bg-gradient-to-br p-4 dark:from-amber-100 dark:via-white dark:to-gray-100">
+            <div className="mb-4 bg-gradient-to-br p-4 dark:from-amber-100 dark:via-white dark:to-gray-100">
               {isAddingCard ? (
                 <form onSubmit={handleCreateCard}>
                   <h4 className="mb-2 font-semibold text-white dark:text-black">
@@ -322,41 +322,41 @@ export default function CreateVocabulary() {
                       value={newCardData.front_text}
                       onChange={handleNewCardChange}
                       placeholder="Từ vựng (VD: Hello)"
-                      className="rounded-md bg-[#121212] px-3 py-2 text-white outline-none placeholder:text-zinc-400 dark:bg-green-100 dark:text-stone-600 dark:placeholder:text-stone-600"
+                      className="bg-[#121212] px-3 py-2 text-white outline-none placeholder:text-zinc-400 dark:bg-green-100 dark:text-stone-600 dark:placeholder:text-stone-600"
                     />
                     <input
                       name="back_text"
                       value={newCardData.back_text}
                       onChange={handleNewCardChange}
                       placeholder="Nghĩa (VD: Xin chào)"
-                      className="rounded-md bg-[#121212] px-3 py-2 text-white outline-none placeholder:text-zinc-400 dark:bg-green-100 dark:text-stone-600 dark:placeholder:text-stone-600"
+                      className="bg-[#121212] px-3 py-2 text-white outline-none placeholder:text-zinc-400 dark:bg-green-100 dark:text-stone-600 dark:placeholder:text-stone-600"
                     />
                     <input
                       name="pronunciation"
                       value={newCardData.pronunciation}
                       onChange={handleNewCardChange}
                       placeholder="Phiên âm (VD: /həˈloʊ/)"
-                      className="rounded-md bg-[#121212] px-3 py-2 text-white outline-none placeholder:text-zinc-400 dark:bg-green-100 dark:text-stone-600 dark:placeholder:text-stone-600"
+                      className="bg-[#121212] px-3 py-2 text-white outline-none placeholder:text-zinc-400 dark:bg-green-100 dark:text-stone-600 dark:placeholder:text-stone-600"
                     />
                     <input
                       name="example"
                       value={newCardData.example}
                       onChange={handleNewCardChange}
                       placeholder="Ví dụ (VD: Hello world)"
-                      className="rounded-md bg-[#121212] px-3 py-2 text-white outline-none placeholder:text-zinc-400 dark:bg-green-100 dark:text-stone-600 dark:placeholder:text-stone-600"
+                      className="bg-[#121212] px-3 py-2 text-white outline-none placeholder:text-zinc-400 dark:bg-green-100 dark:text-stone-600 dark:placeholder:text-stone-600"
                     />
                   </div>
                   <div className="mt-4 flex space-x-2">
                     <button
                       type="submit"
-                      className="rounded-md bg-amber-400 px-3 py-1 text-sm text-stone-700 transition-all hover:scale-105 hover:bg-black hover:text-white dark:bg-green-200 dark:text-stone-600 dark:hover:bg-green-400 dark:hover:text-white"
+                      className="bg-amber-400 px-3 py-1 text-sm text-stone-700 transition-all hover:scale-105 hover:bg-black hover:text-white dark:bg-green-200 dark:text-stone-600 dark:hover:bg-green-400 dark:hover:text-white"
                     >
                       Lưu
                     </button>
                     <button
                       type="button"
                       onClick={() => setIsAddingCard(false)}
-                      className="rounded-md bg-gray-600 px-3 py-1 text-sm text-white transition-all hover:scale-105 hover:bg-black"
+                      className="bg-gray-600 px-3 py-1 text-sm text-white transition-all hover:scale-105 hover:bg-black"
                     >
                       Hủy
                     </button>
@@ -365,7 +365,7 @@ export default function CreateVocabulary() {
               ) : (
                 <button
                   onClick={() => setIsAddingCard(true)}
-                  className="w-50 rounded-md border border-white px-4 py-2 text-white transition-all hover:scale-105 hover:bg-amber-400 hover:text-black dark:bg-green-600"
+                  className="w-50 border border-white px-4 py-2 text-white transition-all hover:scale-105 hover:bg-amber-400 hover:text-black dark:bg-green-600"
                 >
                   + Thêm từ vựng mới
                 </button>

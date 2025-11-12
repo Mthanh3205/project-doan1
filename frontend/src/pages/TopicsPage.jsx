@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Input } from '@/components/ui/input';
 import Header from '@/components/Header';
-import { Heart } from 'lucide-react'; // 1. Import icon Heart
-import axios from 'axios'; // 2. Import axios
+import { Heart } from 'lucide-react'; // 1. Import icon
+import axios from 'axios';
 
 // HÀM BỎ DẤU (lọc tiếng Việt)
 function removeVietnameseTones(str) {
@@ -23,51 +23,19 @@ const TopicsPage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null); // 3. State cho userId
-  const [favoriteDeckIds, setFavoriteDeckIds] = useState(new Set()); // 4. State lưu các deckId yêu thích
-
+  const [favoriteDeckIds, setFavoriteDeckIds] = useState(new Set());
   const navigate = useNavigate();
 
-  // 5. Lấy userId từ sessionStorage
   useEffect(() => {
-    const storedUser = sessionStorage.getItem('user');
-    if (storedUser) {
-      const user = JSON.parse(storedUser);
-      setUserId(user.id);
-    } else {
-      // Nếu bạn yêu cầu đăng nhập, hãy chuyển hướng
-      // alert('Bạn cần đăng nhập để xem chủ đề');
-      // navigate('/Auth');
-      // Tạm thời dùng 1 nếu chưa có user:
-      // setUserId(1);
-    }
-  }, [navigate]);
-
-  // 6. Fetch Topics VÀ Favorite Topics
-  useEffect(() => {
-    if (!userId) {
-      setLoading(false);
-      return; // Chỉ fetch khi có userId
-    }
-
-    const fetchAllData = async () => {
-      setLoading(true);
+    const fetchTopics = async () => {
       try {
-        // Gọi API lấy topics của user
-        const topicsRes = await axios.get(
-          `https://project-doan1-backend.onrender.com/api/topics/user/${userId}`
+        const response = await fetch(
+          'https://project-doan1-backend.onrender.com/api/topics/user/1'
         );
-        if (Array.isArray(topicsRes.data)) {
-          setTopics(topicsRes.data);
-        }
+        if (!response.ok) throw new Error('Không thể kết nối server');
 
-        // Gọi API lấy danh sách topic yêu thích
-        const favRes = await axios.get(
-          `https://project-doan1-backend.onrender.com/api/favorites/${userId}/topics`
-        );
-        if (Array.isArray(favRes.data)) {
-          // Dùng Set để tra cứu nhanh
-          setFavoriteDeckIds(new Set(favRes.data.map((topic) => topic.deck_id)));
-        }
+        const data = await response.json();
+        setTopics(Array.isArray(data) ? data : []);
       } catch (err) {
         setError(err.message || 'Lỗi không xác định');
       } finally {
@@ -75,42 +43,9 @@ const TopicsPage = () => {
       }
     };
 
-    fetchAllData();
-  }, [userId]); // Chạy lại khi có userId
-
-  // 7. Hàm xử lý toggle favorite
-  const handleToggleFavorite = async (e, deck_id) => {
-    e.stopPropagation(); // Ngăn thẻ Card (cha) bị click khi bấm nút
-    if (!userId) return;
-
-    try {
-      // Gọi API để toggle
-      const res = await axios.post(
-        'https://project-doan1-backend.onrender.com/api/favorites/topic',
-        {
-          user_id: userId,
-          deck_id: deck_id,
-        }
-      );
-
-      // Cập nhật state ngay lập tức dựa trên phản hồi
-      setFavoriteDeckIds((prev) => {
-        const newSet = new Set(prev);
-        if (res.data.added) {
-          // Backend trả về 'added: true'
-          newSet.add(deck_id);
-        } else {
-          // Backend trả về 'added: false'
-          newSet.delete(deck_id);
-        }
-        return newSet;
-      });
-    } catch (err) {
-      console.error('Lỗi khi lưu topic:', err);
-      alert('Đã có lỗi xảy ra, vui lòng thử lại.');
-    }
-  };
-
+    fetchTopics();
+  }, []);
+  const isFavorited = favoriteDeckIds.has(topics.deck_id);
   // LỌC CHỦ ĐỀ
   const filteredTopics = topics.filter((topic) => {
     const normalizedTitle = removeVietnameseTones(topic.title || '');
@@ -119,15 +54,6 @@ const TopicsPage = () => {
 
     return normalizedTitle.includes(normalizedQuery) || normalizedDesc.includes(normalizedQuery);
   });
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#121212] ...">
-        <Header />
-        <p className="mt-20 text-center text-gray-500">Đang tải chủ đề...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex-wrap bg-[#121212] bg-gradient-to-br pb-12 text-2xl md:text-lg lg:text-xl xl:text-2xl dark:from-amber-100 dark:via-white dark:to-gray-100">
@@ -162,48 +88,42 @@ const TopicsPage = () => {
         {/* DANH SÁCH CHỦ ĐỀ */}
         <div className="animate-fade-in grid grid-cols-1 gap-6 px-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredTopics.length > 0 ? (
-            filteredTopics.map((topic) => {
-              // 8. Kiểm tra xem topic này có yêu thích không
-              const isFavorited = favoriteDeckIds.has(topic.deck_id);
-
-              return (
-                <Card
-                  key={topic.deck_id}
-                  onClick={() => navigate(`/vocabulary/${topic.deck_id}`)}
-                  // 9. Thêm 'relative' để định vị nút con
-                  className="relative cursor-pointer rounded-2xl border border-gray-700 bg-[#1d1d1d]/60 backdrop-blur-lg transition-all duration-300 hover:scale-[1.03] hover:border-orange-500 hover:shadow-lg dark:border-none dark:bg-green-100 dark:hover:border-white"
+            filteredTopics.map((topic) => (
+              <Card
+                key={topic.deck_id}
+                onClick={() => navigate(`/vocabulary/${topic.deck_id}`)}
+                className="cursor-pointer border border-gray-700 bg-[#1d1d1d]/60 backdrop-blur-lg transition-all duration-300 hover:scale-[1.03] hover:border-orange-500 hover:shadow-lg dark:border-none dark:bg-green-100 dark:hover:border-white"
+              >
+                <button
+                  onClick={(e) => handleToggleFavorite(e, topic.deck_id)}
+                  className="absolute top-4 right-4 z-10 p-1.5 text-gray-500 transition-colors hover:bg-gray-700 hover:text-red-500"
+                  aria-label="Lưu chủ đề"
                 >
-                  {/* 10. NÚT FAVORITE */}
-                  <button
-                    onClick={(e) => handleToggleFavorite(e, topic.deck_id)}
-                    className="absolute top-4 right-4 z-10 rounded-full p-1.5 text-gray-500 transition-colors hover:bg-gray-700 hover:text-red-500"
-                    aria-label="Lưu chủ đề"
-                  >
-                    <Heart
-                      size={20}
-                      className={isFavorited ? 'fill-red-500 text-red-500' : 'fill-transparent'}
-                    />
-                  </button>
-
-                  <CardHeader>
-                    <CardTitle className="mb-2 text-xl text-orange-400">
-                      {topic.title || 'Chủ đề không tên'}
-                    </CardTitle>
-                    <CardDescription className="text-gray-300 dark:text-stone-600">
-                      {topic.description || 'Không có mô tả.'}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="mt-2 text-sm text-gray-500">
-                      Số từ vựng: {topic.word_count ?? 0}
-                    </p>
-                  </CardContent>
-                </Card>
-              );
-            })
+                                     {' '}
+                  <Heart
+                    size={20}
+                    className={isFavorited ? 'fill-red-500 text-red-500' : 'fill-transparent'}
+                  />
+                                   {' '}
+                </button>
+                <CardHeader>
+                  <CardTitle className="mb-2 text-xl text-orange-400">
+                    {topic.title || 'Chủ đề không tên'}
+                  </CardTitle>
+                  <CardDescription className="text-gray-300 dark:text-stone-600">
+                    {topic.description || 'Không có mô tả.'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="mt-2 text-sm text-gray-500">
+                    Số từ vựng: {topic.word_count ?? 'Chưa có dữ liệu'}
+                  </p>
+                </CardContent>
+              </Card>
+            ))
           ) : (
             <p className="col-span-full text-center text-lg text-gray-400">
-              {loading ? 'Đang tải...' : 'Không tìm thấy chủ đề nào phù hợp!'}
+              Không tìm thấy chủ đề nào phù hợp!
             </p>
           )}
         </div>

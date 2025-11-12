@@ -18,7 +18,7 @@ import { useAuth } from '../../context/AuthContext'; // <-- Điều chỉnh đư
 // --- Component Link con (Xử lý logic hover) ---
 function SidebarLink({ icon, text, to, isCollapsed }) {
   const getNavLinkClass = ({ isActive }) =>
-    `flex items-center rounded-lg p-3 transition-colors duration-200 ${
+    `flex items-center  p-3 transition-colors duration-200 ${
       isActive ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700 hover:text-white'
     }`;
 
@@ -45,7 +45,7 @@ function SidebarLink({ icon, text, to, isCollapsed }) {
         - Đây chính là tính năng "fly-out" bạn muốn
       */}
       {isCollapsed && (
-        <span className="pointer-events-none absolute top-1/2 left-full z-50 ml-4 -translate-y-1/2 rounded-md bg-gray-900 px-3 py-2 text-sm text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+        <span className="pointer-events-none absolute top-1/2 left-full z-50 ml-4 -translate-y-1/2 bg-gray-900 px-3 py-2 text-sm text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100">
           {text}
         </span>
       )}
@@ -103,7 +103,7 @@ export default function AdminSidebar({ isOpen, setIsOpen, isCollapsed, setIsColl
           {/* Nút Thu/Mở (cho desktop) */}
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden rounded-lg p-2 text-gray-400 hover:bg-gray-700 md:block"
+            className="hidden p-2 text-gray-400 hover:bg-gray-700 md:block"
           >
             {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
           </button>
@@ -127,7 +127,7 @@ export default function AdminSidebar({ isOpen, setIsOpen, isCollapsed, setIsColl
           <NavLink
             to="/admin/settings"
             className={(navData) =>
-              `group relative flex w-full items-center rounded-lg p-3 transition-colors duration-200 ${
+              `group relative flex w-full items-center p-3 transition-colors duration-200 ${
                 navData.isActive
                   ? 'bg-gray-700 text-white'
                   : 'text-gray-300 hover:bg-gray-700 hover:text-white'
@@ -151,13 +151,9 @@ export default function AdminSidebar({ isOpen, setIsOpen, isCollapsed, setIsColl
 
           {/* Thông tin User / Đăng xuất */}
           <div
-            className={`group relative mt-2 flex w-full items-center rounded-lg p-3 text-gray-300 hover:bg-red-600/80 hover:text-white`}
+            className={`group relative mt-2 flex w-full items-center p-3 text-gray-300 hover:bg-red-600/80 hover:text-white`}
           >
-            <img
-              src={user?.picture || '/avt.jpg'}
-              alt="Avatar"
-              className="h-8 w-8 flex-shrink-0 rounded-full"
-            />
+            <img src={user?.picture || '/avt.jpg'} alt="Avatar" className="h-8 w-8 flex-shrink-0" />
             <div
               className={`ml-4 flex-1 overflow-hidden whitespace-nowrap transition-all duration-300 ${
                 isCollapsed ? 'w-0 opacity-0' : 'w-full opacity-100'
@@ -173,7 +169,7 @@ export default function AdminSidebar({ isOpen, setIsOpen, isCollapsed, setIsColl
             {isCollapsed && (
               <button
                 onClick={() => logout()}
-                className="pointer-events-none absolute top-1/2 left-full z-50 ml-4 -translate-y-1/2 rounded-md bg-red-700 px-3 py-2 text-sm text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                className="pointer-events-none absolute top-1/2 left-full z-50 ml-4 -translate-y-1/2 bg-red-700 px-3 py-2 text-sm text-white opacity-0 transition-opacity duration-200 group-hover:opacity-100"
               >
                 Đăng xuất
               </button>

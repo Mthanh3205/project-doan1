@@ -22,7 +22,7 @@ export default function GoogleButton({ onSuccess }) {
   return (
     <button
       onClick={login}
-      className="group mx-auto mb-6 flex w-full max-w-sm transform items-center justify-center gap-3 rounded-xl border border-white/30 bg-white/10 bg-gradient-to-r px-4 py-3 font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-white/20 hover:shadow-xl dark:bg-green-100 dark:text-stone-600"
+      className="group mx-auto mb-6 flex w-full max-w-sm transform items-center justify-center gap-3 border border-white/30 bg-white/10 bg-gradient-to-r px-4 py-3 font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:bg-white/20 hover:shadow-xl dark:bg-green-100 dark:text-stone-600"
     >
       <Chrome className="h-5 w-5 transition-transform group-hover:scale-110" />
       Continue with Google

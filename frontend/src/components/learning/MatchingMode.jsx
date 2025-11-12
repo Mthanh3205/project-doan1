@@ -206,7 +206,7 @@ export default function MatchingMode({ flashcards, userId }) {
               key={`word-${word.index}`}
               onClick={() => handleWordClick(word)}
               disabled={isMismatch || matchedPairIds.includes(word.pairId) || gameWon}
-              className={`flex h-20 items-center justify-center rounded-xl border border-transparent p-3 text-center font-semibold shadow-md transition-all duration-300 ${getCardClass(
+              className={`flex h-20 items-center justify-center border border-transparent p-3 text-center font-semibold shadow-md transition-all duration-300 ${getCardClass(
                 word,
                 'word'
               )}`}
@@ -223,7 +223,7 @@ export default function MatchingMode({ flashcards, userId }) {
               key={`def-${def.index}`}
               onClick={() => handleDefClick(def)}
               disabled={isMismatch || matchedPairIds.includes(def.pairId) || gameWon}
-              className={`flex h-20 items-center justify-center rounded-xl border border-transparent p-3 text-center font-semibold shadow-md transition-all duration-300 ${getCardClass(
+              className={`flex h-20 items-center justify-center border border-transparent p-3 text-center font-semibold shadow-md transition-all duration-300 ${getCardClass(
                 def,
                 'def'
               )}`}
@@ -250,7 +250,7 @@ export default function MatchingMode({ flashcards, userId }) {
 
             <button
               onClick={handleNextLevel}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-full border py-3 text-lg font-semibold text-zinc-100 transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
+              className="mt-4 flex w-full items-center justify-center gap-2 border py-3 text-lg font-semibold text-zinc-100 transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
             >
               {isMasterWin ? (
                 <>

@@ -2,7 +2,7 @@
 import Favorite from '../models/Favorite.js';
 import Cards from '../models/Cards.js';
 import Topics from '../models/Topics.js'; // Import Topics
-import { Op, sequelize } from 'sequelize'; // Import Op và sequelize
+import { sequelize } from 'sequelize'; // Import Op và sequelize
 
 // 📦 Lấy tất cả favorites CARD theo user
 export const getFavoritesByUser = async (req, res) => {

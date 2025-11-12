@@ -11,12 +11,12 @@ export default function FlipCardMode({
   favorites,
 }) {
   return (
-    <div className="overflow-hidden rounded-3xl bg-[#1d1d1d] shadow-lg lg:col-span-2 dark:bg-white">
+    <div className="overflow-hidden bg-[#1d1d1d] shadow-lg lg:col-span-2 dark:bg-white">
       <section className="relative px-8 py-16 text-center">
         {/* NÚT YÊU THÍCH */}
         <button
           onClick={() => toggleFavorite(card.card_id)}
-          className="absolute top-6 right-6 z-20 rounded-full p-2 transition-all hover:scale-110"
+          className="absolute top-6 right-6 z-20 p-2 transition-all hover:scale-110"
         >
           <Star
             className={`h-7 w-7 ${
@@ -40,7 +40,7 @@ export default function FlipCardMode({
             }`}
           >
             {/* MẶT TRƯỚC */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl bg-[#121212] bg-gradient-to-br p-6 text-center text-white shadow-lg [backface-visibility:hidden] dark:border-none dark:bg-white dark:from-amber-100 dark:via-white dark:to-gray-100 dark:text-gray-900">
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#121212] bg-gradient-to-br p-6 text-center text-white shadow-lg [backface-visibility:hidden] dark:border-none dark:bg-white dark:from-amber-100 dark:via-white dark:to-gray-100 dark:text-gray-900">
               <p className="mb-3 text-2xl font-bold text-amber-400 dark:text-green-700">
                 {card.front_text || 'Không có dữ liệu'}
               </p>
@@ -51,7 +51,7 @@ export default function FlipCardMode({
             </div>
 
             {/* MẶT SAU */}
-            <div className="absolute inset-0 flex [transform:rotateY(180deg)] flex-col items-center justify-center rounded-2xl bg-[#121212] bg-gradient-to-br p-6 text-center text-white shadow-lg [backface-visibility:hidden] dark:border-none dark:bg-white dark:from-amber-100 dark:via-white dark:to-gray-100 dark:text-gray-900">
+            <div className="absolute inset-0 flex [transform:rotateY(180deg)] flex-col items-center justify-center bg-[#121212] bg-gradient-to-br p-6 text-center text-white shadow-lg [backface-visibility:hidden] dark:border-none dark:bg-white dark:from-amber-100 dark:via-white dark:to-gray-100 dark:text-gray-900">
               <p className="mb-2 text-xl font-bold text-amber-400 dark:text-green-700">
                 {card.back_text || 'Chưa có nghĩa'}
               </p>
@@ -59,11 +59,7 @@ export default function FlipCardMode({
                 <p className="mt-2 text-sm text-gray-600 italic">“{card.example}”</p>
               )}
               {card.image_url && (
-                <img
-                  src={card.image_url}
-                  alt="flashcard"
-                  className="mt-3 w-full rounded-xl object-cover"
-                />
+                <img src={card.image_url} alt="flashcard" className="mt-3 w-full object-cover" />
               )}
               <p className="mt-3 text-xs text-gray-400">(Nhấn phím Cách hoặc click để quay lại)</p>
             </div>
@@ -75,13 +71,13 @@ export default function FlipCardMode({
         <div className="mt-10 flex justify-center gap-6">
           <button
             onClick={prevCard}
-            className="rounded-full bg-amber-400 px-6 py-2 font-semibold text-stone-600 transition-all hover:scale-110 dark:bg-green-200"
+            className="bg-amber-400 px-6 py-2 font-semibold text-stone-600 transition-all hover:scale-110 dark:bg-green-200"
           >
             &larr; Quay lại
           </button>
           <button
             onClick={nextCard}
-            className="rounded-full bg-stone-700 px-6 py-2 font-semibold text-white transition-all hover:scale-110"
+            className="bg-stone-700 px-6 py-2 font-semibold text-white transition-all hover:scale-110"
           >
             Tiếp theo &rarr;
           </button>

@@ -52,7 +52,7 @@ export default function ManageWords() {
     <div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-3xl font-bold">Quản lý Từ vựng</h1>
-        <button className="flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700">
+        <button className="flex items-center space-x-2 bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700">
           <Plus size={20} />
           <span>Thêm từ vựng</span>
         </button>
@@ -65,7 +65,7 @@ export default function ManageWords() {
         </span>
       </div>
 
-      <div className="w-full overflow-hidden rounded-lg shadow-md">
+      <div className="w-full overflow-hidden shadow-md">
         <div className="overflow-x-auto bg-white dark:bg-gray-800">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-700">
@@ -120,7 +120,7 @@ export default function ManageWords() {
           <button
             onClick={handlePrevPage}
             disabled={page === 1 || loading}
-            className="rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-700 disabled:opacity-50 dark:bg-gray-700 dark:text-gray-300"
+            className="bg-gray-200 px-4 py-2 text-sm text-gray-700 disabled:opacity-50 dark:bg-gray-700 dark:text-gray-300"
           >
             <ChevronLeft size={16} />
           </button>
@@ -130,7 +130,7 @@ export default function ManageWords() {
           <button
             onClick={handleNextPage}
             disabled={page === data.totalPages || loading}
-            className="rounded-md bg-gray-200 px-4 py-2 text-sm text-gray-700 disabled:opacity-50 dark:bg-gray-700 dark:text-gray-300"
+            className="bg-gray-200 px-4 py-2 text-sm text-gray-700 disabled:opacity-50 dark:bg-gray-700 dark:text-gray-300"
           >
             <ChevronRight size={16} />
           </button>

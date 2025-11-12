@@ -103,20 +103,20 @@ const Account = () => {
         {/* Header */}
         <div className="border-b border-slate-600 p-4 dark:border-stone-200">
           <div className="flex items-center space-x-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg">
+            <div className="flex h-8 w-8 items-center justify-center">
               <a href="/">
-                <Home className="size-7 cursor-pointer rounded-lg p-1 text-gray-100 transition hover:ring-2 hover:ring-[#00ffff] hover:ring-offset-2 hover:ring-offset-gray-900 dark:text-stone-800" />
+                <Home className="size-7 cursor-pointer p-1 text-gray-100 transition hover:ring-2 hover:ring-[#00ffff] hover:ring-offset-2 hover:ring-offset-gray-900 dark:text-stone-800" />
               </a>
             </div>
-            <Settings className="size-7 cursor-pointer rounded-lg p-1 text-gray-100 transition hover:ring-2 hover:ring-[#00ffff] hover:ring-offset-2 hover:ring-offset-gray-900 dark:text-stone-500" />
+            <Settings className="size-7 cursor-pointer p-1 text-gray-100 transition hover:ring-2 hover:ring-[#00ffff] hover:ring-offset-2 hover:ring-offset-gray-900 dark:text-stone-500" />
             <ThemeToggle />
           </div>
         </div>
 
         {/* User greeting */}
-        <div className="border-b border-slate-600 p-4 dark:border-stone-200">
-          <div className="flex items-center space-x-3">
-            <div className="h-8 w-8 overflow-hidden rounded-full">
+        <div className="border-b border-slate-600 dark:border-stone-200">
+          <div className="flex h-10 items-center space-x-3">
+            <div className="overflow-hidden">
               <img
                 src={
                   userInfo.avatar?.startsWith('/uploads')
@@ -124,7 +124,7 @@ const Account = () => {
                     : userInfo.avatar || '/avt.jpg'
                 }
                 alt="Profile"
-                className="h-16 w-16 rounded-full object-cover"
+                className="h-9 w-9 rounded-full object-cover"
                 onError={(e) => (e.target.src = '/avt.jpg')}
               />
             </div>
@@ -167,7 +167,7 @@ const Account = () => {
             Account Info
           </h1>
 
-          <div className="rounded-4xl bg-[#1d1d1d] p-8 shadow-sm dark:bg-white">
+          <div className="bg-[#1d1d1d] p-8 shadow-sm dark:bg-white">
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
               {/* Left Column */}
               <div className="space-y-6">
@@ -176,7 +176,7 @@ const Account = () => {
                   <label className="mb-2 block text-sm font-medium text-gray-100 dark:text-stone-700">
                     Profile Avatar
                   </label>
-                  <div className="h-16 w-16 overflow-hidden rounded-full">
+                  <div className="h-16 w-16 overflow-hidden">
                     <img
                       src={
                         userInfo.avatar?.startsWith('/uploads')
@@ -199,7 +199,7 @@ const Account = () => {
                     type="text"
                     value={profileData.firstName}
                     onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-stone-400 outline-none focus:border-transparent"
+                    className="w-full border border-gray-200 px-4 py-3 text-stone-400 outline-none focus:border-transparent"
                   />
                 </div>
 
@@ -212,7 +212,7 @@ const Account = () => {
                     type="text"
                     value={profileData.lastName}
                     onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-stone-400 outline-none focus:border-transparent"
+                    className="w-full border border-gray-200 px-4 py-3 text-stone-400 outline-none focus:border-transparent"
                   />
                 </div>
 
@@ -225,14 +225,14 @@ const Account = () => {
                     type="email"
                     value={profileData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-stone-400 outline-none focus:border-transparent"
+                    className="w-full border border-gray-200 px-4 py-3 text-stone-400 outline-none focus:border-transparent"
                   />
                 </div>
 
                 {/* Save Button */}
                 <button
                   onClick={handleSave}
-                  className="h-10 w-30 rounded-full border border-amber-400 bg-[#121212] font-semibold text-white shadow-lg transition-all duration-300 hover:scale-115 hover:bg-amber-400 hover:text-stone-600 hover:shadow-xl"
+                  className="h-10 w-30 border border-amber-400 bg-[#121212] font-semibold text-white shadow-lg transition-all duration-300 hover:scale-115 hover:bg-amber-400 hover:text-stone-600 hover:shadow-xl"
                 >
                   SAVE
                 </button>
@@ -250,7 +250,7 @@ const Account = () => {
                     value={profileData.schoolName}
                     onChange={(e) => handleInputChange('schoolName', e.target.value)}
                     placeholder="e.g. NYU"
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-stone-600 placeholder-stone-400 outline-none focus:border-transparent dark:placeholder:text-stone-600"
+                    className="w-full border border-gray-200 px-4 py-3 text-stone-600 placeholder-stone-400 outline-none focus:border-transparent dark:placeholder:text-stone-600"
                   />
                 </div>
 
@@ -264,7 +264,7 @@ const Account = () => {
                     value={profileData.companyName}
                     onChange={(e) => handleInputChange('companyName', e.target.value)}
                     placeholder="e.g. HBO"
-                    className="w-full rounded-lg border border-gray-200 px-4 py-3 text-stone-600 placeholder-stone-400 outline-none focus:border-transparent dark:placeholder:text-stone-600"
+                    className="w-full border border-gray-200 px-4 py-3 text-stone-600 placeholder-stone-400 outline-none focus:border-transparent dark:placeholder:text-stone-600"
                   />
                 </div>
 
@@ -278,7 +278,7 @@ const Account = () => {
                     onChange={(e) => handleInputChange('bio', e.target.value)}
                     placeholder="e.g. My bio"
                     rows={6}
-                    className="w-full resize-none rounded-lg border border-gray-200 px-4 py-3 text-gray-300 placeholder-stone-400 outline-none focus:border-transparent dark:placeholder:text-stone-600"
+                    className="w-full resize-none border border-gray-200 px-4 py-3 text-gray-300 placeholder-stone-400 outline-none focus:border-transparent dark:placeholder:text-stone-600"
                   />
                 </div>
               </div>
@@ -288,7 +288,7 @@ const Account = () => {
 
         {/* Help Button */}
         <div className="fixed right-8 bottom-8">
-          <button className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-600 text-white shadow-lg transition-colors duration-200 hover:bg-teal-700 hover:ring-1">
+          <button className="flex h-12 w-12 items-center justify-center bg-teal-600 text-white shadow-lg transition-colors duration-200 hover:bg-teal-700 hover:ring-1">
             <HelpCircle className="h-6 w-6" />
           </button>
         </div>
