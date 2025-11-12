@@ -1,5 +1,4 @@
-//Favorite
-import { DataTypes } from 'sequelize';
+import { DataTypes, Op } from 'sequelize';
 import sequelize from '../config/db.js';
 import Topics from './Topics.js';
 import Flashcard from './Flashcard.js';
@@ -15,6 +14,10 @@ const Favorite = sequelize.define(
     user_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      references: {
+        model: 'users',
+        key: 'id',
+      },
     },
     deck_id: {
       type: DataTypes.INTEGER,
@@ -47,22 +50,20 @@ const Favorite = sequelize.define(
         unique: true,
         fields: ['user_id', 'deck_id'],
         where: {
-          deck_id: { [DataTypes.Op.ne]: null },
+          // 🟢 SỬA LỖI: Đảm bảo 'Op' được dùng đúng
+          deck_id: { [Op.ne]: null },
         },
       },
       {
         unique: true,
         fields: ['user_id', 'card_id'],
         where: {
-          card_id: { [DataTypes.Op.ne]: null },
+          // 🟢 SỬA LỖI: Đảm bảo 'Op' được dùng đúng
+          card_id: { [Op.ne]: null },
         },
       },
     ],
   }
 );
-
-Favorite.belongsTo(Topics, { foreignKey: 'deck_id', as: 'topic' });
-
-Favorite.belongsTo(Flashcard, { foreignKey: 'card_id', as: 'flashcard' });
 
 export default Favorite;
