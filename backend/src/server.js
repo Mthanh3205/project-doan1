@@ -36,7 +36,6 @@ import routeCards from './routes/routeCards.js';
 import routeTopics from './routes/routeTopics.js';
 import routeVocabulary from './routes/routeVocabulary.js';
 import routeGetTopicCard from './routes/routeGetTopicCard.js';
-import favoriteRoutes from './routes/favoriteRoutes.js';
 import progressRoutes from './routes/progressRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 
@@ -47,7 +46,6 @@ app.use('/api/flashcards', routeCards);
 app.use('/api/topics', routeTopics);
 app.use('/api/vocabulary', routeVocabulary);
 app.use('/api/gettopiccard', routeGetTopicCard);
-app.use('/api/favorites', favoriteRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/admin', adminRoutes);
 

@@ -9,10 +9,7 @@ import UserProgress from './UserProgress.js';
 
 // 2. Định nghĩa tất cả các mối quan hệ
 // Quan hệ giữa Topics (Decks) và Flashcard (Cards)
-Topics.hasMany(Flashcard, {
-  foreignKey: 'deck_id',
-  as: 'flashcards', // Đặt tên đại diện (tùy chọn)
-});
+
 Flashcard.belongsTo(Topics, {
   foreignKey: 'deck_id',
 });
