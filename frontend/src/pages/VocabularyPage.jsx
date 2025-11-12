@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Heart } from 'lucide-react'; // Import icon
+import axios from 'axios'; // Import axios
 
 const VocabularyPage = () => {
   const { deckId } = useParams();
@@ -9,10 +11,12 @@ const VocabularyPage = () => {
   const [topicName, setTopicName] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [userId, setUserId] = useState(1); // Hardcode userId = 1
+  const [favoriteCardIds, setFavoriteCardIds] = useState(new Set()); // State cho từ vựng yêu thích
 
   const navigate = useNavigate();
 
-  // LẤY DANH SÁCH TỪ VỰNG
+  // 1. LẤY DANH SÁCH TỪ VỰNG
   useEffect(() => {
     const fetchFlashcards = async () => {
       try {
@@ -26,14 +30,14 @@ const VocabularyPage = () => {
       } catch (err) {
         setError(err.message);
       } finally {
-        setLoading(false);
+        setLoading(false); // Chỉ set loading false sau khi cả hai đã fetch xong
       }
     };
 
     fetchFlashcards();
   }, [deckId]);
 
-  // LẤY TÊN CHỦ ĐỀ
+  // 2. LẤY TÊN CHỦ ĐỀ
   useEffect(() => {
     const fetchTopicName = async () => {
       try {
@@ -48,6 +52,68 @@ const VocabularyPage = () => {
     };
     fetchTopicName();
   }, [deckId]);
+
+  // 3. LẤY DANH SÁCH TỪ VỰNG YÊU THÍCH
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchFavorites = async () => {
+      try {
+        const response = await axios.get(
+          `https://project-doan1-backend.onrender.com/api/favorites/user/${userId}`
+        );
+        const favorites = response.data;
+        const favoritedCards = new Set(
+          favorites
+            .filter((fav) => fav.favorite_type === 'card' && fav.card_id)
+            .map((fav) => fav.card_id)
+        );
+        setFavoriteCardIds(favoritedCards);
+      } catch (err) {
+        console.error('Lỗi khi lấy danh sách từ vựng yêu thích:', err);
+      }
+    };
+
+    fetchFavorites();
+  }, [userId]);
+
+  // 4. HÀM TOGGLE TỪ VỰNG YÊU THÍCH
+  const handleToggleFavorite = async (e, cardId) => {
+    e.stopPropagation();
+    if (!userId) return;
+
+    // Optimistic Update
+    const newFavoriteCardIds = new Set(favoriteCardIds);
+    let status = '';
+    if (newFavoriteCardIds.has(cardId)) {
+      newFavoriteCardIds.delete(cardId);
+      status = 'removed';
+    } else {
+      newFavoriteCardIds.add(cardId);
+      status = 'added';
+    }
+    setFavoriteCardIds(newFavoriteCardIds);
+
+    // Gửi request
+    try {
+      await axios.post('https://project-doan1-backend.onrender.com/api/favorites/toggle', {
+        userId: userId,
+        cardId: cardId,
+        type: 'card',
+      });
+    } catch (err) {
+      console.error('Lỗi khi cập nhật yêu thích:', err);
+      // Rollback
+      const oldFavoriteCardIds = new Set(favoriteCardIds);
+      if (status === 'added') {
+        oldFavoriteCardIds.delete(cardId);
+      } else {
+        oldFavoriteCardIds.add(cardId);
+      }
+      setFavoriteCardIds(oldFavoriteCardIds);
+      alert('Đã xảy ra lỗi khi lưu yêu thích từ vựng.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#121212] bg-gradient-to-br text-white dark:from-amber-100 dark:via-white dark:to-gray-100">
@@ -90,25 +156,43 @@ const VocabularyPage = () => {
                 <th className="px-6 py-3">Phiên âm (Pronunciation)</th>
                 <th className="px-6 py-3">Nghĩa (Back Text)</th>
                 <th className="px-6 py-3">Ví dụ (Example)</th>
+                <th className="px-4 py-3 text-center">Lưu</th>
               </tr>
             </thead>
             <tbody>
               {flashcards.length > 0 ? (
-                flashcards.map((card) => (
-                  <tr
-                    key={card.card_id}
-                    className="border-b border-gray-700 bg-[#1d1d1d] text-gray-400 transition-all hover:bg-[#121212] dark:border-white dark:bg-green-100 dark:text-stone-600 dark:hover:bg-green-300"
-                  >
-                    <td className="px-6 py-4 font-medium">{card.front_text || '-'}</td>
-                    <td className="px-6 py-4 font-medium">{card.pronunciation || '-'}</td>
-                    <td className="px-6 py-4">{card.back_text || '-'}</td>
-                    <td className="px-6 py-4 italic">{card.example || 'Không có ví dụ'}</td>
-                  </tr>
-                ))
+                flashcards.map((card) => {
+                  const isFavorited = favoriteCardIds.has(card.card_id);
+                  return (
+                    <tr
+                      key={card.card_id}
+                      className="border-b border-gray-700 bg-[#1d1d1d] text-gray-400 transition-all hover:bg-[#121212] dark:border-white dark:bg-green-100 dark:text-stone-600 dark:hover:bg-green-300"
+                    >
+                      <td className="px-6 py-4 font-medium">{card.front_text || '-'}</td>
+                      <td className="px-6 py-4 font-medium">{card.pronunciation || '-'}</td>
+                      <td className="px-6 py-4">{card.back_text || '-'}</td>
+                      <td className="px-6 py-4 italic">{card.example || 'Không có ví dụ'}</td>
+                      <td className="px-4 py-4 text-center">
+                        <button
+                          onClick={(e) => handleToggleFavorite(e, card.card_id)}
+                          className="rounded-full p-1.5 text-gray-500 transition-colors hover:bg-gray-700 hover:text-red-500 dark:text-gray-600 dark:hover:bg-gray-200"
+                          aria-label="Lưu từ vựng"
+                        >
+                          <Heart
+                            size={18}
+                            className={
+                              isFavorited ? 'fill-red-500 text-red-500' : 'fill-transparent'
+                            }
+                          />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               ) : (
                 <tr>
                   <td
-                    colSpan="4"
+                    colSpan="5"
                     className="px-6 py-8 text-center text-gray-400 dark:text-stone-500"
                   >
                     Chưa có từ vựng nào trong chủ đề này.

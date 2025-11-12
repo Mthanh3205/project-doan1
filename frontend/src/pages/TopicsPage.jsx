@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Input } from '@/components/ui/input';
 import Header from '@/components/Header';
-import { Heart } from 'lucide-react'; // 1. Import icon
-import axios from 'axios';
+import { Heart } from 'lucide-react';
+import axios from 'axios'; // Sử dụng axios để gửi request POST
 
 // HÀM BỎ DẤU (lọc tiếng Việt)
 function removeVietnameseTones(str) {
@@ -22,15 +22,16 @@ const TopicsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState(null); // 3. State cho userId
+  const [userId, setUserId] = useState(1); // 3. Hardcode userId = 1
   const [favoriteDeckIds, setFavoriteDeckIds] = useState(new Set());
   const navigate = useNavigate();
 
+  // 1. LẤY DANH SÁCH CHỦ ĐỀ
   useEffect(() => {
     const fetchTopics = async () => {
       try {
         const response = await fetch(
-          'https://project-doan1-backend.onrender.com/api/topics/user/1'
+          `https://project-doan1-backend.onrender.com/api/topics/user/${userId}`
         );
         if (!response.ok) throw new Error('Không thể kết nối server');
 
@@ -44,8 +45,72 @@ const TopicsPage = () => {
     };
 
     fetchTopics();
-  }, []);
-  const isFavorited = favoriteDeckIds.has(topics.deck_id);
+  }, [userId]);
+
+  // 2. LẤY DANH SÁCH YÊU THÍCH CỦA USER
+  useEffect(() => {
+    if (!userId) return; // Chỉ fetch khi có userId
+
+    const fetchFavorites = async () => {
+      try {
+        const response = await axios.get(
+          `https://project-doan1-backend.onrender.com/api/favorites/user/${userId}`
+        );
+        const favorites = response.data;
+        // Lọc ra các deck_id yêu thích
+        const favoritedDecks = new Set(
+          favorites
+            .filter((fav) => fav.favorite_type === 'deck' && fav.deck_id)
+            .map((fav) => fav.deck_id)
+        );
+        setFavoriteDeckIds(favoritedDecks);
+      } catch (err) {
+        console.error('Lỗi khi lấy danh sách yêu thích:', err);
+      }
+    };
+
+    fetchFavorites();
+  }, [userId]);
+
+  // 3. HÀM XỬ LÝ TOGGLE YÊU THÍCH
+  const handleToggleFavorite = async (e, deckId) => {
+    e.stopPropagation(); // Ngăn sự kiện click của Card
+    if (!userId) return;
+
+    // Cập nhật UI trước (Optimistic Update)
+    const newFavoriteDeckIds = new Set(favoriteDeckIds);
+    let status = '';
+    if (newFavoriteDeckIds.has(deckId)) {
+      newFavoriteDeckIds.delete(deckId);
+      status = 'removed';
+    } else {
+      newFavoriteDeckIds.add(deckId);
+      status = 'added';
+    }
+    setFavoriteDeckIds(newFavoriteDeckIds);
+
+    // Gửi request lên server
+    try {
+      await axios.post('https://project-doan1-backend.onrender.com/api/favorites/toggle', {
+        userId: userId,
+        deckId: deckId,
+        type: 'deck',
+      });
+      // Request thành công, không cần làm gì thêm vì UI đã cập nhật
+    } catch (err) {
+      console.error('Lỗi khi cập nhật yêu thích:', err);
+      // Nếu có lỗi, rollback lại UI
+      const oldFavoriteDeckIds = new Set(favoriteDeckIds);
+      if (status === 'added') {
+        oldFavoriteDeckIds.delete(deckId);
+      } else {
+        oldFavoriteDeckIds.add(deckId);
+      }
+      setFavoriteDeckIds(oldFavoriteDeckIds);
+      alert('Đã xảy ra lỗi khi lưu yêu thích. Vui lòng thử lại.');
+    }
+  };
+
   // LỌC CHỦ ĐỀ
   const filteredTopics = topics.filter((topic) => {
     const normalizedTitle = removeVietnameseTones(topic.title || '');
@@ -88,39 +153,40 @@ const TopicsPage = () => {
         {/* DANH SÁCH CHỦ ĐỀ */}
         <div className="animate-fade-in grid grid-cols-1 gap-6 px-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredTopics.length > 0 ? (
-            filteredTopics.map((topic) => (
-              <Card
-                key={topic.deck_id}
-                onClick={() => navigate(`/vocabulary/${topic.deck_id}`)}
-                className="cursor-pointer border border-gray-700 bg-[#1d1d1d]/60 backdrop-blur-lg transition-all duration-300 hover:scale-[1.03] hover:border-orange-500 hover:shadow-lg dark:border-none dark:bg-green-100 dark:hover:border-white"
-              >
-                <button
-                  onClick={(e) => handleToggleFavorite(e, topic.deck_id)}
-                  className="absolute top-4 right-4 z-10 p-1.5 text-gray-500 transition-colors hover:bg-gray-700 hover:text-red-500"
-                  aria-label="Lưu chủ đề"
+            filteredTopics.map((topic) => {
+              const isFavorited = favoriteDeckIds.has(topic.deck_id);
+              return (
+                <Card
+                  key={topic.deck_id}
+                  onClick={() => navigate(`/vocabulary/${topic.deck_id}`)}
+                  className="relative cursor-pointer border border-gray-700 bg-[#1d1d1d]/60 backdrop-blur-lg transition-all duration-300 hover:scale-[1.03] hover:border-orange-500 hover:shadow-lg dark:border-none dark:bg-green-100 dark:hover:border-white"
                 >
-                                     {' '}
-                  <Heart
-                    size={20}
-                    className={isFavorited ? 'fill-red-500 text-red-500' : 'fill-transparent'}
-                  />
-                                   {' '}
-                </button>
-                <CardHeader>
-                  <CardTitle className="mb-2 text-xl text-orange-400">
-                    {topic.title || 'Chủ đề không tên'}
-                  </CardTitle>
-                  <CardDescription className="text-gray-300 dark:text-stone-600">
-                    {topic.description || 'Không có mô tả.'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="mt-2 text-sm text-gray-500">
-                    Số từ vựng: {topic.word_count ?? 'Chưa có dữ liệu'}
-                  </p>
-                </CardContent>
-              </Card>
-            ))
+                  <button
+                    onClick={(e) => handleToggleFavorite(e, topic.deck_id)}
+                    className="absolute top-4 right-4 z-10 rounded-full p-1.5 text-gray-500 transition-colors hover:bg-gray-700 hover:text-red-500 dark:text-gray-600 dark:hover:bg-gray-200"
+                    aria-label="Lưu chủ đề"
+                  >
+                    <Heart
+                      size={20}
+                      className={isFavorited ? 'fill-red-500 text-red-500' : 'fill-transparent'}
+                    />
+                  </button>
+                  <CardHeader>
+                    <CardTitle className="mb-2 text-xl text-orange-400">
+                      {topic.title || 'Chủ đề không tên'}
+                    </CardTitle>
+                    <CardDescription className="text-gray-300 dark:text-stone-600">
+                      {topic.description || 'Không có mô tả.'}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="mt-2 text-sm text-gray-500">
+                      Số từ vựng: {topic.word_count ?? 'Chưa có dữ liệu'}
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+            })
           ) : (
             <p className="col-span-full text-center text-lg text-gray-400">
               Không tìm thấy chủ đề nào phù hợp!

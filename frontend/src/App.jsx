@@ -13,6 +13,7 @@ import TopicsPage from './pages/TopicsPage';
 import VocabularyPage from './pages/VocabularyPage';
 import Test from './pages/test';
 import CreateVocabulary from './pages/CreateVocabulary';
+import FavoritesPage from './pages/FavoritesPage';
 import StudyFavoriteFlashcard from './pages/StudyFavoriteFlashcard';
 import ProgressPage from './pages/ProgressPage';
 // import AdminPage from './pages/AdminPage';
@@ -66,6 +67,14 @@ function AppContent() {
               element={
                 <ProtectedRoute>
                   <CreateVocabulary />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/favorites"
+              element={
+                <ProtectedRoute>
+                  <FavoritesPage />
                 </ProtectedRoute>
               }
             />
