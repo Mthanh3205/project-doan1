@@ -1,4 +1,3 @@
-// File: models/UserProgress.js
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/db.js';
 import Topics from './Topics.js';
@@ -38,7 +37,7 @@ const UserProgress = sequelize.define(
       },
     },
     mode: {
-      type: DataTypes.STRING(50), // 'typing', 'quiz', 'matching'
+      type: DataTypes.STRING(50),
       allowNull: false,
     },
     is_learned: {
@@ -48,8 +47,8 @@ const UserProgress = sequelize.define(
   },
   {
     tableName: 'user_progress',
-    timestamps: true, // Tự động thêm createdAt/updatedAt
-    // Đảm bảo không có 2 dòng y hệt nhau
+    timestamps: true,
+
     indexes: [
       {
         unique: true,

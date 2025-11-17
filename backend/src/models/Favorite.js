@@ -50,7 +50,6 @@ const Favorite = sequelize.define(
         unique: true,
         fields: ['user_id', 'deck_id'],
         where: {
-          // 🟢 SỬA LỖI: Đảm bảo 'Op' được dùng đúng
           deck_id: { [Op.ne]: null },
         },
       },
@@ -58,7 +57,6 @@ const Favorite = sequelize.define(
         unique: true,
         fields: ['user_id', 'card_id'],
         where: {
-          // 🟢 SỬA LỖI: Đảm bảo 'Op' được dùng đúng
           card_id: { [Op.ne]: null },
         },
       },

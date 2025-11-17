@@ -1,4 +1,4 @@
-//Users,Auth
+// User
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/db.js';
 
@@ -15,10 +15,33 @@ const User = sequelize.define(
       allowNull: true,
       unique: true,
     },
+
     name: {
       type: DataTypes.STRING,
       allowNull: false,
     },
+
+    firstName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    lastName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    schoolName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    companyName: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    bio: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+
     email: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -34,8 +57,8 @@ const User = sequelize.define(
     },
   },
   {
-    tableName: 'users', // tên bảng trong DB
-    timestamps: true, // createdAt, updatedAt
+    tableName: 'users',
+    timestamps: true,
   }
 );
 

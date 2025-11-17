@@ -1,298 +1,316 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Eye, HelpCircle, Home } from 'lucide-react';
-import ThemeToggle from '@/components/themeToggle';
+import {
+  Settings,
+  Home,
+  Camera,
+  User,
+  Mail,
+  Briefcase,
+  GraduationCap,
+  FileText,
+  Save,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+} from 'lucide-react';
+
+const InputField = ({
+  label,
+  icon: Icon,
+  type = 'text',
+  value,
+  onChange,
+  placeholder,
+  disabled,
+}) => (
+  <div className="group relative">
+    <label className="mb-1.5 block text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
+      {label}
+    </label>
+    <div className="relative">
+      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+        <Icon className="h-5 w-5 text-gray-400 transition-colors group-focus-within:text-teal-500" />
+      </div>
+      {type === 'textarea' ? (
+        <textarea
+          value={value || ''}
+          onChange={onChange}
+          rows={4}
+          className="block w-full rounded-xl border border-gray-200 bg-gray-50 p-2.5 pl-10 text-sm text-gray-900 transition-all outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+          placeholder={placeholder}
+          disabled={disabled}
+        />
+      ) : (
+        <input
+          type={type}
+          value={value || ''}
+          onChange={onChange}
+          className="block w-full rounded-xl border border-gray-200 bg-gray-50 p-2.5 pl-10 text-sm text-gray-900 transition-all outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+          placeholder={placeholder}
+          disabled={disabled}
+        />
+      )}
+    </div>
+  </div>
+);
 
 const Account = () => {
-  const defaultAvatar = '/avt.jpg'; // ảnh mặc định trong public/
+  const defaultAvatar = '/avt.jpg';
 
-  const [profileData, setProfileData] = useState({
+  const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     schoolName: '',
     companyName: '',
     bio: '',
-  });
-
-  const [userInfo, setUserInfo] = useState({
-    name: '',
     avatar: null,
-    isLoggedIn: false,
   });
 
-  // fetch data user from sessionStorage
+  const [isLoading, setIsLoading] = useState(false);
+  const [status, setStatus] = useState({ type: '', message: '' });
+  const [previewAvatar, setPreviewAvatar] = useState(null);
+
   useEffect(() => {
     const storedUser = sessionStorage.getItem('user');
-
     if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUserInfo({
-        name: parsedUser.name,
-        avatar: parsedUser.picture || '/avt.jpg',
-        isLoggedIn: true,
-      });
+      try {
+        const parsedUser = JSON.parse(storedUser);
 
-      setProfileData((prev) => ({
-        ...prev,
-        firstName: parsedUser.name.split(' ')[0] || '',
-        lastName: parsedUser.name.split(' ')[1] || '',
-        email: parsedUser.email || '',
-      }));
+        const splitName = parsedUser.name ? parsedUser.name.split(' ') : ['', ''];
+        const initialFirstName = parsedUser.firstName || splitName[0] || '';
+        const initialLastName = parsedUser.lastName || splitName.slice(1).join(' ') || '';
+
+        setFormData({
+          firstName: initialFirstName,
+          lastName: initialLastName,
+          email: parsedUser.email || '',
+
+          schoolName: parsedUser.schoolName || '',
+          companyName: parsedUser.companyName || '',
+          bio: parsedUser.bio || '',
+
+          avatar: parsedUser.picture || parsedUser.avatar || defaultAvatar,
+        });
+      } catch (e) {
+        console.error('Lỗi parse user data', e);
+      }
     }
   }, []);
 
   const handleInputChange = (field, value) => {
-    setProfileData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (status.message) setStatus({ type: '', message: '' });
   };
 
-  const handleSave = async () => {
-    try {
-      const token = sessionStorage.getItem('token');
-      if (!token) return;
-
-      const res = await fetch('/api/auth/google', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(profileData),
-      });
-
-      if (!res.ok) throw new Error('Failed to update profile');
-      const data = await res.json();
-      console.log('Profile updated:', data);
-
-      // Đồng bộ state sau khi save
-      setProfileData({
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        schoolName: data.schoolName || '',
-        companyName: data.companyName || '',
-        bio: data.bio || '',
-      });
-      setUserInfo((prev) => ({
-        ...prev,
-        name: data.firstName + ' ' + data.lastName,
-        avatar: data.avatar || prev.avatar || defaultAvatar,
-      }));
-    } catch (err) {
-      console.error(err);
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const objectUrl = URL.createObjectURL(file);
+      setPreviewAvatar(objectUrl);
     }
   };
 
-  const getInitials = (name) => {
-    if (!name) return '';
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase();
+  const handleSave = async () => {
+    setIsLoading(true);
+    setStatus({ type: '', message: '' });
+
+    try {
+      const token = sessionStorage.getItem('token');
+
+      if (!token) {
+        console.warn('Chưa có token!');
+      }
+
+      const res = await fetch('https://project-doan1-backend.onrender.com/api/user/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // Gửi kèm token
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!res.ok) throw new Error('Không thể cập nhật. Vui lòng thử lại.');
+
+      const data = await res.json();
+
+      const currentUser = JSON.parse(sessionStorage.getItem('user') || '{}');
+      const updatedUser = {
+        ...currentUser,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        name: data.name || `${data.firstName} ${data.lastName}`,
+        schoolName: data.schoolName,
+        companyName: data.companyName,
+        bio: data.bio,
+        picture: data.avatar || currentUser.picture,
+      };
+
+      sessionStorage.setItem('user', JSON.stringify(updatedUser));
+
+      setFormData((prev) => ({
+        ...prev,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        schoolName: data.schoolName,
+        companyName: data.companyName,
+        bio: data.bio,
+        avatar: data.avatar,
+      }));
+
+      setStatus({ type: 'success', message: 'Đã lưu thay đổi thành công!' });
+    } catch (err) {
+      console.error(err);
+      setStatus({ type: 'error', message: err.message || 'Lỗi kết nối server.' });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const [open, setOpen] = useState(false);
+  const getAvatarSrc = () => {
+    if (previewAvatar) return previewAvatar;
+
+    const avt = formData.avatar;
+    if (!avt) return defaultAvatar;
+    if (avt.startsWith('http')) return avt;
+
+    return `https://project-doan1-backend.onrender.com${avt}`;
+  };
 
   return (
-    <div className="flex min-h-screen bg-[#121212] bg-gradient-to-br dark:from-amber-100 dark:via-white dark:to-gray-100">
-      {/* Sidebar */}
-      <div className="w-64 bg-black text-white dark:bg-green-100">
-        {/* Header */}
-        <div className="border-b border-slate-600 p-4 dark:border-stone-200">
-          <div className="flex items-center space-x-3">
-            <div className="flex h-8 w-8 items-center justify-center">
-              <a href="/">
-                <Home className="size-7 cursor-pointer p-1 text-gray-100 transition hover:ring-2 hover:ring-[#00ffff] hover:ring-offset-2 hover:ring-offset-gray-900 dark:text-stone-800" />
-              </a>
-            </div>
-            <Settings className="size-7 cursor-pointer p-1 text-gray-100 transition hover:ring-2 hover:ring-[#00ffff] hover:ring-offset-2 hover:ring-offset-gray-900 dark:text-stone-500" />
-            <ThemeToggle />
-          </div>
+    <div className="flex min-h-screen bg-gray-50 font-sans dark:bg-[#0a0a0a]">
+      {/* Sidebar (Ẩn trên mobile) */}
+      <aside className="hidden w-64 flex-col border-r border-gray-200 bg-white p-5 md:flex dark:border-gray-800 dark:bg-black">
+        <div className="mb-8 flex items-center gap-2 text-xl font-bold text-gray-800 dark:text-white">
+          <Settings className="text-teal-500" />
+          <span>MySettings</span>
         </div>
 
-        {/* User greeting */}
-        <div className="border-b border-slate-600 dark:border-stone-200">
-          <div className="flex h-10 items-center space-x-3">
-            <div className="overflow-hidden">
-              <img
-                src={
-                  userInfo.avatar?.startsWith('/uploads')
-                    ? `https://project-doan1-backend.onrender.com${userInfo.avatar}`
-                    : userInfo.avatar || '/avt.jpg'
-                }
-                alt="Profile"
-                className="h-9 w-9 rounded-full object-cover"
-                onError={(e) => (e.target.src = '/avt.jpg')}
-              />
-            </div>
-            <span className="text-sm font-medium dark:text-stone-800">
-              Hi, {userInfo.name || `${profileData.firstName} ${profileData.lastName}` || 'User'}!
-            </span>
-          </div>
+        <div className="mb-6 text-center">
+          <img
+            src={getAvatarSrc()}
+            alt="User"
+            className="mx-auto h-16 w-16 rounded-full object-cover ring-2 ring-gray-100"
+          />
+          <h3 className="mt-3 truncate text-sm font-semibold text-gray-900 dark:text-white">
+            {formData.firstName} {formData.lastName}
+          </h3>
         </div>
 
-        {/* Navigation */}
-        <nav className="mt-4">
-          <div className="px-4 py-2 text-sm font-medium tracking-wider uppercase dark:text-gray-500">
-            Account Overview
-          </div>
-          <div className="mt-2 space-y-1">
-            <a href="#" className="flex items-center px-4 py-2 text-sm dark:text-gray-500">
-              Profile Info
-            </a>
-            <a
-              href="#"
-              className="flex items-center px-4 py-2 text-sm hover:bg-slate-600 hover:text-white dark:text-gray-500 dark:hover:bg-white"
-            >
-              Account Settings
-            </a>
-            <a
-              href="#"
-              className="flex items-center px-4 py-2 text-sm hover:bg-slate-600 hover:text-white dark:text-gray-500 dark:hover:bg-white"
-            >
-              <Eye className="mr-2 h-4 w-4" />
-              View Public Profile
-            </a>
-          </div>
+        <nav className="space-y-1">
+          <a
+            href="#"
+            className="flex items-center gap-3 rounded-lg bg-teal-50 px-3 py-2 text-sm font-medium text-teal-700 dark:bg-teal-500/10 dark:text-teal-400"
+          >
+            <User size={18} /> Thông tin cá nhân
+          </a>
+          <a
+            href="#"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+          >
+            <Home size={18} /> Trang chủ
+          </a>
         </nav>
-      </div>
+      </aside>
 
       {/* Main Content */}
-      <div className="flex-1 p-8">
+      <main className="flex-1 p-4 md:p-8">
         <div className="mx-auto max-w-4xl">
-          <h1 className="mb-8 text-2xl font-semibold text-gray-100 dark:text-stone-800">
-            Account Info
-          </h1>
+          <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">Hồ sơ cá nhân</h1>
+          <p className="mb-8 text-sm text-gray-500">
+            Quản lý thông tin hiển thị của bạn trên hệ thống.
+          </p>
 
-          <div className="bg-[#1d1d1d] p-8 shadow-sm dark:bg-white">
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-              {/* Left Column */}
-              <div className="space-y-6">
-                {/* Profile Avatar */}
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-100 dark:text-stone-700">
-                    Profile Avatar
-                  </label>
-                  <div className="h-16 w-16 overflow-hidden">
-                    <img
-                      src={
-                        userInfo.avatar?.startsWith('/uploads')
-                          ? `https://project-doan1-backend.onrender.com${userInfo.avatar}`
-                          : userInfo.avatar || '/avt.jpg'
-                      }
-                      alt="Profile"
-                      className="h-16 w-16 rounded-full object-cover"
-                      onError={(e) => (e.target.src = '/avt.jpg')}
-                    />
-                  </div>
+          {/* Thông báo */}
+          {status.message && (
+            <div
+              className={`mb-6 flex items-center gap-2 rounded-lg p-4 text-sm font-medium ${status.type === 'success' ? 'border border-green-200 bg-green-50 text-green-700' : 'border border-red-200 bg-red-50 text-red-700'}`}
+            >
+              {status.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+              {status.message}
+            </div>
+          )}
+
+          <div className="grid gap-8 lg:grid-cols-3">
+            {/* Cột trái: Avatar */}
+            <div className="h-fit rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-sm dark:border-gray-800 dark:bg-[#121212]">
+              <div className="group relative mx-auto inline-block">
+                <div className="h-32 w-32 overflow-hidden rounded-full border-4 border-white shadow-md dark:border-gray-700">
+                  <img src={getAvatarSrc()} className="h-full w-full object-cover" alt="Avatar" />
                 </div>
-
-                {/* First Name */}
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-100 dark:text-stone-700">
-                    First Name
-                  </label>
+                <label className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black/50 opacity-0 transition-all group-hover:opacity-100">
+                  <Camera className="text-white" size={24} />
                   <input
-                    type="text"
-                    value={profileData.firstName}
-                    onChange={(e) => handleInputChange('firstName', e.target.value)}
-                    className="w-full border border-gray-200 px-4 py-3 text-stone-400 outline-none focus:border-transparent"
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageChange}
                   />
-                </div>
+                </label>
+              </div>
+              <p className="mt-4 text-xs text-gray-500">Cho phép định dạng: JPG, PNG (Max 5MB)</p>
+            </div>
 
-                {/* Last Name */}
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-100 dark:text-stone-700">
-                    Last Name
-                  </label>
-                  <input
-                    type="text"
-                    value={profileData.lastName}
-                    onChange={(e) => handleInputChange('lastName', e.target.value)}
-                    className="w-full border border-gray-200 px-4 py-3 text-stone-400 outline-none focus:border-transparent"
-                  />
-                </div>
-
-                {/* Email */}
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-100 dark:text-stone-700">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    value={profileData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="w-full border border-gray-200 px-4 py-3 text-stone-400 outline-none focus:border-transparent"
-                  />
-                </div>
-
-                {/* Save Button */}
-                <button
-                  onClick={handleSave}
-                  className="h-10 w-30 border border-amber-400 bg-[#121212] font-semibold text-white shadow-lg transition-all duration-300 hover:scale-115 hover:bg-amber-400 hover:text-stone-600 hover:shadow-xl"
-                >
-                  SAVE
-                </button>
+            {/* Cột phải: Form nhập liệu */}
+            <div className="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2 dark:border-gray-800 dark:bg-[#121212]">
+              <div className="grid gap-6 md:grid-cols-2">
+                <InputField
+                  label="Họ (First Name)"
+                  icon={User}
+                  value={formData.firstName}
+                  onChange={(e) => handleInputChange('firstName', e.target.value)}
+                />
+                <InputField
+                  label="Tên (Last Name)"
+                  icon={User}
+                  value={formData.lastName}
+                  onChange={(e) => handleInputChange('lastName', e.target.value)}
+                />
               </div>
 
-              {/* Right Column */}
-              <div className="space-y-6">
-                {/* School Name */}
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-100 dark:text-stone-700">
-                    School Name
-                  </label>
-                  <input
-                    type="text"
-                    value={profileData.schoolName}
-                    onChange={(e) => handleInputChange('schoolName', e.target.value)}
-                    placeholder="e.g. NYU"
-                    className="w-full border border-gray-200 px-4 py-3 text-stone-600 placeholder-stone-400 outline-none focus:border-transparent dark:placeholder:text-stone-600"
-                  />
-                </div>
+              <InputField label="Email" icon={Mail} value={formData.email} disabled={true} />
 
-                {/* Company Name */}
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-100 dark:text-stone-700">
-                    Company Name
-                  </label>
-                  <input
-                    type="text"
-                    value={profileData.companyName}
-                    onChange={(e) => handleInputChange('companyName', e.target.value)}
-                    placeholder="e.g. HBO"
-                    className="w-full border border-gray-200 px-4 py-3 text-stone-600 placeholder-stone-400 outline-none focus:border-transparent dark:placeholder:text-stone-600"
-                  />
-                </div>
+              <div className="grid gap-6 md:grid-cols-2">
+                <InputField
+                  label="Trường học"
+                  icon={GraduationCap}
+                  value={formData.schoolName}
+                  onChange={(e) => handleInputChange('schoolName', e.target.value)}
+                  placeholder="VD: ĐH Bách Khoa"
+                />
+                <InputField
+                  label="Công ty / Nơi làm việc"
+                  icon={Briefcase}
+                  value={formData.companyName}
+                  onChange={(e) => handleInputChange('companyName', e.target.value)}
+                  placeholder="VD: FPT Software"
+                />
+              </div>
 
-                {/* Bio */}
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-100 dark:text-stone-700">
-                    Bio
-                  </label>
-                  <textarea
-                    value={profileData.bio}
-                    onChange={(e) => handleInputChange('bio', e.target.value)}
-                    placeholder="e.g. My bio"
-                    rows={6}
-                    className="w-full resize-none border border-gray-200 px-4 py-3 text-gray-300 placeholder-stone-400 outline-none focus:border-transparent dark:placeholder:text-stone-600"
-                  />
-                </div>
+              <InputField
+                label="Giới thiệu ngắn (Bio)"
+                type="textarea"
+                icon={FileText}
+                value={formData.bio}
+                onChange={(e) => handleInputChange('bio', e.target.value)}
+                placeholder="Một chút về bản thân bạn..."
+              />
+
+              <div className="flex justify-end border-t border-gray-100 pt-4 dark:border-gray-700">
+                <button
+                  onClick={handleSave}
+                  disabled={isLoading}
+                  className="flex items-center gap-2 rounded-lg bg-teal-600 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-teal-700 disabled:opacity-70"
+                >
+                  {isLoading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+                  Lưu thay đổi
+                </button>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Help Button */}
-        <div className="fixed right-8 bottom-8">
-          <button className="flex h-12 w-12 items-center justify-center bg-teal-600 text-white shadow-lg transition-colors duration-200 hover:bg-teal-700 hover:ring-1">
-            <HelpCircle className="h-6 w-6" />
-          </button>
-        </div>
-      </div>
+      </main>
     </div>
   );
 };

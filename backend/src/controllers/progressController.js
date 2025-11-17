@@ -3,14 +3,11 @@ import { Topics, Flashcard, UserProgress, sequelize } from '../models/index.js';
 const markAsLearned = async (req, res) => {
   const { userId, cardId, deckId, mode } = req.body;
 
-  // Kiểm tra dữ liệu đầu vào
   if (!userId || !cardId || !deckId || !mode) {
     return res.status(400).json({ error: 'Thiếu thông tin cần thiết' });
   }
 
   try {
-    // Upsert: Thêm mới nếu chưa có, hoặc cập nhật nếu đã tồn tại
-    // (dựa trên unique index 'user_id', 'card_id', 'mode')
     const [progress, created] = await UserProgress.upsert({
       user_id: userId,
       card_id: cardId,

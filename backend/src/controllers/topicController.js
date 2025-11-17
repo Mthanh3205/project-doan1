@@ -1,7 +1,5 @@
 //Topics - hiển thị tất cả các chủ đề
 import { Topics, Flashcard, UserProgress, sequelize } from '../models/index.js';
-
-// 🟢 LẤY TẤT CẢ TOPICS
 const getAllTopics = async (req, res) => {
   try {
     const [allTopics, metadata] = await sequelize.query(`
@@ -35,11 +33,10 @@ const getAllTopics = async (req, res) => {
   }
 };
 
-// 🟢 LẤY THEO deckId
 const getTopicById = async (req, res) => {
   try {
     const { deckId } = req.params;
-    const topic = await Topics.findByPk(deckId); // Sequelize: tìm theo khóa chính
+    const topic = await Topics.findByPk(deckId);
 
     if (!topic) {
       return res.status(404).json({ message: 'Không tìm thấy topic' });
@@ -52,7 +49,6 @@ const getTopicById = async (req, res) => {
   }
 };
 
-// 🟢 ✅ HÀM MỚI: LẤY TẤT CẢ TOPICS THEO user_id
 const getTopicsByUserId = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -90,9 +86,8 @@ const getTopicsByUserId = async (req, res) => {
   }
 };
 
-// 🟢 EXPORT
 export default {
   getAllTopics,
   getTopicById,
-  getTopicsByUserId, // ✅ thêm export mới
+  getTopicsByUserId,
 };

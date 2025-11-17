@@ -33,30 +33,21 @@ export const getAllUsers = async (req, res) => {
 
 export const getDashboardStats = async (req, res) => {
   try {
-    // --- PHẦN SỐ ĐẾM (ĐÃ CÓ) ---
     const userCount = await User.count();
     const topicCount = await Topics.count();
     const wordCount = await Flashcard.count();
-    const feedbackCount = 0; // (Bạn có thể thêm logic đếm Góp ý ở đây)
+    const feedbackCount = 0;
 
-    // --- PHẦN MỚI: LẤY 5 MỤC GẦN ĐÂY ---
-
-    // Lấy 5 người dùng mới nhất
     const recentUsers = await User.findAll({
       limit: 5,
       order: [['createdAt', 'DESC']], // Sắp xếp theo ngày tạo
-      attributes: { exclude: ['password', 'googleId'] }, // Không gửi password
+      attributes: { exclude: ['password', 'googleId'] },
     });
-
-    // Lấy 5 chủ đề mới nhất
     const recentTopics = await Topics.findAll({
       limit: 5,
-      order: [['created_at', 'DESC']], // Sắp xếp theo ngày tạo
+      order: [['created_at', 'DESC']],
     });
 
-    // --- KẾT THÚC PHẦN MỚI ---
-
-    // Trả về một object JSON chứa tất cả số liệu
     res.json({
       // Số đếm
       userCount,
@@ -65,8 +56,8 @@ export const getDashboardStats = async (req, res) => {
       feedbackCount,
 
       // Danh sách
-      recentUsers, // <-- Dữ liệu mới
-      recentTopics, // <-- Dữ liệu mới
+      recentUsers,
+      recentTopics,
     });
   } catch (error) {
     console.error('Lỗi khi lấy số liệu thống kê dashboard:', error);
