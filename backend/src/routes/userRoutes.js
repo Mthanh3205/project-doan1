@@ -1,10 +1,10 @@
 //Account
 import express from 'express';
 import { updateProfile } from '../controllers/userController.js';
-import verifyToken from '../middleware/auth.js';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.post('/update', verifyToken, updateProfile);
+router.post('/update', authenticateToken, updateProfile);
 
 export default router;
