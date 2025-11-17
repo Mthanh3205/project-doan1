@@ -179,7 +179,7 @@ const Account = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50 font-sans dark:bg-[#0a0a0a]">
+    <div className="flex h-screen bg-gray-50 font-sans dark:bg-[#0a0a0a]">
       {/* Sidebar (Ẩn trên mobile) */}
       <aside className="hidden w-64 flex-col border-r border-gray-200 bg-white p-5 md:flex dark:border-gray-800 dark:bg-black">
         <div className="mb-8 flex items-center gap-2 text-xl font-bold text-gray-800 dark:text-white">
@@ -206,7 +206,7 @@ const Account = () => {
             <User size={18} /> Thông tin cá nhân
           </a>
           <a
-            href="#"
+            href="/"
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
           >
             <Home size={18} /> Trang chủ

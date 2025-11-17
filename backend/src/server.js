@@ -39,6 +39,7 @@ import routeGetTopicCard from './routes/routeGetTopicCard.js';
 import progressRoutes from './routes/progressRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import routeFavorites from './routes/routeFavorites.js';
+import userRoutes from './routes/userRoutes.js';
 
 // Khai báo các route
 app.use('/api/auth', routeAuth);
@@ -50,6 +51,7 @@ app.use('/api/gettopiccard', routeGetTopicCard);
 app.use('/api/progress', progressRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/favorites', routeFavorites);
+app.use('/api/user', userRoutes);
 
 // Kết nối DB và chạy server
 const startServer = async () => {
