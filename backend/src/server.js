@@ -69,18 +69,18 @@ const startServer = async () => {
   try {
     // Kiểm tra kết nối
     await sequelize.authenticate();
-    console.log('✅ Connect MySQL successfully');
+    console.log(' Connect MySQL successfully');
 
     // Đồng bộ Model (Lưu ý: alter: true sẽ cập nhật bảng nếu có thay đổi column)
     await sequelize.sync({ alter: true });
-    console.log('✅ DB synced successfully');
+    console.log('DB synced successfully');
 
     app.listen(PORT, () => {
-      console.log(`🚀 Server running at port ${PORT}`);
+      console.log(` Server running at port ${PORT}`);
       console.log(`Visit your app at https://myprojects.id.vn or http://localhost:${PORT}`);
     });
   } catch (err) {
-    console.error('❌ Error connect DB:', err);
+    console.error(' Error connect DB:', err);
   }
 };
 

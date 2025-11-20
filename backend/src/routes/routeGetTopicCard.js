@@ -16,8 +16,8 @@ import { authenticateToken } from '../middleware/auth.js';
 const router = express.Router();
 
 // Routes topics(decks)
-router.get('/decks', getAllDecks);
-router.get('/decks/:id', getDeckById);
+router.get('/decks', authenticateToken, getAllDecks);
+router.get('/decks/:id', authenticateToken, getDeckById);
 router.post('/decks', authenticateToken, createDeck);
 router.put('/decks/:id', authenticateToken, updateDeck);
 router.delete('/decks/:id', authenticateToken, deleteDeck);
