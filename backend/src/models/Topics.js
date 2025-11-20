@@ -1,7 +1,5 @@
-//Topics
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/db.js';
-import Cards from './Cards.js';
 
 const Topics = sequelize.define(
   'Topics',
@@ -40,7 +38,5 @@ const Topics = sequelize.define(
     updatedAt: 'updated_at',
   }
 );
-
-Topics.hasMany(Cards, { foreignKey: 'deck_id', as: 'flashcards' });
 
 export default Topics;
