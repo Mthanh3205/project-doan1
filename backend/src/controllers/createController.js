@@ -1,44 +1,52 @@
-// controllers/createController.js
 import { Topics, Flashcard, User } from '../models/index.js';
 
-// Helper check quyền sở hữu (giữ nguyên hoặc cập nhật nếu cần admin can thiệp sâu hơn)
+// Helper: Kiểm tra quyền sở hữu Flashcard (Dành cho Sửa/Xóa từ vựng)
 const checkFlashcardOwnership = async (cardId, userId) => {
   try {
     const card = await Flashcard.findByPk(cardId);
-    if (!card) return { error: 'Không tìm thấy từ vựng', status: 404 };
+    if (!card) {
+      return { error: 'Không tìm thấy từ vựng', status: 404 };
+    }
 
     const deck = await Topics.findByPk(card.deck_id);
-    if (!deck) return { error: 'Không tìm thấy chủ đề', status: 404 };
+    if (!deck) {
+      return { error: 'Không tìm thấy chủ đề chứa từ vựng này', status: 404 };
+    }
 
-    // Admin (id=1) luôn có quyền, hoặc chủ sở hữu
+    // Admin (id=1) hoặc chủ sở hữu mới được phép
     if (userId !== 1 && deck.user_id !== userId) {
       return { error: 'Bạn không có quyền thực hiện hành động này.', status: 403 };
     }
 
     return { authorized: true };
   } catch (error) {
-    return { error: 'Lỗi server', status: 500 };
+    return { error: 'Lỗi server khi xác thực quyền', status: 500 };
   }
 };
 
-// --- GET ALL DECKS (ĐÃ SỬA LOGIC ADMIN) ---
+// GET ALL DECKS
 export const getAllDecks = async (req, res) => {
   try {
+    // Kiểm tra middleware
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: 'Unauthorized: User info missing' });
+    }
+
     const userId = req.user.id;
 
-    // Cấu hình query cơ bản
     let queryOptions = {
-      order: [['created_at', 'DESC']], // Chú ý: createdAt viết hoa chữ A theo mặc định Sequelize
+      // Sắp xếp theo created_at
+      order: [['created_at', 'DESC']],
       include: [
         {
           model: User,
-          as: 'author', // Phải khớp với alias trong models/index.js
-          attributes: ['id', 'name', 'email'], // Chỉ lấy thông tin cần thiết
+          as: 'author', // Alias khớp với models/index.js
+          attributes: ['id', 'name', 'email'],
         },
       ],
     };
 
-    // Nếu KHÔNG phải Admin (id = 1), chỉ lấy bài của chính mình
+    // Nếu KHÔNG phải Admin (id=1), chỉ lấy bài của chính user đó
     if (userId !== 1) {
       queryOptions.where = { user_id: userId };
     }
@@ -51,18 +59,21 @@ export const getAllDecks = async (req, res) => {
   }
 };
 
-// Get Deck By ID
+// GET DECK BY ID
 export const getDeckById = async (req, res) => {
   try {
     const deck = await Topics.findByPk(req.params.id, {
-      include: { model: Flashcard, as: 'flashcards' },
+      include: {
+        model: Flashcard,
+        as: 'flashcards',
+      },
     });
-    if (!deck) return res.status(404).json({ message: 'Không tìm thấy chủ đề' });
 
-    // Bảo mật: Nếu không phải admin và không phải chủ sở hữu thì không cho xem chi tiết (tùy chọn)
-    if (req.user.id !== 1 && deck.user_id !== req.user.id) {
-      return res.status(403).json({ message: 'Bạn không có quyền truy cập chủ đề này' });
+    if (!deck) {
+      return res.status(404).json({ message: 'Không tìm thấy chủ đề' });
     }
+
+    // ĐÃ XÓA CHECK QUYỀN Ở ĐÂY ĐỂ AI CŨNG CÓ THỂ VÀO HỌC
 
     res.status(200).json(deck);
   } catch (error) {
@@ -70,14 +81,15 @@ export const getDeckById = async (req, res) => {
   }
 };
 
-// Create Deck
+// CREATE DECK
 export const createDeck = async (req, res) => {
   try {
     const { title, description } = req.body;
     const userId = req.user.id;
+
     const newDeck = await Topics.create({
-      title,
-      description,
+      title: title,
+      description: description,
       user_id: userId,
     });
     res.status(201).json(newDeck);
@@ -86,29 +98,35 @@ export const createDeck = async (req, res) => {
   }
 };
 
-// Update Deck
+// UPDATE DECK
 export const updateDeck = async (req, res) => {
   try {
     const userId = req.user.id;
     const deckId = req.params.id;
 
     let whereClause = { deck_id: deckId };
-    if (userId !== 1) whereClause.user_id = userId; // Admin được sửa tất cả
 
-    const [updated] = await Topics.update(req.body, { where: whereClause });
+    // Nếu không phải Admin, chỉ được sửa bài của mình
+    if (userId !== 1) {
+      whereClause.user_id = userId;
+    }
+
+    const [updated] = await Topics.update(req.body, {
+      where: whereClause,
+    });
 
     if (updated) {
       const updatedDeck = await Topics.findByPk(deckId);
       res.status(200).json(updatedDeck);
     } else {
-      res.status(404).json({ message: 'Không tìm thấy chủ đề hoặc bạn không có quyền' });
+      res.status(403).json({ message: 'Không tìm thấy chủ đề hoặc bạn không có quyền sửa.' });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// --- DELETE DECK (ĐÃ SỬA CHO ADMIN) ---
+// DELETE DECK
 export const deleteDeck = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -116,7 +134,7 @@ export const deleteDeck = async (req, res) => {
 
     let whereClause = { deck_id: deckId };
 
-    // Nếu không phải Admin, thêm điều kiện user_id
+    // Nếu không phải Admin, chỉ được xóa bài của mình
     if (userId !== 1) {
       whereClause.user_id = userId;
     }
@@ -129,10 +147,15 @@ export const deleteDeck = async (req, res) => {
         .json({ message: 'Bạn không có quyền xóa chủ đề này hoặc chủ đề không tồn tại.' });
     }
 
-    // Xóa các flashcard con trước
-    await Flashcard.destroy({ where: { deck_id: deckId } });
-    // Xóa chủ đề
-    await Topics.destroy({ where: { deck_id: deckId } });
+    // Xóa hết Flashcard con trước
+    await Flashcard.destroy({
+      where: { deck_id: deckId },
+    });
+
+    // Xóa Topic
+    await Topics.destroy({
+      where: { deck_id: deckId },
+    });
 
     res.status(204).send();
   } catch (error) {
@@ -140,19 +163,21 @@ export const deleteDeck = async (req, res) => {
   }
 };
 
-// --- FLASHCARD CRUD ---
-
+// CREATE FLASHCARD
 export const createFlashcard = async (req, res) => {
   try {
     const { deck_id, front_text, back_text, pronunciation, example, image_url } = req.body;
     const userId = req.user.id;
 
-    // Kiểm tra quyền chủ đề
     const deck = await Topics.findByPk(deck_id);
-    if (!deck) return res.status(404).json({ message: 'Chủ đề không tồn tại' });
 
+    if (!deck) {
+      return res.status(404).json({ message: 'Chủ đề không tồn tại' });
+    }
+
+    // Admin hoặc chủ sở hữu mới được thêm thẻ
     if (userId !== 1 && deck.user_id !== userId) {
-      return res.status(403).json({ message: 'Bạn không có quyền thêm vào chủ đề này.' });
+      return res.status(403).json({ message: 'Lỗi: Bạn không có quyền thêm vào chủ đề này.' });
     }
 
     const newCard = await Flashcard.create({
@@ -170,15 +195,22 @@ export const createFlashcard = async (req, res) => {
   }
 };
 
+// UPDATE FLASHCARD
 export const updateFlashcard = async (req, res) => {
   try {
     const userId = req.user.id;
     const cardId = req.params.id;
 
     const { authorized, error, status } = await checkFlashcardOwnership(cardId, userId);
-    if (!authorized) return res.status(status).json({ message: error });
 
-    const [updated] = await Flashcard.update(req.body, { where: { card_id: cardId } });
+    if (!authorized) {
+      return res.status(status).json({ message: error });
+    }
+
+    const [updated] = await Flashcard.update(req.body, {
+      where: { card_id: cardId },
+    });
+
     if (updated) {
       const updatedCard = await Flashcard.findByPk(cardId);
       res.status(200).json(updatedCard);
@@ -190,16 +222,27 @@ export const updateFlashcard = async (req, res) => {
   }
 };
 
+// DELETE FLASHCARD
 export const deleteFlashcard = async (req, res) => {
   try {
     const userId = req.user.id;
     const cardId = req.params.id;
 
     const { authorized, error, status } = await checkFlashcardOwnership(cardId, userId);
-    if (!authorized) return res.status(status).json({ message: error });
 
-    await Flashcard.destroy({ where: { card_id: cardId } });
-    res.status(204).send();
+    if (!authorized) {
+      return res.status(status).json({ message: error });
+    }
+
+    const deleted = await Flashcard.destroy({
+      where: { card_id: cardId },
+    });
+
+    if (deleted) {
+      res.status(204).send();
+    } else {
+      res.status(404).json({ message: 'Không tìm thấy từ vựng' });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
