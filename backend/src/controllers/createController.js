@@ -28,7 +28,7 @@ export const getAllDecks = async (req, res) => {
 
     // Cấu hình query cơ bản
     let queryOptions = {
-      order: [['createdAt', 'DESC']], // Chú ý: createdAt viết hoa chữ A theo mặc định Sequelize
+      order: [['created_at', 'DESC']], // Chú ý: createdAt viết hoa chữ A theo mặc định Sequelize
       include: [
         {
           model: User,
