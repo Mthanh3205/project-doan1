@@ -25,6 +25,7 @@ export default function StudyFlashcard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [favorites, setFavorites] = useState([]);
+  const [isChanging, setIsChanging] = useState(false);
 
   useEffect(() => {
     //Lấy user data từ sessionStorage
@@ -62,7 +63,6 @@ export default function StudyFlashcard() {
   }, [deckId]);
 
   useEffect(() => {
-    // Chỉ gọi API khi `userId` đã được set (không phải là null)
     if (userId) {
       axios
         .get(`https://project-doan1-backend.onrender.com/api/favorites/${userId}`)
@@ -90,16 +90,22 @@ export default function StudyFlashcard() {
   //HÀM CHUYỂN THẺ
   const nextCard = useCallback(() => {
     if (flashcards.length > 0) {
+      setIsChanging(true);
       setFlipped(false);
       setIndex((prev) => (prev + 1) % flashcards.length);
+
+      setTimeout(() => setIsChanging(false), 50);
     }
   }, [flashcards.length]);
 
   //HÀM LÙI THẺ
   const prevCard = useCallback(() => {
     if (flashcards.length > 0) {
+      setIsChanging(true);
       setFlipped(false);
       setIndex((prev) => (prev - 1 + flashcards.length) % flashcards.length);
+
+      setTimeout(() => setIsChanging(false), 50);
     }
   }, [flashcards.length]);
 
@@ -108,7 +114,6 @@ export default function StudyFlashcard() {
     setFlipped((prev) => !prev);
   }, []);
 
-  //Logic lắng nghe sự kiện bàn phím
   const handleKeyDown = useCallback(
     (event) => {
       if (event.target.tagName === 'TEXTAREA' || event.target.tagName === 'INPUT') {
@@ -124,6 +129,7 @@ export default function StudyFlashcard() {
             break;
           case ' ':
           case 'Spacebar':
+          case 'Enter':
             event.preventDefault();
             flipCard();
             break;
@@ -142,8 +148,6 @@ export default function StudyFlashcard() {
     };
   }, [handleKeyDown]);
 
-  //XỬ LÝ TRẠNG THÁI
-  // Nếu chưa có userId (đang kiểm tra) hoặc đang tải, hiển thị "Đang tải..."
   if (loading || !userId) {
     return <p className="mt-20 text-center text-gray-500">Đang tải dữ liệu...</p>;
   }
@@ -158,7 +162,7 @@ export default function StudyFlashcard() {
     <div className="min-h-screen bg-[#121212] bg-gradient-to-br font-sans text-gray-900 dark:from-amber-100 dark:via-white dark:to-gray-100">
       <Header />
 
-      <main className="mx-auto max-w-7xl px-6 py-16">
+      <main className="mx-auto max-w-7xl px-6 py-22">
         <h1 className="mb-12 text-center text-4xl font-extrabold text-amber-600">
           Học Flashcard – Chủ đề {deckId}
         </h1>
@@ -166,6 +170,7 @@ export default function StudyFlashcard() {
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {mode === 'flip' && (
             <FlipCardMode
+              key={index}
               card={card}
               nextCard={nextCard}
               prevCard={prevCard}
@@ -173,6 +178,7 @@ export default function StudyFlashcard() {
               flipped={flipped}
               toggleFavorite={toggleFavorite}
               favorites={favorites}
+              isChanging={isChanging}
             />
           )}
 
@@ -209,10 +215,10 @@ export default function StudyFlashcard() {
               Thẻ {index + 1} / {flashcards.length}
             </p>
 
-            <div className="mt-2">
+            <div className="mt-2 flex items-center justify-center">
               <Link
                 to="/topics"
-                className="flex justify-center border px-6 py-3 font-semibold text-zinc-100 transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
+                className="flex w-50 justify-center rounded-full border bg-black px-6 py-3 font-semibold text-zinc-100 transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
               >
                 Chọn chủ đề khác
               </Link>

@@ -1,9 +1,8 @@
-// src/pages/VocabularyPage.jsx
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Heart } from 'lucide-react'; // Import icon
-import axios from 'axios'; // Import axios
+import { Heart } from 'lucide-react';
+import axios from 'axios';
 
 const VocabularyPage = () => {
   const { deckId } = useParams();
@@ -11,12 +10,12 @@ const VocabularyPage = () => {
   const [topicName, setTopicName] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [userId, setUserId] = useState(1); // Hardcode userId = 1
-  const [favoriteCardIds, setFavoriteCardIds] = useState(new Set()); // State cho từ vựng yêu thích
+  const [userId, setUserId] = useState(1);
+  const [favoriteCardIds, setFavoriteCardIds] = useState(new Set());
 
   const navigate = useNavigate();
 
-  // 1. LẤY DANH SÁCH TỪ VỰNG
+  //LẤY DANH SÁCH TỪ VỰNG
   useEffect(() => {
     const fetchFlashcards = async () => {
       try {
@@ -30,14 +29,14 @@ const VocabularyPage = () => {
       } catch (err) {
         setError(err.message);
       } finally {
-        setLoading(false); // Chỉ set loading false sau khi cả hai đã fetch xong
+        setLoading(false);
       }
     };
 
     fetchFlashcards();
   }, [deckId]);
 
-  // 2. LẤY TÊN CHỦ ĐỀ
+  // LẤY TÊN CHỦ ĐỀ
   useEffect(() => {
     const fetchTopicName = async () => {
       try {
@@ -53,7 +52,7 @@ const VocabularyPage = () => {
     fetchTopicName();
   }, [deckId]);
 
-  // 3. LẤY DANH SÁCH TỪ VỰNG YÊU THÍCH
+  // LẤY DANH SÁCH TỪ VỰNG YÊU THÍCH
   useEffect(() => {
     if (!userId) return;
 
@@ -77,7 +76,7 @@ const VocabularyPage = () => {
     fetchFavorites();
   }, [userId]);
 
-  // 4. HÀM TOGGLE TỪ VỰNG YÊU THÍCH
+  //HÀM TOGGLE TỪ VỰNG YÊU THÍCH
   const handleToggleFavorite = async (e, cardId) => {
     e.stopPropagation();
     if (!userId) return;
@@ -122,7 +121,7 @@ const VocabularyPage = () => {
         <Header />
       </div>
 
-      <div className="mx-auto max-w-5xl pt-12 pb-10">
+      <div className="mx-auto max-w-5xl pt-22 pb-10">
         <h1 className="mb-8 text-center text-5xl font-extrabold text-orange-500 sm:text-6xl">
           Danh Sách Từ Vựng
         </h1>

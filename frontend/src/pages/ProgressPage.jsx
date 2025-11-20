@@ -104,7 +104,7 @@ export default function ProgressPage() {
     <div className="min-h-screen bg-[#121212] bg-gradient-to-br font-sans text-gray-900 dark:from-amber-100 dark:via-white dark:to-gray-100">
       <Header />
 
-      <main className="mx-auto max-w-4xl px-4 py-12">
+      <main className="mx-auto max-w-4xl px-4 py-22">
         <h1 className="mb-8 text-center text-4xl font-extrabold text-amber-600">
           <Activity className="mr-3 inline-block" size={40} />
           Tiến Trình Học Tập

@@ -135,13 +135,17 @@ const Auth = () => {
         {/* Main card */}
         <div className="bg-[rgba(255, 255, 255, 0.05)] border border-white/20 p-8 shadow-2xl backdrop-blur-lg">
           {/* Header */}
-          <div className="mb-8 text-center">
-            <div className="bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text pb-8 text-4xl font-bold text-transparent italic">
-              <Snowflake className="mr-2 inline-block h-10 w-10 text-amber-400" />
-              <a href="/">
-                <span>FlashCard</span>
-              </a>
-            </div>
+          <div className="mb-8 flex flex-col items-center text-center">
+            <a href="/" className="group flex items-center gap-3 pb-6 transition-transform">
+              <div className="relative">
+                <Snowflake className="h-10 w-10 text-amber-400 transition-transform duration-700 ease-in-out group-hover:rotate-180" />
+                {/* Thêm hiệu ứng phát sáng mờ phía sau icon cho đồng bộ với Header */}
+                <div className="absolute inset-0 animate-pulse rounded-full bg-amber-400/30 blur-md" />
+              </div>
+              <span className="bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-4xl font-bold text-transparent italic">
+                FlashCard
+              </span>
+            </a>
             <div className="mx-auto mb-4 flex h-7 w-16 transform items-center justify-center border border-white/20 bg-white/10 bg-gradient-to-r px-4 py-3 font-semibold text-slate-300 placeholder-slate-400 shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl focus:border-transparent focus:ring-2 focus:outline-none dark:bg-green-200">
               <a href="/">
                 <Home className="h-8 w-8 text-white hover:text-gray-300 hover:shadow-2xl dark:text-stone-700 dark:hover:text-stone-400" />

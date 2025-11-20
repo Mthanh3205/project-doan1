@@ -1,13 +1,12 @@
-// src/pages/TopicsPage.jsx
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Input } from '@/components/ui/input';
 import Header from '@/components/Header';
 import { Heart } from 'lucide-react';
-import axios from 'axios'; // Sử dụng axios để gửi request POST
+import axios from 'axios';
 
-// HÀM BỎ DẤU (lọc tiếng Việt)
+// HÀM BỎ DẤU
 function removeVietnameseTones(str) {
   return str
     ?.normalize('NFD')
@@ -22,11 +21,10 @@ const TopicsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState(1); // 3. Hardcode userId = 1
+  const [userId, setUserId] = useState(1);
   const [favoriteDeckIds, setFavoriteDeckIds] = useState(new Set());
   const navigate = useNavigate();
 
-  // 1. LẤY DANH SÁCH CHỦ ĐỀ
   useEffect(() => {
     const fetchTopics = async () => {
       try {
@@ -47,9 +45,8 @@ const TopicsPage = () => {
     fetchTopics();
   }, [userId]);
 
-  // 2. LẤY DANH SÁCH YÊU THÍCH CỦA USER
   useEffect(() => {
-    if (!userId) return; // Chỉ fetch khi có userId
+    if (!userId) return;
 
     const fetchFavorites = async () => {
       try {
@@ -72,12 +69,11 @@ const TopicsPage = () => {
     fetchFavorites();
   }, [userId]);
 
-  // 3. HÀM XỬ LÝ TOGGLE YÊU THÍCH
+  //  HÀM XỬ LÝ TOGGLE YÊU THÍCH
   const handleToggleFavorite = async (e, deckId) => {
-    e.stopPropagation(); // Ngăn sự kiện click của Card
+    e.stopPropagation();
     if (!userId) return;
 
-    // Cập nhật UI trước (Optimistic Update)
     const newFavoriteDeckIds = new Set(favoriteDeckIds);
     let status = '';
     if (newFavoriteDeckIds.has(deckId)) {
@@ -89,17 +85,15 @@ const TopicsPage = () => {
     }
     setFavoriteDeckIds(newFavoriteDeckIds);
 
-    // Gửi request lên server
     try {
       await axios.post('https://project-doan1-backend.onrender.com/api/favorites/toggle', {
         userId: userId,
         deckId: deckId,
         type: 'deck',
       });
-      // Request thành công, không cần làm gì thêm vì UI đã cập nhật
     } catch (err) {
       console.error('Lỗi khi cập nhật yêu thích:', err);
-      // Nếu có lỗi, rollback lại UI
+
       const oldFavoriteDeckIds = new Set(favoriteDeckIds);
       if (status === 'added') {
         oldFavoriteDeckIds.delete(deckId);

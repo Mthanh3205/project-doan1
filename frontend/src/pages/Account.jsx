@@ -5,13 +5,18 @@ import {
   Camera,
   User,
   Mail,
+  Book,
   Briefcase,
   GraduationCap,
   FileText,
-  Save,
   Loader2,
   CheckCircle,
   AlertCircle,
+  Sparkles,
+  Star,
+  Menu,
+  X,
+  Activity,
 } from 'lucide-react';
 
 const InputField = ({
@@ -23,20 +28,20 @@ const InputField = ({
   placeholder,
   disabled,
 }) => (
-  <div className="group relative">
-    <label className="mb-1.5 block text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-400">
+  <div className="group space-y-2">
+    <label className="text-xs font-bold tracking-wider text-gray-400 uppercase transition-colors group-focus-within:text-teal-400 dark:text-gray-500 dark:group-focus-within:text-teal-600">
       {label}
     </label>
-    <div className="relative">
-      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-        <Icon className="h-5 w-5 text-gray-400 transition-colors group-focus-within:text-teal-500" />
+    <div className="relative transition-all duration-300 focus-within:-translate-y-0.5">
+      <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+        <Icon className="h-5 w-5 text-gray-500 transition-colors group-focus-within:text-teal-500 dark:text-gray-400" />
       </div>
       {type === 'textarea' ? (
         <textarea
           value={value || ''}
           onChange={onChange}
           rows={4}
-          className="block w-full rounded-xl border border-gray-200 bg-gray-50 p-2.5 pl-10 text-sm text-gray-900 transition-all outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+          className="block w-full border border-gray-700 bg-gray-800/50 p-3 pl-12 text-sm font-medium text-white backdrop-blur-sm transition-all outline-none placeholder:text-gray-500 focus:border-teal-500 focus:bg-gray-800 focus:ring-4 focus:ring-teal-500/10 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-200 dark:bg-gray-50/50 dark:text-gray-900 dark:placeholder:text-gray-400 dark:focus:bg-white"
           placeholder={placeholder}
           disabled={disabled}
         />
@@ -45,7 +50,7 @@ const InputField = ({
           type={type}
           value={value || ''}
           onChange={onChange}
-          className="block w-full rounded-xl border border-gray-200 bg-gray-50 p-2.5 pl-10 text-sm text-gray-900 transition-all outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
+          className="block w-full border border-gray-700 bg-gray-800/50 p-3 pl-12 text-sm font-medium text-white backdrop-blur-sm transition-all outline-none placeholder:text-gray-500 focus:border-teal-500 focus:bg-gray-800 focus:ring-4 focus:ring-teal-500/10 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-200 dark:bg-gray-50/50 dark:text-gray-900 dark:placeholder:text-gray-400 dark:focus:bg-white"
           placeholder={placeholder}
           disabled={disabled}
         />
@@ -71,12 +76,13 @@ const Account = () => {
   const [status, setStatus] = useState({ type: '', message: '' });
   const [previewAvatar, setPreviewAvatar] = useState(null);
 
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   useEffect(() => {
     const storedUser = sessionStorage.getItem('user');
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
-
         const splitName = parsedUser.name ? parsedUser.name.split(' ') : ['', ''];
         const initialFirstName = parsedUser.firstName || splitName[0] || '';
         const initialLastName = parsedUser.lastName || splitName.slice(1).join(' ') || '';
@@ -85,11 +91,9 @@ const Account = () => {
           firstName: initialFirstName,
           lastName: initialLastName,
           email: parsedUser.email || '',
-
           schoolName: parsedUser.schoolName || '',
           companyName: parsedUser.companyName || '',
           bio: parsedUser.bio || '',
-
           avatar: parsedUser.picture || parsedUser.avatar || defaultAvatar,
         });
       } catch (e) {
@@ -117,22 +121,18 @@ const Account = () => {
 
     try {
       const token = sessionStorage.getItem('token');
-
-      if (!token) {
-        console.warn('Chưa có token!');
-      }
+      if (!token) console.warn('Chưa có token!');
 
       const res = await fetch('https://project-doan1-backend.onrender.com/api/user/update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`, // Gửi kèm token
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
       });
 
       if (!res.ok) throw new Error('Không thể cập nhật. Vui lòng thử lại.');
-
       const data = await res.json();
 
       const currentUser = JSON.parse(sessionStorage.getItem('user') || '{}');
@@ -170,142 +170,241 @@ const Account = () => {
 
   const getAvatarSrc = () => {
     if (previewAvatar) return previewAvatar;
-
     const avt = formData.avatar;
     if (!avt) return defaultAvatar;
     if (avt.startsWith('http')) return avt;
-
     return `https://project-doan1-backend.onrender.com${avt}`;
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans dark:bg-[#0a0a0a]">
-      {/* Sidebar (Ẩn trên mobile) */}
-      <aside className="hidden w-64 flex-col border-r border-gray-200 bg-white p-5 md:flex dark:border-gray-800 dark:bg-black">
-        <div className="mb-8 flex items-center gap-2 text-xl font-bold text-gray-800 dark:text-white">
-          <Settings className="text-teal-500" />
-          <span>MySettings</span>
+    <div className="flex min-h-screen bg-[#121212] bg-gradient-to-br from-[#121212] via-black to-zinc-900 font-sans transition-colors duration-500 dark:from-stone-50 dark:via-white dark:to-amber-50">
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm transition-opacity md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
+      {/*Offcanvas Mobile + Sticky Desktop*/}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex h-full w-72 flex-col border-r border-white/10 bg-[#121212]/95 px-6 py-8 backdrop-blur-xl transition-transform duration-300 ease-in-out dark:border-stone-200/60 dark:bg-white/95 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:sticky md:top-0 md:translate-x-0 md:bg-white/5 md:dark:bg-white/60`}
+      >
+        {/* Sidebar Header */}
+        <div className="mb-10 flex items-center justify-between">
+          <div className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-white dark:text-gray-800">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white">
+              <Settings size={22} />
+            </div>
+            <span>Settings</span>
+          </div>
+          {/* Close Button (Mobile Only) */}
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="rounded-full p-1 text-gray-400 hover:bg-white/10 hover:text-white md:hidden dark:text-gray-500 dark:hover:bg-black/5 dark:hover:text-black"
+          >
+            <X size={24} />
+          </button>
         </div>
 
-        <div className="mb-6 text-center">
-          <img
-            src={getAvatarSrc()}
-            alt="User"
-            className="mx-auto h-16 w-16 rounded-full object-cover ring-2 ring-gray-100"
-          />
-          <h3 className="mt-3 truncate text-sm font-semibold text-gray-900 dark:text-white">
+        {/* Mini Profile Widget */}
+        <div className="mb-8 border border-white/5 bg-white/5 p-4 text-center dark:border-white/50 dark:bg-white/40 dark:shadow-lg dark:shadow-stone-200/50">
+          <div className="relative mx-auto h-16 w-16">
+            <img
+              src={getAvatarSrc()}
+              alt="User"
+              className="h-full w-full rounded-full object-cover ring-2 ring-white/10 dark:ring-white"
+            />
+            <span className="absolute right-0 bottom-0 h-4 w-4 rounded-full border-2 border-[#121212] bg-emerald-500 dark:border-white"></span>
+          </div>
+          <h3 className="mt-3 truncate text-sm font-bold text-gray-200 dark:text-gray-800">
             {formData.firstName} {formData.lastName}
           </h3>
+          <p className="text-xs font-medium text-gray-500 dark:text-gray-500">Member</p>
         </div>
 
-        <nav className="space-y-1">
-          <a
-            href="#"
-            className="flex items-center gap-3 rounded-lg bg-teal-50 px-3 py-2 text-sm font-medium text-teal-700 dark:bg-teal-500/10 dark:text-teal-400"
-          >
-            <User size={18} /> Thông tin cá nhân
-          </a>
-          <a
-            href="/"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-          >
-            <Home size={18} /> Trang chủ
-          </a>
+        {/* Navigation */}
+        <nav className="space-y-2">
+          <div className="px-3 pb-2 text-xs font-bold text-gray-400 uppercase">Menu</div>
+          {/* Wrap NavItems để đóng menu khi click trên mobile */}
+          <div onClick={() => setIsSidebarOpen(false)}>
+            <NavItem href="#" icon={User} label="Thông tin cá nhân" active />
+            <NavItem href="/favorites" icon={Star} label="Yêu thích" />
+            <NavItem href="/study-favorites/:deckId" icon={Book} label="Học từ vựng yêu thích" />
+            <NavItem href="/progress" icon={Activity} label="Tiến trình" />
+            <NavItem href="/" icon={Home} label="Trang chủ" />
+          </div>
         </nav>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8">
-        <div className="mx-auto max-w-4xl">
-          <h1 className="mb-2 text-2xl font-bold text-gray-900 dark:text-white">Hồ sơ cá nhân</h1>
-          <p className="mb-8 text-sm text-gray-500">
-            Quản lý thông tin hiển thị của bạn trên hệ thống.
-          </p>
+      {/* --- Main Content --- */}
+      <main className="flex-1 p-6 md:p-10">
+        {/* Background Decor */}
+        <div className="fixed -top-20 right-0 -z-10 h-96 w-96 rounded-full bg-amber-400/10 blur-[100px]"></div>
+        <div className="fixed bottom-0 left-0 -z-10 h-96 w-96 rounded-full bg-blue-400/10 blur-[100px]"></div>
 
-          {/* Thông báo */}
+        <div className="mx-auto max-w-5xl">
+          <header className="mb-10 flex items-center gap-4">
+            {/* Mobile Menu Trigger Button */}
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className="rounded-lg bg-white/10 p-2 text-white hover:bg-white/20 md:hidden dark:bg-black/5 dark:text-gray-800 dark:hover:bg-black/10"
+            >
+              <Menu size={24} />
+            </button>
+
+            <div className="flex-1">
+              <h1 className="bg-gradient-to-r from-white to-gray-400 bg-clip-text text-3xl font-extrabold tracking-tight text-transparent md:text-4xl dark:from-gray-900 dark:to-gray-600">
+                Hồ sơ của bạn
+              </h1>
+              <p className="mt-2 text-base text-gray-400 md:text-lg dark:text-gray-500">
+                Quản lý thông tin cá nhân và hiển thị công khai.
+              </p>
+            </div>
+          </header>
+
+          {/* Notification Toast */}
           {status.message && (
             <div
-              className={`mb-6 flex items-center gap-2 rounded-lg p-4 text-sm font-medium ${status.type === 'success' ? 'border border-green-200 bg-green-50 text-green-700' : 'border border-red-200 bg-red-50 text-red-700'}`}
+              className={`animate-fade-in-down mb-6 flex items-center gap-3 rounded-xl border p-4 font-medium shadow-lg backdrop-blur-md ${
+                status.type === 'success'
+                  ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400 dark:border-emerald-200 dark:bg-emerald-50/80 dark:text-emerald-700'
+                  : 'border-red-500/20 bg-red-500/10 text-red-400 dark:border-red-200 dark:bg-red-50/80 dark:text-red-700'
+              }`}
             >
-              {status.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
+              {status.type === 'success' ? (
+                <div className="rounded-full bg-emerald-500/20 p-1 text-emerald-600 dark:bg-emerald-100">
+                  <CheckCircle size={20} />
+                </div>
+              ) : (
+                <div className="rounded-full bg-red-500/20 p-1 text-red-600 dark:bg-red-100">
+                  <AlertCircle size={20} />
+                </div>
+              )}
               {status.message}
             </div>
           )}
 
-          <div className="grid gap-8 lg:grid-cols-3">
-            {/* Cột trái: Avatar */}
-            <div className="h-fit rounded-2xl border border-gray-200 bg-white p-6 text-center shadow-sm dark:border-gray-800 dark:bg-[#121212]">
-              <div className="group relative mx-auto inline-block">
-                <div className="h-32 w-32 overflow-hidden rounded-full border-4 border-white shadow-md dark:border-gray-700">
-                  <img src={getAvatarSrc()} className="h-full w-full object-cover" alt="Avatar" />
+          <div className="grid gap-8 lg:grid-cols-12">
+            {/* Left Column: Avatar Card */}
+            <div className="lg:col-span-4">
+              <div className="sticky top-10 flex flex-col items-center border border-white/5 bg-white/5 p-8 text-center backdrop-blur-xl dark:border-white/60 dark:bg-white/40 dark:shadow-2xl dark:shadow-stone-200/50">
+                <div className="group relative mb-6 inline-block">
+                  <div className="relative h-40 w-40 overflow-hidden rounded-full border-4 border-white/10 bg-gray-800 shadow-2xl transition-transform duration-500 group-hover:scale-105 dark:border-white dark:bg-gray-100">
+                    <img src={getAvatarSrc()} className="h-full w-full object-cover" alt="Avatar" />
+                  </div>
+                  <label className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black/40 opacity-0 backdrop-blur-sm transition-all duration-300 group-hover:opacity-100">
+                    <Camera className="text-white drop-shadow-lg" size={32} />
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                    />
+                  </label>
+                  <div className="absolute right-2 bottom-2 rounded-full bg-[#1e1e1e] p-2 text-amber-500 shadow-lg dark:bg-white">
+                    <Sparkles size={16} fill="currentColor" />
+                  </div>
                 </div>
-                <label className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-full bg-black/50 opacity-0 transition-all group-hover:opacity-100">
-                  <Camera className="text-white" size={24} />
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                  />
-                </label>
+
+                <h2 className="text-xl font-bold text-white dark:text-gray-900">
+                  {formData.firstName} {formData.lastName}
+                </h2>
+
+                <div className="mt-6 w-full border border-blue-500/20 bg-[#1d1d1d] p-4 text-left dark:border-blue-100/50 dark:bg-blue-50/50">
+                  <p className="text-xs font-bold text-blue-400 uppercase dark:text-blue-600">
+                    Pro Tip
+                  </p>
+                  <p className="mt-1 text-xs text-blue-200/70 dark:text-blue-800/70">
+                    Ảnh hồ sơ chuyên nghiệp giúp tăng độ tin cậy của tài khoản lên 40%.
+                  </p>
+                </div>
               </div>
-              <p className="mt-4 text-xs text-gray-500">Cho phép định dạng: JPG, PNG (Max 5MB)</p>
             </div>
 
-            {/* Cột phải: Form nhập liệu */}
-            <div className="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm lg:col-span-2 dark:border-gray-800 dark:bg-[#121212]">
-              <div className="grid gap-6 md:grid-cols-2">
-                <InputField
-                  label="Họ (First Name)"
-                  icon={User}
-                  value={formData.firstName}
-                  onChange={(e) => handleInputChange('firstName', e.target.value)}
-                />
-                <InputField
-                  label="Tên (Last Name)"
-                  icon={User}
-                  value={formData.lastName}
-                  onChange={(e) => handleInputChange('lastName', e.target.value)}
-                />
-              </div>
+            {/* Right Column: Form Details */}
+            <div className="lg:col-span-8">
+              <div className="border border-white/5 bg-white/5 p-8 backdrop-blur-xl dark:border-white/60 dark:bg-white/40 dark:shadow-2xl dark:shadow-stone-200/50">
+                <div className="mb-8 flex items-center justify-between border-b border-white/10 pb-4 dark:border-gray-200/60">
+                  <h3 className="text-lg font-bold text-white dark:text-gray-900">
+                    Thông tin chi tiết
+                  </h3>
+                  <span className="text-xs font-medium text-gray-400">Lần sửa cuối: Vừa xong</span>
+                </div>
 
-              <InputField label="Email" icon={Mail} value={formData.email} disabled={true} />
+                <div className="space-y-8">
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <InputField
+                      label="Họ (First Name)"
+                      icon={User}
+                      value={formData.firstName}
+                      onChange={(e) => handleInputChange('firstName', e.target.value)}
+                    />
+                    <InputField
+                      label="Tên (Last Name)"
+                      icon={User}
+                      value={formData.lastName}
+                      onChange={(e) => handleInputChange('lastName', e.target.value)}
+                    />
+                  </div>
 
-              <div className="grid gap-6 md:grid-cols-2">
-                <InputField
-                  label="Trường học"
-                  icon={GraduationCap}
-                  value={formData.schoolName}
-                  onChange={(e) => handleInputChange('schoolName', e.target.value)}
-                  placeholder="VD: ĐH Bách Khoa"
-                />
-                <InputField
-                  label="Công ty / Nơi làm việc"
-                  icon={Briefcase}
-                  value={formData.companyName}
-                  onChange={(e) => handleInputChange('companyName', e.target.value)}
-                  placeholder="VD: FPT Software"
-                />
-              </div>
+                  <InputField
+                    label="Địa chỉ Email"
+                    icon={Mail}
+                    value={formData.email}
+                    disabled={true}
+                  />
 
-              <InputField
-                label="Giới thiệu ngắn (Bio)"
-                type="textarea"
-                icon={FileText}
-                value={formData.bio}
-                onChange={(e) => handleInputChange('bio', e.target.value)}
-                placeholder="Một chút về bản thân bạn..."
-              />
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <InputField
+                      label="Trường học"
+                      icon={GraduationCap}
+                      value={formData.schoolName}
+                      onChange={(e) => handleInputChange('schoolName', e.target.value)}
+                      placeholder="VD: ĐH Bách Khoa TP.HCM"
+                    />
+                    <InputField
+                      label="Nơi làm việc"
+                      icon={Briefcase}
+                      value={formData.companyName}
+                      onChange={(e) => handleInputChange('companyName', e.target.value)}
+                      placeholder="VD: Google, FPT..."
+                    />
+                  </div>
 
-              <div className="flex justify-end border-t border-gray-100 pt-4 dark:border-gray-700">
-                <button
-                  onClick={handleSave}
-                  disabled={isLoading}
-                  className="flex items-center gap-2 rounded-lg bg-teal-600 px-6 py-2.5 text-sm font-semibold text-white transition-all hover:bg-teal-700 disabled:opacity-70"
-                >
-                  {isLoading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
-                  Lưu thay đổi
-                </button>
+                  <InputField
+                    label="Giới thiệu (Bio)"
+                    type="textarea"
+                    icon={FileText}
+                    value={formData.bio}
+                    onChange={(e) => handleInputChange('bio', e.target.value)}
+                    placeholder="Hãy viết đôi lời thú vị về bản thân bạn..."
+                  />
+                </div>
+
+                <div className="mt-10 flex justify-end gap-4 border-t border-white/10 pt-6 dark:border-gray-200/60">
+                  <button
+                    className="px-6 py-3 text-sm font-semibold text-gray-200 transition-colors hover:bg-white/10 hover:text-white dark:text-gray-500 dark:hover:bg-gray-100/50 dark:hover:text-gray-900"
+                    onClick={() => window.location.reload()}
+                  >
+                    Hủy bỏ
+                  </button>
+
+                  <button
+                    onClick={handleSave}
+                    disabled={isLoading}
+                    className="group relative flex items-center gap-2 overflow-hidden bg-gradient-to-r from-amber-400 to-orange-500 px-8 py-3 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-1 hover:shadow-amber-500/50 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full"></div>
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="animate-spin" size={18} />
+                        Đang xử lý...
+                      </>
+                    ) : (
+                      <>Lưu thay đổi</>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -314,5 +413,26 @@ const Account = () => {
     </div>
   );
 };
+
+const NavItem = ({ href, icon: Icon, label, active }) => (
+  <a
+    href={href}
+    className={`group flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold transition-all duration-200 ${
+      active
+        ? 'bg-amber-500/20 text-amber-400 dark:bg-amber-100 dark:text-amber-700'
+        : 'text-gray-400 hover:bg-white/5 hover:text-white dark:text-gray-500 dark:hover:bg-gray-100/50 dark:hover:text-gray-900'
+    }`}
+  >
+    <Icon
+      size={20}
+      className={`transition-colors ${
+        active
+          ? 'text-amber-400 dark:text-amber-600'
+          : 'text-gray-500 group-hover:text-gray-300 dark:text-gray-400 dark:group-hover:text-gray-600'
+      }`}
+    />
+    {label}
+  </a>
+);
 
 export default Account;

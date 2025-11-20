@@ -11,7 +11,7 @@ import { useDecks } from '../context/DeckContext';
 const API_URL = 'https://project-doan1-backend.onrender.com/api/gettopiccard';
 
 export default function CreateVocabulary() {
-  // --- 2. LẤY STATE TOÀN CỤC ---
+  //  LẤY STATE TOÀN CỤC
   const {
     decks,
     selectedDeck,
@@ -28,7 +28,7 @@ export default function CreateVocabulary() {
     getAuthHeaders, // Lấy hàm này từ context
   } = useDecks();
 
-  // --- STATE LOCAL (chỉ cho UI form) ---
+  //  STATE LOCAL
   const [isOffcanvasOpen, setIsOffcanvasOpen] = useState(false);
   const [editingCardId, setEditingCardId] = useState(null);
   const [isAddingDeck, setIsAddingDeck] = useState(false);
@@ -42,27 +42,24 @@ export default function CreateVocabulary() {
     example: '',
   });
 
-  // --- 3. HÀM XỬ LÝ CHỦ ĐỀ (GỌI CONTEXT) ---
+  // HÀM XỬ LÝ CHỦ ĐỀ
 
   const handleSelectDeck = (deckId) => {
     setEditingCardId(null);
     setIsAddingCard(false);
     selectDeck(deckId);
-    setIsOffcanvasOpen(false); // (Logic riêng của trang này)
+    setIsOffcanvasOpen(false);
   };
 
   const handleUpdateDeck = async (e) => {
     e.preventDefault();
     if (!selectedDeck) return;
     try {
-      // Dùng setSelectedDeck của context để cập nhật form
       await updateDeck(selectedDeck.deck_id, {
         title: selectedDeck.title,
         description: selectedDeck.description,
       });
-    } catch (err) {
-      /* Lỗi đã được context xử lý */
-    }
+    } catch (err) {}
   };
 
   const handleDeleteDeck = async () => {
@@ -70,9 +67,7 @@ export default function CreateVocabulary() {
     if (window.confirm(`Bạn có chắc muốn xóa chủ đề "${selectedDeck.title}"?`)) {
       try {
         await deleteDeck(selectedDeck.deck_id);
-      } catch (err) {
-        /* Lỗi đã được context xử lý */
-      }
+      } catch (err) {}
     }
   };
 
@@ -84,12 +79,10 @@ export default function CreateVocabulary() {
       setNewDeckTitle('');
       setNewDeckDescription('');
       setIsAddingDeck(false);
-    } catch (err) {
-      /* Lỗi đã được context xử lý */
-    }
+    } catch (err) {}
   };
 
-  // --- 4. CÁC HÀM CỦA TỪ VỰNG (CARD) (GIỮ NGUYÊN) ---
+  // CÁC HÀM CỦA TỪ VỰNG
 
   const handleUpdateCard = async (cardId, updatedData) => {
     const authHeaders = getAuthHeaders();
@@ -145,7 +138,7 @@ export default function CreateVocabulary() {
     return <div className="p-4 text-red-500">{error}</div>;
   }
 
-  // --- 5. JSX HOÀN CHỈNH (KHÔNG RÚT GỌN) ---
+  // JSX HOÀN CHỈNH
   return (
     <div className="relative flex h-screen overflow-hidden">
       {/* Offcanvas (Sidebar) */}
@@ -250,7 +243,6 @@ export default function CreateVocabulary() {
 
       {/*Responsive cho panel chính */}
       <div className="flex w-full flex-col bg-[#1d1d1d] bg-gradient-to-br p-6 lg:w-2/3 dark:from-amber-100 dark:via-white dark:to-gray-100">
-        {/* nút Hamburger (chỉ hiển thị trên mobile) */}
         <button
           onClick={() => setIsOffcanvasOpen(true)}
           className="mb-4 text-zinc-200 lg:hidden dark:text-stone-700"
@@ -258,7 +250,7 @@ export default function CreateVocabulary() {
           <Menu size={28} />
         </button>
 
-        {isLoadingDetails ? ( // Dùng isLoadingDetails
+        {isLoadingDetails ? (
           <div className="mt-20 text-center text-gray-500">Đang tải chi tiết...</div>
         ) : selectedDeck ? (
           <div className="scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 hover:scrollbar-thumb-gray-600 flex-1 overflow-auto">
@@ -400,7 +392,7 @@ export default function CreateVocabulary() {
         )}
       </div>
 
-      {/*Thêm Overlay (phần nền mờ) khi offcanvas mở */}
+      {/*Overlay khi offcanvas mở */}
       {isOffcanvasOpen && (
         <div
           onClick={() => setIsOffcanvasOpen(false)}

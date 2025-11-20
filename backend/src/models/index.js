@@ -25,7 +25,9 @@ Favorite.belongsTo(User, { foreignKey: 'user_id' });
 Topics.hasMany(Favorite, { foreignKey: 'deck_id' });
 Favorite.belongsTo(Topics, { foreignKey: 'deck_id', as: 'topic' });
 
-Flashcard.hasMany(Favorite, { foreignKey: 'card_id' });
+Topics.hasMany(Favorite, { foreignKey: 'deck_id' });
+
+Flashcard.hasMany(Flashcard, { foreignKey: 'deck_id', as: 'flashcards' });
 Favorite.belongsTo(Flashcard, { foreignKey: 'card_id', as: 'flashcard' });
 
 export { sequelize, Topics, Flashcard, User, UserProgress, Favorite };

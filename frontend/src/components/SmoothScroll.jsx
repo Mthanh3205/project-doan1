@@ -6,7 +6,6 @@ const SmoothScroll = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Nếu route không dùng scroll Lenis (ví dụ /CreateVocabulary), return
     if (location.pathname === '/CreateVocabulary') {
       if (window.lenisInstance) {
         window.lenisInstance.destroy();
@@ -27,7 +26,7 @@ const SmoothScroll = () => {
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      smoothTouch: false,
+      smoothTouch: true,
     });
 
     window.lenisInstance = lenis;

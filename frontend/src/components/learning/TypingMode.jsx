@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Check, X, ArrowRight, Keyboard, ArrowRightLeft } from 'lucide-react';
+import { Check, X, Keyboard, ArrowRightLeft, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 
 function TypingMode({ card, index, nextCard, userId }) {
@@ -11,6 +11,7 @@ function TypingMode({ card, index, nextCard, userId }) {
   const [isCorrect, setIsCorrect] = useState(false);
   const [showAnswer, setShowAnswer] = useState(false);
   const [message, setMessage] = useState('');
+
   useEffect(() => {
     setUserInput('');
     setIsChecked(false);
@@ -22,7 +23,7 @@ function TypingMode({ card, index, nextCard, userId }) {
   // Hàm chuẩn hóa chuỗi
   const normalize = (text) => (text || '').toLowerCase().trim();
 
-  // Xác định câu hỏi và câu trả lời dựa trên chiều dịch
+  // Xác định câu hỏi và câu trả lời
   const questionText = typingDirection === 'vi-en' ? card.front_text : card.back_text;
   const correctAnswer = typingDirection === 'vi-en' ? card.back_text : card.front_text;
 
@@ -39,37 +40,37 @@ function TypingMode({ card, index, nextCard, userId }) {
     setIsChecked(true);
     if (normalizedInput === normalizedCorrect) {
       setIsCorrect(true);
-      setMessage('Chính xác! Ghi nhớ tốt.');
+      setMessage('Chính xác!');
 
-      // --- 4. GỌI API ĐỂ LƯU TIẾN TRÌNH ---
+      // Gọi API
       try {
         await axios.post('https://project-doan1-backend.onrender.com/api/progress/mark', {
           userId: userId,
           cardId: card.card_id,
-          deckId: card.deck_id, // Đảm bảo API trả về 'deck_id' trong object 'card'
+          deckId: card.deck_id,
           mode: 'typing',
         });
       } catch (err) {
         console.error('Lỗi khi lưu tiến trình typing:', err);
-        // Không chặn người dùng, chỉ log lỗi
       }
-      // --- KẾT THÚC GỌI API ---
     } else {
       setIsCorrect(false);
-      setMessage('Chưa chính xác. Thử lại hoặc xem đáp án.');
+      setMessage('Chưa chính xác.');
     }
-  }, [userInput, correctAnswer, userId, card]); // 5. Thêm `userId` và `card` vào dependencies
+  }, [userInput, correctAnswer, userId, card]);
 
   // HÀM CHUYỂN THẺ
   const handleNext = () => {
     nextCard();
   };
 
-  //XỬ LÝ PHÍM TẮT
+  // XỬ LÝ PHÍM TẮT
   const handleKeyDown = useCallback(
     (event) => {
-      // Bỏ qua nếu đang gõ trong input/textarea
-      if (event.target.tagName === 'TEXTAREA' || event.target.tagName === 'INPUT') {
+      if (
+        event.target.tagName === 'TEXTAREA' ||
+        (event.target.tagName === 'INPUT' && event.target !== document.activeElement)
+      ) {
         return;
       }
       if (event.key === 'Enter') {
@@ -84,117 +85,124 @@ function TypingMode({ card, index, nextCard, userId }) {
     [isChecked, checkAnswer, handleNext]
   );
 
-  // Gắn listener cho phím Enter
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
   return (
-    <div className="flex flex-col items-center justify-center lg:col-span-2">
-      <h2 className="mb-4 text-3xl font-extrabold text-amber-600 dark:text-green-700">
-        Chế độ Điền từ <Keyboard className="ml-2 inline" size={28} />
-      </h2>
+    <div className="relative flex flex-col items-center justify-center bg-white/5 p-8 backdrop-blur-xl lg:col-span-2 dark:bg-white/40">
+      {/* Header */}
+      <div className="mb-8 flex w-full flex-col items-center justify-between gap-4 sm:flex-row">
+        <h2 className="flex items-center gap-3 text-2xl font-bold text-amber-500 dark:text-green-700">
+          <Keyboard className="h-8 w-8" />
+          <span>Typing Mode</span>
+        </h2>
 
-      {/* Nút chuyển chiều dịch*/}
-      <div className="mb-6 flex bg-stone-200 p-1 dark:bg-gray-700">
-        <button
-          onClick={() => setTypingDirection('vi-en')}
-          className={`px-4 py-1 text-sm font-semibold transition-colors ${
-            typingDirection === 'vi-en'
-              ? 'bg-[#1d1d1d] text-white shadow'
-              : 'text-gray-600 hover:bg-stone-300 dark:text-gray-300 dark:hover:bg-gray-600'
-          }`}
-        >
-          Việt &rarr; Anh
-        </button>
-        <button
-          onClick={() => setTypingDirection('en-vi')}
-          className={`px-4 py-1 text-sm font-semibold transition-colors ${
-            typingDirection === 'en-vi'
-              ? 'bg-[#1d1d1d] text-white shadow'
-              : 'text-gray-600 hover:bg-stone-300 dark:text-gray-300 dark:hover:bg-gray-600'
-          }`}
-        >
-          Anh &rarr; Việt
-        </button>
+        {/* Switch Direction */}
+        <div className="flex items-center bg-black/20 p-1 backdrop-blur-sm dark:bg-white/50">
+          <button
+            onClick={() => setTypingDirection('vi-en')}
+            className={`px-4 py-1.5 text-sm font-medium transition-all ${
+              typingDirection === 'vi-en'
+                ? 'bg-amber-500 text-white '
+                : 'text-gray-400 hover:text-white dark:text-gray-600 dark:hover:text-black'
+            }`}
+          >
+            Việt &rarr; Anh
+          </button>
+          <button
+            onClick={() => setTypingDirection('en-vi')}
+            className={`px-4 py-1.5 text-sm font-medium transition-all ${
+              typingDirection === 'en-vi'
+                ? 'bg-amber-500 text-white '
+                : 'text-gray-400 hover:text-white dark:text-gray-600 dark:hover:text-black'
+            }`}
+          >
+            Anh &rarr; Việt
+          </button>
+        </div>
       </div>
 
-      {/*Cập nhật để hiển thị câu hỏi động*/}
-      <div className="w-full max-w-lg bg-[#1d1d1d] p-8 text-center shadow-lg dark:bg-green-100">
-        <p className="mb-2 text-gray-300 dark:text-stone-700">
-          {typingDirection === 'vi-en' ? 'Dịch sang Tiếng Anh:' : 'Dịch sang Tiếng Việt:'}
+      {/* Question Card */}
+      <div className="w-full max-w-xl bg-[#121212] p-10 text-center backdrop-blur-sm dark:from-white/60">
+        <p className="mb-4 text-sm font-medium tracking-wider text-gray-400 uppercase dark:text-gray-600">
+          {typingDirection === 'vi-en' ? 'Translate to English' : 'Dịch sang Tiếng Việt'}
         </p>
         <h3 className="text-4xl font-black text-white dark:text-gray-900">{questionText}</h3>
       </div>
 
-      <div className="mt-8 w-full max-w-lg">
-        <input
-          type="text"
-          value={userInput}
-          onChange={(e) => setUserInput(e.target.value)}
-          placeholder="Nhập đáp án tại đây..."
-          disabled={isChecked && isCorrect}
-          className={`w-full bg-[#1d1d1d] p-4 text-xl text-zinc-200 transition-colors placeholder:text-zinc-200 focus:outline-none dark:border-1 dark:bg-white dark:text-gray-900 dark:placeholder:text-stone-700 ${
-            isChecked
-              ? isCorrect
-                ? 'border-green-500 dark:bg-green-50'
-                : 'border-red-500 dark:bg-red-50'
-              : 'border-stone-300 focus:border-amber-400 dark:border-gray-300'
-          }`}
-        />
+      {/* Input Area */}
+      <div className="mt-8 w-full max-w-xl">
+        <div className="relative">
+          <input
+            type="text"
+            value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
+            placeholder="Nhập câu trả lời của bạn..."
+            autoFocus
+            disabled={isChecked && isCorrect}
+            className={`w-full bg-black/20 px-6 py-4 text-xl text-white placeholder-gray-500 backdrop-blur-md transition-all focus:ring-2 focus:outline-none dark:bg-white/50 dark:text-black dark:placeholder-gray-500 ${
+              isChecked
+                ? isCorrect
+                  ? 'border-green-500/50 bg-green-500/10 focus:ring-green-500/20'
+                  : 'border-red-500/50 bg-red-500/10 focus:ring-red-500/20'
+                : 'border-transparent focus:border-amber-500/50 focus:bg-black/40 focus:ring-amber-500/20 dark:focus:bg-white/80'
+            }`}
+          />
+          {isChecked && (
+            <div className="absolute top-1/2 right-4 -translate-y-1/2">
+              {isCorrect ? <Check className="text-green-500" /> : <X className="text-red-500" />}
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="mt-6 flex w-full max-w-lg justify-between gap-4">
-        {!isChecked && (
+      {/* Feedback & Actions */}
+      <div className="mt-8 min-h-[80px] w-full max-w-xl text-center">
+        {message && (
+          <div
+            className={`mb-4 flex items-center justify-center gap-2 text-lg font-bold ${isCorrect ? 'text-green-400' : 'text-red-400'}`}
+          >
+            {message}
+          </div>
+        )}
+
+        {!isChecked ? (
           <button
             onClick={checkAnswer}
-            className="mt-4 flex-1 border py-3 text-lg font-semibold text-zinc-100 transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
+            className="w-50 rounded-full border bg-[#121212] py-3.5 font-bold text-white transition-all hover:bg-amber-500 dark:bg-gray-200 dark:text-gray-900 dark:hover:bg-green-500 dark:hover:text-white"
           >
             Kiểm tra (Enter)
           </button>
-        )}
-
-        {isChecked && (
-          <>
+        ) : (
+          <div className="flex gap-4">
             {!isCorrect && (
               <button
                 onClick={() => setShowAnswer(true)}
-                className="w-1/3 bg-stone-500 py-3 text-lg font-semibold text-white shadow-md transition-all hover:bg-stone-600"
+                className="flex-1 bg-white/5 py-3.5 font-semibold text-gray-300 hover:bg-white/10 hover:text-white dark:text-gray-600 dark:hover:bg-gray-100"
               >
                 Xem đáp án
               </button>
             )}
             <button
               onClick={handleNext}
-              className={`py-3 text-lg font-semibold text-white shadow-lg transition-all ${
-                isCorrect
-                  ? 'flex-1 bg-amber-400 hover:bg-amber-500 dark:bg-green-600 dark:hover:bg-green-700'
-                  : 'w-2/3 bg-amber-600 hover:bg-amber-700'
-              }`}
+              className="flex-1 bg-gradient-to-r from-amber-500 to-orange-600 py-3.5 font-bold text-white transition-all hover:-translate-y-0.5 dark:from-green-500 dark:to-teal-600"
             >
-              Tiếp theo
+              Tiếp theo (Enter)
             </button>
-          </>
+          </div>
         )}
-      </div>
 
-      <div className="mt-6 min-h-[50px] w-full max-w-lg text-center">
-        {message && (
-          <p className={`text-xl font-bold ${isCorrect ? 'text-green-600' : 'text-red-600'}`}>
-            {message}{' '}
-            {isCorrect ? (
-              <Check className="inline" size={24} />
-            ) : (
-              <X className="inline" size={24} />
-            )}
+        {/* Show Answer Result */}
+        <div
+          className={`mt-4 overflow-hidden transition-all duration-500 ${showAnswer && !isCorrect ? 'max-h-20 opacity-100' : 'max-h-0 opacity-0'}`}
+        >
+          <p className="text-stone-400 dark:text-stone-500">Đáp án đúng là:</p>
+          <p className="text-xl font-bold text-amber-400 underline decoration-amber-500/50 underline-offset-4 dark:text-green-600">
+            {correctAnswer}
           </p>
-        )}
-        {showAnswer && !isCorrect && (
-          <p className="mt-2 text-xl font-medium text-stone-500 dark:text-stone-500">
-            Đáp án đúng: <span className="font-bold underline">{correctAnswer}</span>
-          </p>
-        )}
+        </div>
       </div>
     </div>
   );

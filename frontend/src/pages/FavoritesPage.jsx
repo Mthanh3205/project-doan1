@@ -1,6 +1,5 @@
-// src/pages/FavoritesPage.jsx
 import React, { useState, useEffect } from 'react';
-import Header from '@/components/Header'; // Hoàn lại đường dẫn alias
+import Header from '@/components/Header';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Heart } from 'lucide-react';
@@ -12,21 +11,36 @@ const FavoritesPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const userId = 1; // Lấy userId từ context hoặc hardcode
+  const userId = 1;
 
-  // Hàm fetch danh sách yêu thích
+  // Hàm fetch danh sách yêu thích (Đã sửa để lấy word_count)
   const fetchFavorites = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        `https://project-doan1-backend.onrender.com/api/favorites/user/${userId}`
-      );
-      const favorites = response.data;
+      // 1. Gọi song song 2 API: Lấy danh sách yêu thích VÀ Lấy tất cả chủ đề (để lấy word_count)
+      const [favResponse, topicsResponse] = await Promise.all([
+        axios.get(`https://project-doan1-backend.onrender.com/api/favorites/user/${userId}`),
+        axios.get(`https://project-doan1-backend.onrender.com/api/topics/user/${userId}`),
+      ]);
 
-      // Phân loại
+      const favorites = favResponse.data;
+      const allTopics = Array.isArray(topicsResponse.data) ? topicsResponse.data : [];
+
+      // 2. Xử lý Topics: Ghép thông tin word_count từ allTopics vào favorites
       const topics = favorites
         .filter((fav) => fav.favorite_type === 'deck' && fav.topic)
-        .map((fav) => fav.topic);
+        .map((fav) => {
+          // Tìm chủ đề tương ứng trong danh sách đầy đủ để lấy word_count
+          const fullTopicInfo = allTopics.find((t) => t.deck_id === fav.topic.deck_id);
+
+          // Trả về object đã gộp (ưu tiên thông tin từ fullTopicInfo nếu có)
+          return {
+            ...fav.topic,
+            word_count: fullTopicInfo ? fullTopicInfo.word_count : fav.topic.word_count,
+          };
+        });
+
+      // 3. Xử lý Cards (Giữ nguyên)
       const cards = favorites
         .filter((fav) => fav.favorite_type === 'card' && fav.flashcard)
         .map((fav) => fav.flashcard);
@@ -44,10 +58,6 @@ const FavoritesPage = () => {
   useEffect(() => {
     fetchFavorites();
   }, [userId]);
-
-  // Hàm xử lý khi bỏ yêu thích (tùy chọn, vì có thể người dùng muốn làm điều này từ trang chính)
-  // Nếu bạn muốn thêm nút bỏ yêu thích ở đây, bạn sẽ cần gọi lại API toggle
-  // và sau đó gọi lại fetchFavorites() để cập nhật UI.
 
   return (
     <div className="min-h-screen bg-[#121212] bg-gradient-to-br text-white dark:from-amber-100 dark:via-white dark:to-gray-100">
@@ -87,8 +97,13 @@ const FavoritesPage = () => {
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
-                        {/* Bạn có thể cần một query khác để lấy word_count ở đây nếu cần */}
-                        <p className="mt-2 text-sm text-gray-500">ID: {topic.deck_id}</p>
+                        {/* HIỂN THỊ SỐ LƯỢNG TỪ */}
+                        <p className="mt-2 text-sm text-gray-500">
+                          Số từ vựng:{' '}
+                          <span className="font-bold text-gray-300 dark:text-stone-700">
+                            {topic.word_count ?? 0}
+                          </span>
+                        </p>
                       </CardContent>
                     </Card>
                   ))}
