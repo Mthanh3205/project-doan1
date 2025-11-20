@@ -31,7 +31,7 @@ const checkFlashcardOwnership = async (cardId, userId) => {
 //Get all topics
 export const getAllDecks = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id;
     const decks = await Topics.findAll({
       where: { user_id: userId }, // Chỉ lấy deck của user này
       order: [['createdAt', 'DESC']],
