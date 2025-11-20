@@ -9,7 +9,7 @@ import {
   createFlashcard,
   updateFlashcard,
   deleteFlashcard,
-} from '../controllers/adminController.js';
+} from '../controllers/createController.js';
 
 import { authenticateToken } from '../middleware/auth.js';
 
