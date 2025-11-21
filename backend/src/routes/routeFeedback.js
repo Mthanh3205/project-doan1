@@ -60,4 +60,21 @@ router.get('/list', async (req, res) => {
   }
 });
 
+//API LẤY LỊCH SỬ ĐÁNH GIÁ CỦA CHÍNH USER ĐANG LOGIN
+router.get('/my-history', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const history = await Feedback.findAll({
+      where: { user_id: userId },
+      order: [['createdAt', 'DESC']],
+    });
+
+    res.json({ success: true, data: history });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Lỗi lấy dữ liệu' });
+  }
+});
+
 export default router;

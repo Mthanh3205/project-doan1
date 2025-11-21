@@ -118,5 +118,25 @@ router.get('/reviews/:id', authenticateToken, admin, async (req, res) => {
     res.status(500).json({ message: 'Lỗi server' });
   }
 });
+//PHẢN HỒI ĐÁNH GIÁ
+router.patch('/reviews/:id/reply', authenticateToken, admin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { replyText } = req.body;
+
+    const review = await Feedback.findByPk(id);
+    if (!review) return res.status(404).json({ message: 'Đánh giá không tồn tại' });
+
+    // Cập nhật phản hồi
+    review.admin_reply = replyText;
+    review.replied_at = new Date();
+    await review.save();
+
+    res.json({ success: true, message: 'Đã gửi phản hồi thành công', data: review });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Lỗi server' });
+  }
+});
 
 export default router;
