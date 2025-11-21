@@ -1,15 +1,12 @@
 import express from 'express';
 import Feedback from '../models/Feedback.js';
 import User from '../models/User.js';
-import { authenticateToken } from '../middleware/auth.js'; // Import middleware xác thực
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// 1. API GỬI ĐÁNH GIÁ (Bắt buộc đăng nhập)
 router.post('/create', authenticateToken, async (req, res) => {
   try {
-    // LẤY ID TỪ TOKEN (Bảo mật tuyệt đối)
-    // req.user được tạo ra từ middleware authenticateToken
     const userId = req.user.id;
 
     const { name, rating, comment, type = 'website', target_id = null } = req.body;
@@ -20,7 +17,7 @@ router.post('/create', authenticateToken, async (req, res) => {
       comment,
       type,
       target_id,
-      user_id: userId, // Server tự điền ID này
+      user_id: userId,
     });
 
     res.json({ success: true, message: 'Gửi đánh giá thành công!', data: newFeedback });
@@ -30,7 +27,6 @@ router.post('/create', authenticateToken, async (req, res) => {
   }
 });
 
-// 2. API LẤY DANH SÁCH (Công khai, lọc lấy 4-5 sao)
 router.get('/list', async (req, res) => {
   try {
     const list = await Feedback.findAll({

@@ -24,10 +24,13 @@ const Footer = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
   const handleReviewClick = () => {
-    const token = localStorage.getItem('accessToken');
-    // Kiểm tra nếu chưa có token -> bắt login
+    const token = sessionStorage.getItem('accessToken');
+
+    console.log('Token hiện tại:', token);
+
     if (!token) {
-      if (window.confirm('Bạn cần đăng nhập để đánh giá. Đi đến trang đăng nhập?')) {
+      const confirmLogin = window.confirm('Bạn cần đăng nhập để gửi đánh giá. Đăng nhập ngay?');
+      if (window.confirmLogin) {
         navigate('/Auth');
       }
       return;

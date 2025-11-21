@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock, User, Chrome, Home, Snowflake } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, Home, Snowflake } from 'lucide-react';
 import GoogleButton from '@/components/ui/GoogleButton';
-
+import { useNavigate } from 'react-router-dom'; // Import hook chuyển trang
 import { useAuth } from '../context/AuthContext';
 
 const Auth = () => {
@@ -15,6 +15,7 @@ const Auth = () => {
   });
 
   const { login } = useAuth();
+  const navigate = useNavigate(); // Khởi tạo điều hướng
 
   const handleInputChange = (e) => {
     setFormData({
@@ -27,7 +28,7 @@ const Auth = () => {
     e.preventDefault();
 
     if (isLogin) {
-      //ĐĂNG NHẬP EMAIL
+      // --- ĐĂNG NHẬP EMAIL ---
       try {
         const res = await fetch('https://project-doan1-backend.onrender.com/api/auth/login', {
           method: 'POST',
@@ -41,11 +42,21 @@ const Auth = () => {
         const data = await res.json();
 
         if (res.ok) {
-          sessionStorage.setItem('token', data.token);
+          // 1. Lưu Token vào sessionStorage (như bạn yêu cầu)
+          // Đổi tên thành 'accessToken' để khớp với file Footer/Modal
+          sessionStorage.setItem('accessToken', data.token);
 
+          // 2. QUAN TRỌNG: Lưu thông tin User để lấy ID cho phần đánh giá
+          sessionStorage.setItem('user', JSON.stringify(data.user));
+
+          // 3. Cập nhật Context
           login(data.user);
 
-          console.log('Auth.jsx: Đăng nhập Email thành công.', data);
+          console.log('Đăng nhập thành công:', data);
+          alert('Đăng nhập thành công!');
+
+          // 4. Chuyển về trang chủ
+          navigate('/');
         } else {
           alert(data.message || 'Đăng nhập thất bại!');
         }
@@ -54,7 +65,7 @@ const Auth = () => {
         alert('Lỗi kết nối server');
       }
     } else {
-      //ĐĂNG KÝ
+      // --- ĐĂNG KÝ ---
       if (formData.password !== formData.confirmPassword) {
         alert('Mật khẩu xác nhận không khớp!');
         return;
@@ -72,7 +83,7 @@ const Auth = () => {
         const data = await res.json();
         if (res.ok) {
           alert('Đăng ký thành công! Vui lòng đăng nhập.');
-          setIsLogin(true); // Tự động chuyển sang tab login
+          setIsLogin(true); // Chuyển sang tab login
         } else {
           alert(data.message || 'Đăng ký thất bại!');
         }
@@ -83,8 +94,8 @@ const Auth = () => {
     }
   };
 
-  //GOOGLE
-  const handleLogin = async (googleUser) => {
+  // --- GOOGLE LOGIN ---
+  const handleLoginGoogle = async (googleUser) => {
     console.log('Google userInfo:', googleUser);
 
     try {
@@ -100,16 +111,19 @@ const Auth = () => {
         }),
       });
 
-      console.log('Status backend:', res.status);
       const data = await res.json();
-      console.log('Response backend:', data);
 
       if (data.token) {
-        sessionStorage.setItem('token', data.token);
+        // 1. Lưu Token
+        sessionStorage.setItem('accessToken', data.token);
 
+        // 2. Lưu User (QUAN TRỌNG)
+        sessionStorage.setItem('user', JSON.stringify(data.user));
+
+        // 3. Cập nhật Context & Chuyển trang
         login(data.user);
-
-        console.log('Auth.jsx: Đăng nhập Google thành công.', data);
+        console.log('Đăng nhập Google thành công.');
+        navigate('/');
       } else {
         alert('Login thất bại!');
       }
@@ -139,7 +153,6 @@ const Auth = () => {
             <a href="/" className="group flex items-center gap-3 pb-6 transition-transform">
               <div className="relative">
                 <Snowflake className="h-10 w-10 text-amber-400 transition-transform duration-700 ease-in-out group-hover:rotate-180" />
-                {/* Thêm hiệu ứng phát sáng mờ phía sau icon cho đồng bộ với Header */}
                 <div className="absolute inset-0 animate-pulse rounded-full bg-amber-400/30 blur-md" />
               </div>
               <span className="bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-4xl font-bold text-transparent italic">
@@ -161,7 +174,7 @@ const Auth = () => {
 
           {/* Google Login Button */}
           <div>
-            <GoogleButton onSuccess={handleLogin} />
+            <GoogleButton onSuccess={handleLoginGoogle} />
           </div>
 
           {/* Divider */}
@@ -178,7 +191,6 @@ const Auth = () => {
 
           {/* Form */}
           <div className="space-y-6">
-            {/* Name field (only for register) */}
             {!isLogin && (
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-300">Họ và tên</label>
@@ -197,7 +209,6 @@ const Auth = () => {
               </div>
             )}
 
-            {/* Email field */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-300">Email</label>
               <div className="relative">
@@ -214,22 +225,19 @@ const Auth = () => {
               </div>
             </div>
 
-            {/* Password field */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-300">Mật khẩu</label>
               <div className="relative">
                 <Lock className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 transform text-slate-400" />
-                <form>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="w-full border border-white/20 bg-white/10 py-3 pr-12 pl-12 text-white placeholder-slate-400 shadow-lg transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-green-100 dark:text-stone-600"
-                    placeholder="Nhập mật khẩu"
-                    required
-                  />
-                </form>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className="w-full border border-white/20 bg-white/10 py-3 pr-12 pl-12 text-white placeholder-slate-400 shadow-lg transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none dark:bg-green-100 dark:text-stone-600"
+                  placeholder="Nhập mật khẩu"
+                  required
+                />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
@@ -245,17 +253,15 @@ const Auth = () => {
                 <label className="text-sm font-medium text-slate-300">Xác nhận mật khẩu</label>
                 <div className="relative">
                   <Lock className="absolute top-1/2 left-3 h-5 w-5 -translate-y-1/2 transform text-slate-400" />
-                  <form>
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                      className="w-full border border-white/20 bg-white/10 py-3 pr-4 pl-12 text-white placeholder-slate-400 transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-stone-600"
-                      placeholder="Nhập lại mật khẩu"
-                      required={!isLogin}
-                    />
-                  </form>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    className="w-full border border-white/20 bg-white/10 py-3 pr-4 pl-12 text-white placeholder-slate-400 transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none dark:text-stone-600"
+                    placeholder="Nhập lại mật khẩu"
+                    required={!isLogin}
+                  />
                 </div>
               </div>
             )}
@@ -271,7 +277,6 @@ const Auth = () => {
               </div>
             )}
 
-            {/* Submit button */}
             <button
               onClick={handleSubmit}
               className="w-full transform bg-gradient-to-r from-amber-300 to-amber-400 px-4 py-3 font-semibold text-white shadow-lg transition-all duration-300 hover:scale-105 hover:from-amber-300 hover:to-amber-500 hover:shadow-xl"
@@ -280,7 +285,6 @@ const Auth = () => {
             </button>
           </div>
 
-          {/* Toggle auth mode */}
           <div className="mt-8 text-center">
             <p className="text-slate-300">
               {isLogin ? 'Chưa có tài khoản?' : 'Đã có tài khoản?'}
@@ -293,7 +297,6 @@ const Auth = () => {
             </p>
           </div>
 
-          {/* Terms and privacy (only for register) */}
           {!isLogin && (
             <div className="mt-6 text-center">
               <p className="text-xs text-slate-400">
@@ -310,7 +313,6 @@ const Auth = () => {
           )}
         </div>
 
-        {/* Footer */}
         <div className="mt-8 text-center">
           <p className="text-sm text-slate-500">© 2025 Student Project. Created by MTHANH</p>
         </div>
