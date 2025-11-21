@@ -15,7 +15,6 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // --- 1. FIX LỖI DƯ KHOẢNG TRẮNG (OVERFLOW-X) ---
   useEffect(() => {
     document.documentElement.style.overflowX = 'hidden';
     document.body.style.overflowX = 'hidden';
@@ -25,7 +24,6 @@ export default function Header() {
     };
   }, []);
 
-  // --- 2. Xử lý Scroll & Click Outside ---
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
@@ -43,7 +41,6 @@ export default function Header() {
     };
   }, []);
 
-  // --- 3. Khóa cuộn trang TUYỆT ĐỐI khi mở menu mobile ---
   useEffect(() => {
     if (isOpen) {
       document.documentElement.style.overflow = 'hidden';

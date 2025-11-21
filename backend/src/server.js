@@ -23,34 +23,24 @@ app.use(
   })
 );
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // Thêm dòng này để đọc form data nếu cần
-
-// --- BỎ CÁC DÒNG IMPORT MODEL LẺ Ở ĐÂY (VÌ ĐÃ IMPORT Ở TRÊN) ---
-// import './models/User.js';  <-- Xóa
-// import './models/Topics.js'; <-- Xóa
-// ...
+app.use(express.urlencoded({ extended: true }));
 
 // Import Routes
 import routeUser from './routes/routeUser.js';
 import routeAuth from './routes/routeAuth.js';
-// import routeCards from './routes/routeCards.js'; // Nếu routeGetTopicCard đã bao gồm chức năng này thì có thể bỏ
-// import routeTopics from './routes/routeTopics.js'; // Tương tự
-// import routeVocabulary from './routes/routeVocabulary.js'; // Tương tự
-import routeGetTopicCard from './routes/routeGetTopicCard.js'; // Route chính bạn đang sửa
+
+import routeGetTopicCard from './routes/routeGetTopicCard.js';
 import progressRoutes from './routes/progressRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import routeFavorites from './routes/routeFavorites.js';
 import userRoutes from './routes/userRoutes.js';
 import siteRoutes from './routes/site.js';
+import routeFeedback from './routes/routeFeedback.js';
 
 // Khai báo các route
 app.use('/api/auth', routeAuth);
 app.use('/api/users', routeUser);
-// app.use('/api/flashcards', routeCards); // Kiểm tra nếu trùng lặp với gettopiccard
-// app.use('/api/topics', routeTopics);      // Kiểm tra nếu trùng lặp với gettopiccard
-// app.use('/api/vocabulary', routeVocabulary); // Kiểm tra nếu trùng lặp với gettopiccard
 
-// Route quan trọng cho chức năng Tạo/Lấy từ vựng & Chủ đề
 app.use('/api/gettopiccard', routeGetTopicCard);
 
 app.use('/api/progress', progressRoutes);
@@ -58,6 +48,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/favorites', routeFavorites);
 app.use('/api/user', userRoutes);
 app.use('/api', siteRoutes);
+app.use('/api/feedback', routeFeedback);
 
 // Test route
 app.get('/', (req, res) => {
@@ -71,7 +62,6 @@ const startServer = async () => {
     await sequelize.authenticate();
     console.log(' Connect MySQL successfully');
 
-    // Đồng bộ Model (Lưu ý: alter: true sẽ cập nhật bảng nếu có thay đổi column)
     await sequelize.sync({ alter: true });
     console.log('DB synced successfully');
 

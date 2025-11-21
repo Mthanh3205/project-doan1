@@ -1,0 +1,53 @@
+//Đánh giá
+import express from 'express';
+import Feedback from '../models/Feedback.js';
+
+const router = express.Router();
+
+router.post('/create', async (req, res) => {
+  try {
+    const { name, rating, comment, type = 'website', target_id = null } = req.body;
+
+    await Feedback.create({
+      name,
+      rating,
+      comment,
+      type,
+      target_id,
+    });
+
+    res.json({ success: true, message: 'Cảm ơn bạn đã đánh giá!' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Lỗi server' });
+  }
+});
+
+router.get('/list', async (req, res) => {
+  try {
+    const { type = 'website', target_id } = req.query;
+
+    // Tạo điều kiện lọc
+    const whereCondition = {
+      isVisible: true,
+      type: type,
+      rating: [4, 5],
+    };
+
+    if (target_id) {
+      whereCondition.target_id = target_id;
+    }
+
+    const reviews = await Feedback.findAll({
+      where: whereCondition,
+      limit: 6,
+      order: [['createdAt', 'DESC']],
+    });
+
+    res.json({ success: true, data: reviews });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Lỗi lấy dữ liệu' });
+  }
+});
+
+export default router;

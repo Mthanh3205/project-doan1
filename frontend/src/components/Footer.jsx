@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import {
   Twitter,
@@ -10,22 +10,25 @@ import {
   Headphones,
   ShoppingBag,
   Star,
+  Snowflake,
+  Mail,
+  Phone,
+  MapPin,
+  Pencil,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import FeedbackModal from './FeedbackModal';
 
 const Footer = () => {
-  const course = [
-    { name: 'Khóa học cơ bản', href: '#' },
-    { name: 'Tiếng anh giao tiếp', href: '#' },
-    { name: 'B1-B2', href: '#' },
-    { name: 'C1-C2', href: '#' },
-    { name: 'Ielts', href: '#' },
-  ];
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const course = [];
 
   const infomation = [
     { name: 'Về chúng tôi', href: '#' },
     { name: 'Tin tức', href: '#' },
     { name: 'Đội ngũ giáo viên', href: '#' },
     { name: 'Khóa học', href: '#' },
+    { name: 'Bảng xếp hạng', href: '#' },
   ];
 
   const support = [
@@ -33,6 +36,7 @@ const Footer = () => {
     { name: 'Liên hệ', href: '#' },
     { name: 'Cộng đồng', href: '#' },
     { name: 'Báo lỗi', href: '#' },
+    { name: 'Gửi đánh giá', icon: <Pencil className="h-4 w-4" />, isButton: true },
   ];
 
   const socialIcons = [
@@ -64,6 +68,11 @@ const Footer = () => {
 
   return (
     <footer className="bg-black py-16 text-gray-300 shadow-lg dark:bg-green-100">
+      <FeedbackModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        reviewType="website"
+      />
       <div className="my-6 h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent"></div>
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -71,25 +80,34 @@ const Footer = () => {
         <div className="mb-12 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
           {/* Key Links */}
           <div>
-            <h3 className="mb-6 text-lg font-semibold text-white dark:text-amber-500">
-              Các khóa học
-            </h3>
-            <ul className="space-y-2">
-              {course.map((link, index) => (
-                <li key={index}>
-                  <a
-                    href={link.href}
-                    className="relative inline-block h-9 w-full rounded-2xl bg-[#1d1d1d] text-base text-white transition-all duration-300 hover:translate-x-1 hover:bg-white hover:text-gray-900 dark:bg-white dark:text-stone-600 dark:hover:bg-green-500 dark:hover:text-white"
-                  >
-                    <span className="relative z-10 flex h-full items-center gap-2 pl-3">
-                      <Star />
-                      {link.name}
-                    </span>
-                    <div className="absolute inset-0 -z-10 scale-0 rounded bg-blue-500/20 transition-transform duration-300 group-hover:scale-100"></div>
-                  </a>
-                </li>
-              ))}
-            </ul>
+            {/* Logo */}
+            <Link to="/" className="group flex shrink-0 items-center gap-2">
+              <div className="relative">
+                <Snowflake className="h-10 w-10 text-amber-500 transition-transform duration-700 ease-in-out group-hover:rotate-180" />
+                <div className="absolute inset-0 animate-pulse bg-amber-500/20 blur-md" />
+              </div>
+              <span className="bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-2xl font-bold whitespace-nowrap text-transparent italic md:text-3xl">
+                Flashcard
+              </span>
+            </Link>
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-stone-200">
+              Nền tảng học từ vựng thông minh giúp bạn ghi nhớ kiến thức lâu dài và hiệu quả hơn.
+            </p>
+            {/* Contact Info */}
+            <div className="mt-4 space-y-3 border-t border-gray-800/50 pt-2">
+              <div className="flex items-center gap-3 text-sm text-gray-400 transition-colors hover:text-amber-500">
+                <Mail className="h-4 w-4 shrink-0 text-amber-500" />
+                <span>doanminhthanh205@gmail.com</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-gray-400 transition-colors hover:text-amber-500">
+                <Phone className="h-4 w-4 shrink-0 text-amber-500" />
+                <span>(+84) 963 145 061</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-gray-400 transition-colors hover:text-amber-500">
+                <MapPin className="h-4 w-4 shrink-0 text-amber-500" />
+                <span>ĐH Kỹ Thuật - Công Nghệ Cần Thơ</span>
+              </div>
+            </div>
           </div>
 
           {/* Subjects */}
@@ -120,13 +138,28 @@ const Footer = () => {
             <ul className="space-y-2">
               {support.map((item, index) => (
                 <li key={index}>
-                  <a
-                    href={item.href}
-                    className="relative inline-block h-9 w-full rounded-2xl bg-[#1d1d1d] text-base text-white transition-all duration-300 hover:translate-x-1 hover:bg-white hover:text-gray-900 hover:after:w-full dark:bg-white dark:text-stone-600 dark:hover:bg-green-500 dark:hover:text-white"
-                  >
-                    <span className="relative z-10 flex h-full items-center pl-3">{item.name}</span>
-                    <div className="absolute inset-0 -z-10 scale-0 rounded bg-blue-500/20 transition-transform duration-300 group-hover:scale-100"></div>
-                  </a>
+                  {item.isButton ? (
+                    <button
+                      onClick={() => setIsModalOpen(true)}
+                      className="relative inline-block h-9 w-full cursor-pointer rounded-2xl bg-[#1d1d1d] text-left text-base text-white transition-all duration-300 hover:translate-x-1 hover:bg-white hover:text-gray-900 hover:after:w-full dark:bg-white dark:text-stone-600 dark:hover:bg-green-500 dark:hover:text-white"
+                    >
+                      <span className="relative z-10 flex h-full items-center pl-3">
+                        {item.icon && <span className="mr-2">{item.icon}</span>}
+                        {item.name}
+                      </span>
+                      <div className="absolute inset-0 -z-10 scale-0 rounded bg-blue-500/20 transition-transform duration-300 group-hover:scale-100"></div>
+                    </button>
+                  ) : (
+                    <a
+                      href={item.href}
+                      className="relative inline-block h-9 w-full rounded-2xl bg-[#1d1d1d] text-base text-white transition-all duration-300 hover:translate-x-1 hover:bg-white hover:text-gray-900 hover:after:w-full dark:bg-white dark:text-stone-600 dark:hover:bg-green-500 dark:hover:text-white"
+                    >
+                      <span className="relative z-10 flex h-full items-center pl-3">
+                        {item.name}
+                      </span>
+                      <div className="absolute inset-0 -z-10 scale-0 rounded bg-blue-500/20 transition-transform duration-300 group-hover:scale-100"></div>
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>

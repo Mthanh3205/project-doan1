@@ -16,6 +16,25 @@ const HomePage = () => {
     { id: 'reviews', num: '0', label: 'Lượt ôn tập', icon: <Repeat className="h-6 w-6" /> },
     { id: 'rating', num: '0', label: 'Đánh giá', icon: <Star className="h-6 w-6" /> },
   ]);
+  const [reviews, setReviews] = useState([]);
+  useEffect(() => {
+    // Gọi API lấy danh sách review cho website
+    fetch('http://localhost:5000/api/feedback/list?type=website')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data.length > 0) {
+          setReviews(data.data);
+        } else {
+          // Dữ liệu mẫu fallback nếu chưa có ai đánh giá
+          setReviews([
+            { name: 'Minh Tú', comment: 'Web rất xịn, mình học mỗi ngày!', rating: 5 },
+            { name: 'Hoàng Nam', comment: 'Giao diện đẹp, dễ dùng.', rating: 5 },
+            { name: 'Lan Anh', comment: 'Thích nhất tính năng Spaced Repetition.', rating: 4 },
+          ]);
+        }
+      })
+      .catch((err) => console.error(err));
+  }, []);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -83,6 +102,20 @@ const HomePage = () => {
                 Repetition).
               </p>
 
+              <div className="mt-8 flex justify-center gap-4">
+                <a
+                  href="/test"
+                  className="rounded-full border px-6 py-3 font-semibold transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
+                >
+                  Bắt đầu học ngay
+                </a>
+                <a
+                  href="/courses"
+                  className="rounded-full border px-6 py-3 font-semibold transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
+                >
+                  Xem các khóa học
+                </a>
+              </div>
               <div className="mt-10 flex w-full flex-col items-center justify-center gap-6 md:mt-12 md:flex-row">
                 <motion.img
                   initial={{ opacity: 0, x: -50 }}
@@ -100,20 +133,6 @@ const HomePage = () => {
                   alt="Học tập minh họa"
                   className="w-full max-w-sm rounded-xl object-cover drop-shadow-2xl md:w-1/2 lg:max-w-lg"
                 />
-              </div>
-              <div className="mt-8 flex justify-center gap-4">
-                <a
-                  href="/test"
-                  className="rounded-full border px-6 py-3 font-semibold transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
-                >
-                  Bắt đầu học ngay
-                </a>
-                <a
-                  href="/courses"
-                  className="rounded-full border px-6 py-3 font-semibold transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
-                >
-                  Xem các khóa học
-                </a>
               </div>
             </div>
           </section>
@@ -158,13 +177,16 @@ const HomePage = () => {
           <div className="h-px bg-gradient-to-r from-transparent via-amber-400 to-transparent"></div>
 
           {/* Preview flashcards */}
-          <section className="dark:white px-6 py-16 text-center">
-            <h2 className="mb-10 text-3xl font-bold text-amber-600">Flashcards</h2>
+          <section className="dark:white px-6 py-20 text-center">
+            <h2 className="mb-10 text-3xl font-bold text-amber-600">Trải nghiệm Flashcards</h2>
             <div className="flex flex-col items-center justify-center space-y-6 md:flex-row md:space-y-0 md:space-x-6">
               <FlashcardPreview word="Apple" meaning="Quả táo" />
               <FlashcardPreview word="Beautiful" meaning="Xinh đẹp" />
               <FlashcardPreview word="Journey" meaning="Hành trình" />
             </div>
+            <p className="pt-9 text-xs text-stone-300 italic">
+              "Di chuột vào thẻ để xem nghĩa tiếng Việt"
+            </p>
           </section>
 
           {/* Thống kê */}
@@ -206,42 +228,33 @@ const HomePage = () => {
           </section>
 
           {/* Đánh giá */}
-          <section className="px-6 pt-16">
+          <section className="px-6 py-16">
             <h2 className="mb-10 text-center text-3xl font-bold text-amber-500">
               Học viên nói gì về Flashcard?
             </h2>
             <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
-              {[
-                {
-                  name: 'Minh Tú',
-                  role: 'Sinh viên',
-                  text: 'Nhờ Flashcard mà mình đã qua môn Tiếng Anh B1 một cách dễ dàng. Giao diện rất dễ dùng!',
-                },
-                {
-                  name: 'Hoàng Nam',
-                  role: 'Developer',
-                  text: 'Thuật toán lặp lại ngắt quãng cực kỳ hiệu quả. Mình nhớ từ vựng lâu hơn hẳn.',
-                },
-                {
-                  name: 'Lan Anh',
-                  role: 'IELTS 7.0',
-                  text: 'Kho từ vựng phong phú, có cả phát âm chuẩn. Rất đáng để trải nghiệm.',
-                },
-              ].map((user, i) => (
+              {/* Loop qua mảng reviews */}
+              {reviews.map((review, i) => (
                 <div
                   key={i}
                   className="rounded-xl border border-gray-800 bg-[#1d1d1d] p-6 shadow-lg"
                 >
-                  <div className="mb-4 flex items-center">
+                  <div className="mb-4 flex items-center justify-between">
+                    {/* Avatar chữ cái đầu */}
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-tr from-amber-400 to-pink-500 font-bold text-white">
-                      {user.name[0]}
+                      {review.name.charAt(0).toUpperCase()}
                     </div>
-                    <div className="ml-3">
-                      <h4 className="font-bold text-white">{user.name}</h4>
-                      <span className="text-xs text-gray-400">{user.role}</span>
+                    {/* Số sao */}
+                    <div className="flex text-amber-500">
+                      {[...Array(review.rating)].map((_, idx) => (
+                        <span key={idx}>★</span>
+                      ))}
                     </div>
                   </div>
-                  <p className="text-xs text-gray-300 italic">"{user.text}"</p>
+
+                  <p className="mb-4 min-h-[60px] text-gray-300 italic">"{review.comment}"</p>
+
+                  <div className="font-bold text-white">{review.name}</div>
                 </div>
               ))}
             </div>
