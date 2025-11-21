@@ -1,19 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Props:
-// - reviewType: 'website' (mặc định) hoặc 'deck', 'course'...
-// - targetId: ID của đối tượng (nếu review deck/course)
 const FeedbackModal = ({ isOpen, onClose, reviewType = 'website', targetId = null }) => {
   const [rating, setRating] = useState(5);
   const [name, setName] = useState('');
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (isOpen) {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        setName(user.name || user.firstName || '');
+      }
+    }
+  }, [isOpen]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    const userStr = localStorage.getItem('user');
+    const user = userStr ? JSON.parse(userStr) : null;
 
     try {
       const response = await fetch(
@@ -27,16 +36,10 @@ const FeedbackModal = ({ isOpen, onClose, reviewType = 'website', targetId = nul
             comment,
             type: reviewType,
             target_id: targetId,
+            user_id: user ? user.id : null,
           }),
         }
       );
-
-      const data = await response.json();
-      if (data.success) {
-        alert('Cảm ơn đánh giá của bạn!');
-        setComment('');
-        onClose();
-      }
     } catch (error) {
       console.error('Lỗi gửi đánh giá:', error);
       alert('Có lỗi xảy ra, vui lòng thử lại.');
@@ -70,7 +73,6 @@ const FeedbackModal = ({ isOpen, onClose, reviewType = 'website', targetId = nul
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Chọn sao */}
               <div className="mb-4 flex justify-center gap-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button

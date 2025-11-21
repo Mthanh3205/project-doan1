@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post('/create', async (req, res) => {
   try {
-    const { name, rating, comment, type = 'website', target_id = null } = req.body;
+    const { name, rating, comment, type = 'website', target_id = null, user_id } = req.body;
 
     await Feedback.create({
       name,
@@ -14,6 +14,7 @@ router.post('/create', async (req, res) => {
       comment,
       type,
       target_id,
+      user_id,
     });
 
     res.json({ success: true, message: 'Cảm ơn bạn đã đánh giá!' });

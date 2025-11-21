@@ -18,10 +18,27 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import FeedbackModal from './FeedbackModal';
+import { useNavigate } from 'react-router-dom';
 
 const Footer = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
   const course = [];
+  const handleReviewClick = () => {
+    const isLoggedIn = localStorage.getItem('accessToken') || localStorage.getItem('user');
+
+    if (!isLoggedIn) {
+      const confirmLogin = window.confirm(
+        'Bạn cần đăng nhập để gửi đánh giá. Bạn có muốn đăng nhập ngay không?'
+      );
+      if (confirmLogin) {
+        navigate('/Auth');
+      }
+      return;
+    }
+
+    setIsModalOpen(true);
+  };
 
   const infomation = [
     { name: 'Về chúng tôi', href: '#' },
@@ -140,7 +157,7 @@ const Footer = () => {
                 <li key={index}>
                   {item.isButton ? (
                     <button
-                      onClick={() => setIsModalOpen(true)}
+                      onClick={handleReviewClick} // 4. Thay đổi sự kiện onClick gọi hàm mới
                       className="relative inline-block h-9 w-full cursor-pointer rounded-2xl bg-[#1d1d1d] text-left text-base text-white transition-all duration-300 hover:translate-x-1 hover:bg-white hover:text-gray-900 hover:after:w-full dark:bg-white dark:text-stone-600 dark:hover:bg-green-500 dark:hover:text-white"
                     >
                       <span className="relative z-10 flex h-full items-center pl-3">

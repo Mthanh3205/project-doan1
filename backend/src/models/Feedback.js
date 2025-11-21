@@ -1,7 +1,7 @@
 //Đánh giá
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/db.js';
-
+import User from './User.js';
 const Feedback = sequelize.define(
   'Feedback',
   {
@@ -42,11 +42,22 @@ const Feedback = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: true,
     },
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'users',
+        key: 'id',
+      },
+    },
   },
   {
     tableName: 'feedbacks',
     timestamps: true,
   }
 );
+Feedback.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
+User.hasMany(Feedback, { foreignKey: 'user_id', as: 'feedbacks' });
 
 export default Feedback;
