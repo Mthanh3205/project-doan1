@@ -16,24 +16,26 @@ const FeedbackModal = ({ isOpen, onClose, reviewType = 'website', targetId = nul
     setIsSubmitting(true);
 
     try {
-      // Gọi API Backend (cổng 5000 hoặc cổng server của bạn)
-      const response = await fetch('http://localhost:5000/api/feedback/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name,
-          rating,
-          comment,
-          type: reviewType,
-          target_id: targetId,
-        }),
-      });
+      const response = await fetch(
+        'https://project-doan1-backend.onrender.com/api/feedback/create',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name,
+            rating,
+            comment,
+            type: reviewType,
+            target_id: targetId,
+          }),
+        }
+      );
 
       const data = await response.json();
       if (data.success) {
         alert('Cảm ơn đánh giá của bạn!');
-        setComment(''); // Reset form
-        onClose(); // Đóng popup
+        setComment('');
+        onClose();
       }
     } catch (error) {
       console.error('Lỗi gửi đánh giá:', error);

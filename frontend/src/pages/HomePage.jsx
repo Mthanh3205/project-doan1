@@ -19,7 +19,7 @@ const HomePage = () => {
   const [reviews, setReviews] = useState([]);
   useEffect(() => {
     // Gọi API lấy danh sách review cho website
-    fetch('http://localhost:5000/api/feedback/list?type=website')
+    fetch('https://project-doan1-backend.onrender.com/api/feedback/list?type=website')
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data.length > 0) {
