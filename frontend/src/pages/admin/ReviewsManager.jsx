@@ -90,7 +90,7 @@ const ReviewsManager = () => {
       </div>
 
       {/* TABLE LIST */}
-      <div className="overflow-hidden rounded-xl border border-white/10 bg-[#1a1a1a] shadow-xl">
+      <div className="overflow-hidden border border-white/10 bg-[#1a1a1a] shadow-xl">
         <table className="w-full text-left text-sm text-gray-400">
           <thead className="bg-white/5 text-xs text-gray-300 uppercase">
             <tr>
