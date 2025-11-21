@@ -23,7 +23,7 @@ function SidebarLink({ icon, text, to, isCollapsed }) {
       className={({ isActive }) =>
         `group relative flex items-center rounded-xl p-3 transition-all duration-300 ${
           isActive
-            ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20'
+            ? 'bg-amber-500 text-white'
             : 'text-gray-400 hover:bg-white/5 hover:text-amber-500'
         }`
       }
@@ -40,7 +40,7 @@ function SidebarLink({ icon, text, to, isCollapsed }) {
 
       {/* Tooltip khi thu nhỏ */}
       {isCollapsed && (
-        <div className="absolute top-1/2 left-full z-50 ml-2 -translate-y-1/2 rounded-md bg-gray-800 px-2 py-1 text-xs text-white opacity-0 shadow-md transition-opacity group-hover:opacity-100">
+        <div className="absolute top-1/2 left-full z-50 ml-2 -translate-y-1/2 rounded-md bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
           {text}
         </div>
       )}
@@ -73,7 +73,7 @@ export default function AdminSidebar({ isOpen, setIsOpen, isCollapsed, setIsColl
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-white/10 bg-[#121212] text-white shadow-2xl transition-all duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-white/10 bg-[#121212] text-white transition-all duration-300 ease-in-out ${
           isCollapsed ? 'w-20' : 'w-72'
         } ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
       >

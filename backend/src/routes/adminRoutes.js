@@ -1,5 +1,6 @@
 import express from 'express';
 const router = express.Router();
+import Notification from '../models/Notification.js';
 import { authenticateToken, admin } from '../middleware/auth.js';
 import {
   getAllUsers,
@@ -65,6 +66,33 @@ router.patch('/reviews/:id/toggle', authenticateToken, admin, async (req, res) =
     });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi cập nhật trạng thái' });
+  }
+});
+
+//Thông báo
+router.get('/notifications', authenticateToken, admin, async (req, res) => {
+  try {
+    const notis = await Notification.findAll({
+      limit: 5,
+      order: [['createdAt', 'DESC']], // Mới nhất lên đầu
+    });
+
+    // Đếm số thông báo chưa đọc
+    const unreadCount = await Notification.count({ where: { isRead: false } });
+
+    res.json({ data: notis, unread: unreadCount });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi lấy thông báo' });
+  }
+});
+
+// Đánh dấu tất cả là đã đọc
+router.patch('/notifications/read-all', authenticateToken, admin, async (req, res) => {
+  try {
+    await Notification.update({ isRead: true }, { where: { isRead: false } });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi cập nhật' });
   }
 });
 

@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Trash2, Star, Eye, EyeOff, MessageSquare, Search, X, User } from 'lucide-react';
-import { toast } from 'sonner'; // Dùng thư viện toast cho đẹp (hoặc alert)
+import { toast } from 'sonner';
 
 const ReviewsManager = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedReview, setSelectedReview] = useState(null); // State lưu đánh giá đang xem chi tiết
+  const [selectedReview, setSelectedReview] = useState(null);
 
-  // 1. HÀM LẤY DỮ LIỆU
+  //HÀM LẤY DỮ LIỆU
   const fetchReviews = async () => {
     try {
       const token = sessionStorage.getItem('accessToken');
@@ -30,7 +30,7 @@ const ReviewsManager = () => {
     fetchReviews();
   }, []);
 
-  // 2. HÀM XÓA
+  //  HÀM XÓA
   const handleDelete = async (id) => {
     if (!window.confirm('Bạn chắc chắn muốn xóa vĩnh viễn đánh giá này?')) return;
 
@@ -54,7 +54,7 @@ const ReviewsManager = () => {
     }
   };
 
-  // 3. HÀM ẨN/HIỆN
+  // HÀM ẨN/HIỆN
   const handleToggleVisibility = async (id, currentStatus) => {
     try {
       const token = sessionStorage.getItem('accessToken');
@@ -67,7 +67,6 @@ const ReviewsManager = () => {
       );
 
       if (res.ok) {
-        // Cập nhật lại state local để UI thay đổi ngay lập tức
         setReviews(reviews.map((r) => (r.id === id ? { ...r, isVisible: !r.isVisible } : r)));
         toast.success(currentStatus ? 'Đã ẩn đánh giá' : 'Đã hiển thị đánh giá');
       }
@@ -80,7 +79,7 @@ const ReviewsManager = () => {
     <div className="relative space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white">Quản lý Đánh giá & Góp ý</h1>
-        <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2">
+        <div className="flex items-center gap-2 px-4 py-2">
           <Search size={16} className="text-gray-400" />
           <input
             placeholder="Tìm kiếm..."
@@ -211,7 +210,7 @@ const ReviewsManager = () => {
         </table>
       </div>
 
-      {/* --- MODAL CHI TIẾT (POPUP) --- */}
+      {/*MODAL CHI TIẾT (POPUP) */}
       {selectedReview && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
@@ -224,8 +223,25 @@ const ReviewsManager = () => {
             {/* Modal Header */}
             <div className="mb-6 flex items-start justify-between">
               <div className="flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-600 text-2xl font-bold text-white shadow-lg">
-                  {selectedReview.user?.name?.charAt(0)}
+                {selectedReview.user?.picture ? (
+                  <img
+                    src={selectedReview.user.picture}
+                    alt={selectedReview.user.name}
+                    className="h-14 w-14 rounded-full border-2 border-amber-500 object-cover shadow-lg"
+                    onError={(e) => {
+                      // Nếu ảnh lỗi (link hỏng), tự động chuyển về hiển thị chữ cái đầu
+                      e.target.style.display = 'none';
+                      e.target.nextSibling.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+
+                {/* Fallback: Hiển thị chữ cái đầu nếu không có ảnh (hoặc ảnh lỗi) */}
+                <div
+                  className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-600 text-2xl font-bold text-white shadow-lg"
+                  style={{ display: selectedReview.user?.picture ? 'none' : 'flex' }}
+                >
+                  {selectedReview.user?.name?.charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-white">{selectedReview.user?.name}</h3>
@@ -280,7 +296,7 @@ const ReviewsManager = () => {
               >
                 {selectedReview.isVisible ? (
                   <>
-                    <EyeOff size={18} /> Ẩn bài viết
+                    <EyeOff size={18} /> Ẩn đánh giá
                   </>
                 ) : (
                   <>
@@ -292,7 +308,7 @@ const ReviewsManager = () => {
                 onClick={() => handleDelete(selectedReview.id)}
                 className="flex flex-1 justify-center gap-2 rounded-xl bg-red-500/10 py-3 font-medium text-red-500 transition-colors hover:bg-red-500/20"
               >
-                <Trash2 size={18} /> Xóa bài viết
+                <Trash2 size={18} /> Xóa đánh giá
               </button>
             </div>
           </div>

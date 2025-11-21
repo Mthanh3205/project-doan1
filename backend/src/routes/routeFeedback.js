@@ -1,6 +1,7 @@
 import express from 'express';
 import Feedback from '../models/Feedback.js';
 import User from '../models/User.js';
+import Notification from '../models/Notification.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -23,6 +24,13 @@ router.post('/create', authenticateToken, async (req, res) => {
       type,
       target_id,
       user_id: userId,
+    });
+
+    await Notification.create({
+      message: `${name || userName} đã gửi một đánh giá ${rating} sao.`,
+      type: 'feedback',
+      reference_id: newFeedback.id,
+      isRead: false,
     });
 
     res.json({ success: true, message: 'Gửi đánh giá thành công!', data: newFeedback });
