@@ -2,8 +2,6 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 
-// --- THAY ĐỔI QUAN TRỌNG: Import từ models/index.js ---
-// Điều này giúp load toàn bộ Model và Quan hệ (Associations) một cách chính xác
 import { sequelize } from './models/index.js';
 
 // Load biến môi trường
@@ -18,7 +16,7 @@ app.use(
     origin: [
       'https://myprojects.id.vn',
       'https://project-doan1-frontend.onrender.com',
-      'http://localhost:5173', // Lưu ý: localhost thường là http, không phải https trừ khi bạn cấu hình SSL local
+      'http://localhost:5173',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
@@ -43,6 +41,7 @@ import progressRoutes from './routes/progressRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import routeFavorites from './routes/routeFavorites.js';
 import userRoutes from './routes/userRoutes.js';
+import siteRoutes from './routes/site.js';
 
 // Khai báo các route
 app.use('/api/auth', routeAuth);
@@ -58,6 +57,7 @@ app.use('/api/progress', progressRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/favorites', routeFavorites);
 app.use('/api/user', userRoutes);
+app.use('/api', siteRoutes);
 
 // Test route
 app.get('/', (req, res) => {

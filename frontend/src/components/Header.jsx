@@ -174,7 +174,7 @@ export default function Header() {
             {!user ? (
               <button
                 onClick={() => navigate('/Auth')}
-                className="rounded-full bg-gradient-to-r from-zinc-700 to-zinc-600 px-5 py-2 text-sm font-medium text-white shadow-lg transition-all hover:scale-105 hover:shadow-amber-500/20 dark:from-zinc-200 dark:to-zinc-300 dark:text-black"
+                className="rounded-full bg-gradient-to-r from-zinc-700 to-zinc-600 px-5 py-2 text-sm font-medium text-white transition-all hover:scale-105 hover:shadow-amber-500/20 dark:from-zinc-200 dark:to-zinc-300 dark:text-black"
               >
                 Đăng nhập
               </button>
