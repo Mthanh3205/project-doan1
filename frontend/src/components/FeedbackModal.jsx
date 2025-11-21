@@ -33,22 +33,25 @@ const FeedbackModal = ({ isOpen, onClose, reviewType = 'website', targetId = nul
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/feedback/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // 2. QUAN TRỌNG: Gửi Token kèm theo Header
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name,
-          rating,
-          comment,
-          type: reviewType,
-          target_id: targetId,
-          // LƯU Ý: Không cần gửi user_id ở đây nữa, Backend tự lấy từ Token rồi
-        }),
-      });
+      const response = await fetch(
+        'https://project-doan1-backend.onrender.com/api/feedback/create',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            // 2. QUAN TRỌNG: Gửi Token kèm theo Header
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name,
+            rating,
+            comment,
+            type: reviewType,
+            target_id: targetId,
+            // LƯU Ý: Không cần gửi user_id ở đây nữa, Backend tự lấy từ Token rồi
+          }),
+        }
+      );
 
       const data = await response.json();
 

@@ -6,6 +6,13 @@ const router = express.Router();
 
 router.post('/create', authenticateToken, async (req, res) => {
   try {
+    console.log('Token User Decoded:', req.user);
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ success: false, message: 'Không tìm thấy thông tin User từ Token' });
+    }
+
     const userIdFromToken = req.user.id;
     const { name, rating, comment, type = 'website', target_id = null } = req.body;
     await Feedback.create({
