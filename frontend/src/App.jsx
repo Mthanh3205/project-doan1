@@ -33,6 +33,7 @@ import AdminProtectedRoute from './components/AdminProtectedRoute';
 
 //Cuộn mượt
 import SmoothScroll from './components/SmoothScroll';
+import ReviewsManager from './pages/admin/ReviewsManager';
 function AppContent() {
   return (
     <AuthProvider>
@@ -97,15 +98,12 @@ function AppContent() {
 
             {/* admin */}
             <Route element={<AdminProtectedRoute />}>
-              {/* <Route path="/admin" element={<AdminPage />} /> */}
               <Route path="/admin" element={<AdminLayout />}>
-                {/* index=true nghĩa là đây là trang mặc định của /admin */}
                 <Route index element={<DashboardOverview />} />
                 <Route path="users" element={<ManageUsers />} />
-                {/* <Route path="topics" element={<ManageTopics />} />
-              <Route path="words" element={<ManageWords />} /> */}
                 <Route path="topics" element={<ManageTopicsWords />} />
                 <Route path="settings" element={<AdminSettings />} />
+                <Route path="reviews" element={<ReviewsManager />} />
               </Route>
             </Route>
           </Routes>

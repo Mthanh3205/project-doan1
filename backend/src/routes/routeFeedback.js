@@ -40,7 +40,7 @@ router.get('/list', async (req, res) => {
         isVisible: true,
         rating: [4, 5], // Chỉ lấy đánh giá tốt để hiển thị
       },
-      limit: 6,
+      limit: 3,
       order: [['createdAt', 'DESC']],
       include: [
         { model: User, as: 'user', attributes: ['name', 'picture'] }, // Lấy kèm avatar user

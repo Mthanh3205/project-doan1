@@ -25,7 +25,6 @@ const HomePage = () => {
         if (data.success && data.data.length > 0) {
           setReviews(data.data);
         } else {
-          // Dữ liệu mẫu fallback nếu chưa có ai đánh giá
           setReviews([
             { name: 'Minh Tú', comment: 'Web rất xịn, mình học mỗi ngày!', rating: 5 },
             { name: 'Hoàng Nam', comment: 'Giao diện đẹp, dễ dùng.', rating: 5 },

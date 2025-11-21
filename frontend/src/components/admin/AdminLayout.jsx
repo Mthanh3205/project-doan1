@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import AdminSidebar from './AdminSidebar';
 import AdminHeader from './AdminHeader';
@@ -6,17 +6,9 @@ import AdminHeader from './AdminHeader';
 export default function AdminLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  useEffect(() => {
-    document.body.classList.add('h-full', 'overflow-hidden');
-
-    return () => {
-      document.body.classList.remove('h-full', 'overflow-hidden');
-    };
-  }, []);
 
   return (
-    <div className="flex min-h-screen bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
-      {/* sidebar */}
+    <div className="min-h-screen bg-[#0a0a0a] font-sans text-gray-100 selection:bg-amber-500/30">
       <AdminSidebar
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
@@ -24,13 +16,15 @@ export default function AdminLayout() {
         setIsCollapsed={setIsCollapsed}
       />
 
-      {/* main content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        {/* header */}
+      {/* Main Content Area */}
+      <div
+        className={`flex min-h-screen flex-col transition-all duration-300 ease-in-out ${
+          isCollapsed ? 'md:pl-20' : 'md:pl-72'
+        }`}
+      >
         <AdminHeader setIsSidebarOpen={setIsSidebarOpen} />
 
-        {/* contentpage render*/}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto p-6">
+        <main className="flex-1 p-6 md:p-8">
           <Outlet />
         </main>
       </div>

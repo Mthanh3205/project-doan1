@@ -7,25 +7,21 @@ const FeedbackModal = ({ isOpen, onClose }) => {
   const [name, setName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // --- ĐOẠN CODE MỚI ĐỂ FIX LỖI TÊN ---
   useEffect(() => {
     if (isOpen) {
-      // Mỗi khi mở Modal, đọc lại dữ liệu từ Session
       const userStr = sessionStorage.getItem('user');
       if (userStr) {
         try {
           const user = JSON.parse(userStr);
-          setName(user.name || ''); // Cập nhật tên mới nhất
+          setName(user.name || '');
         } catch (e) {
           setName('');
         }
       } else {
-        // Nếu không tìm thấy user (đã đăng xuất), xóa trắng tên
         setName('');
       }
     }
-  }, [isOpen]); // Chạy lại mỗi khi biến isOpen thay đổi
-  // -------------------------------------
+  }, [isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
