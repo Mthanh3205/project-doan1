@@ -1,20 +1,20 @@
 //Đánh giá
 import express from 'express';
 import Feedback from '../models/Feedback.js';
-
+import { authenticateToken } from '../middleware/auth.js';
 const router = express.Router();
 
-router.post('/create', async (req, res) => {
+router.post('/create', authenticateToken, async (req, res) => {
   try {
-    const { name, rating, comment, type = 'website', target_id = null, user_id } = req.body;
-
+    const userIdFromToken = req.user.id;
+    const { name, rating, comment, type = 'website', target_id = null } = req.body;
     await Feedback.create({
       name,
       rating,
       comment,
       type,
       target_id,
-      user_id,
+      user_id: userIdFromToken,
     });
 
     res.json({ success: true, message: 'Cảm ơn bạn đã đánh giá!' });

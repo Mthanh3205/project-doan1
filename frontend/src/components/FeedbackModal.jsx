@@ -21,28 +21,47 @@ const FeedbackModal = ({ isOpen, onClose, reviewType = 'website', targetId = nul
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const userStr = localStorage.getItem('user');
-    const user = userStr ? JSON.parse(userStr) : null;
+
+    // 1. Lấy Token từ LocalStorage (Backend cần cái này để biết ai đang đánh giá)
+    const token = localStorage.getItem('accessToken');
+
+    // Kiểm tra an toàn: Nếu mất token thì bắt đăng nhập lại
+    if (!token) {
+      alert('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
-      const response = await fetch(
-        'https://project-doan1-backend.onrender.com/api/feedback/create',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name,
-            rating,
-            comment,
-            type: reviewType,
-            target_id: targetId,
-            user_id: user ? user.id : null,
-          }),
-        }
-      );
+      const response = await fetch('http://localhost:5000/api/feedback/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // 2. QUAN TRỌNG: Gửi Token kèm theo Header
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name,
+          rating,
+          comment,
+          type: reviewType,
+          target_id: targetId,
+          // LƯU Ý: Không cần gửi user_id ở đây nữa, Backend tự lấy từ Token rồi
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('Cảm ơn đánh giá của bạn!');
+        setComment('');
+        onClose();
+      } else {
+        alert(data.message || 'Có lỗi xảy ra.');
+      }
     } catch (error) {
       console.error('Lỗi gửi đánh giá:', error);
-      alert('Có lỗi xảy ra, vui lòng thử lại.');
+      alert('Lỗi kết nối server.');
     } finally {
       setIsSubmitting(false);
     }
