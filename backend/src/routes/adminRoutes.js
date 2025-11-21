@@ -24,10 +24,10 @@ router.get('/reviews', authenticateToken, admin, async (req, res) => {
         {
           model: User,
           as: 'user',
-          attributes: ['id', 'name', 'email', 'picture'], // Lấy thông tin người đánh giá
+          attributes: ['id', 'name', 'email', 'picture'],
         },
       ],
-      order: [['createdAt', 'DESC']], // Mới nhất lên đầu
+      order: [['createdAt', 'DESC']],
     });
     res.json(reviews);
   } catch (error) {
@@ -47,7 +47,7 @@ router.delete('/reviews/:id', authenticateToken, admin, async (req, res) => {
   }
 });
 
-//ẨN / HIỆN ĐÁNH GIÁ (Toggle Visibility)
+//ẨN HIỆN ĐÁNH GIÁ
 router.patch('/reviews/:id/toggle', authenticateToken, admin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -93,6 +93,29 @@ router.patch('/notifications/read-all', authenticateToken, admin, async (req, re
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi cập nhật' });
+  }
+});
+
+//LẤY CHI TIẾT 1 ĐÁNH GIÁ (Theo ID)
+router.get('/reviews/:id', authenticateToken, admin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const review = await Feedback.findOne({
+      where: { id },
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'name', 'email', 'picture'],
+        },
+      ],
+    });
+
+    if (!review) return res.status(404).json({ message: 'Đánh giá không tồn tại hoặc đã bị xóa' });
+
+    res.json(review);
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi server' });
   }
 });
 
