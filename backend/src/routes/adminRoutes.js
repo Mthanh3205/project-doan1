@@ -7,6 +7,8 @@ import {
   getAllTopics,
   getAllWords,
 } from '../controllers/adminController.js';
+import Feedback from '../models/Feedback.js';
+import User from '../models/User.js';
 
 router.get('/users', authenticateToken, admin, getAllUsers);
 router.get('/stats', authenticateToken, admin, getDashboardStats);
