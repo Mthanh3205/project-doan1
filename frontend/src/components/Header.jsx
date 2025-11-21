@@ -15,6 +15,22 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // --- HÀM ĐĂNG XUẤT SẠCH SẼ (MỚI THÊM) ---
+  const handleLogout = () => {
+    // 1. Xóa sạch mọi nơi lưu trữ
+    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('user');
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('user');
+
+    // 2. Gọi hàm logout của Context (để set user = null trong app)
+    logout();
+
+    // 3. Chuyển về trang Auth
+    navigate('/Auth');
+  };
+  // ----------------------------------------
+
   useEffect(() => {
     document.documentElement.style.overflowX = 'hidden';
     document.body.style.overflowX = 'hidden';
@@ -211,9 +227,10 @@ export default function Header() {
                       </Link>
                     </div>
                     <div className="border-t border-white/10 py-1 dark:border-gray-100">
+                      {/* NÚT ĐĂNG XUẤT DESKTOP - GỌI HÀM MỚI */}
                       <button
                         onClick={() => {
-                          logout();
+                          handleLogout(); // Gọi hàm xóa sạch session
                           setShowUserMenu(false);
                         }}
                         className="flex w-full items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300"
@@ -300,6 +317,7 @@ export default function Header() {
             </button>
           )}
 
+          {/* ... Search and Nav Items ... */}
           <div className="group relative mb-4">
             <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500 transition-colors group-focus-within:text-amber-500" />
             <input
@@ -343,15 +361,13 @@ export default function Header() {
                         <Link
                           key={sub.label}
                           to={sub.href}
-                          // --- SỬA LỖI CLICK Ở ĐÂY ---
                           onClick={(e) => {
                             if (sub.onClick) {
-                              e.preventDefault(); // Ngăn chặn nhảy về '#'
-                              sub.onClick(); // Thực hiện navigate
+                              e.preventDefault();
+                              sub.onClick();
                             }
-                            setIsOpen(false); // Đóng menu
+                            setIsOpen(false);
                           }}
-                          // ---------------------------
                           className="block rounded-md px-3 py-2 text-sm text-gray-500 transition-colors hover:text-amber-400 dark:text-gray-400 dark:hover:text-amber-600"
                         >
                           {sub.label}
@@ -365,7 +381,7 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Footer */}
+        {/* Footer Mobile */}
         <div className="mt-auto border-t border-white/10 bg-[#121212] px-6 py-6 dark:border-gray-200/60 dark:bg-white">
           <div className="mb-4 flex items-center justify-between">
             <span className="text-xs font-bold tracking-wider text-gray-500 uppercase">
@@ -374,9 +390,10 @@ export default function Header() {
             <ThemeToggle />
           </div>
           {user && (
+            // NÚT ĐĂNG XUẤT MOBILE - GỌI HÀM MỚI
             <button
               onClick={() => {
-                logout();
+                handleLogout(); // Gọi hàm xóa sạch session
                 setIsOpen(false);
               }}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/5 py-3 text-sm font-semibold text-red-400 transition-colors hover:bg-red-500/10 dark:bg-gray-100 dark:text-red-500"

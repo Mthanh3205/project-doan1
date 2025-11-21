@@ -9,7 +9,7 @@ export const authenticateToken = (req, res, next) => {
     return res.status(401).json({ message: 'Bạn chưa đăng nhập (Không tìm thấy token)' });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+  jwt.verify(token, process.env.JWT_SECRET || 'mysecretkey', (err, user) => {
     if (err) {
       return res.status(403).json({ message: 'Token không hợp lệ hoặc đã hết hạn' });
     }

@@ -7,6 +7,11 @@ const router = express.Router();
 
 router.post('/create', authenticateToken, async (req, res) => {
   try {
+    if (!req.user || !req.user.id) {
+      return res
+        .status(401)
+        .json({ success: false, message: 'Lỗi xác thực: Không tìm thấy User ID.' });
+    }
     const userId = req.user.id;
 
     const { name, rating, comment, type = 'website', target_id = null } = req.body;
