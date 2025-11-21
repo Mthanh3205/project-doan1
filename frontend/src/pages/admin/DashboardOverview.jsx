@@ -24,7 +24,7 @@ export default function DashboardOverview() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const token = sessionStorage.getItem('token');
+        const token = sessionStorage.getItem('accessToken');
         if (!token) throw new Error('Không tìm thấy token');
 
         const res = await fetch('https://project-doan1-backend.onrender.com/api/admin/stats', {

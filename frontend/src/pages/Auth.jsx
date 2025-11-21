@@ -42,21 +42,19 @@ const Auth = () => {
         const data = await res.json();
 
         if (res.ok) {
-          // 1. Lưu Token vào sessionStorage (như bạn yêu cầu)
-          // Đổi tên thành 'accessToken' để khớp với file Footer/Modal
           sessionStorage.setItem('accessToken', data.token);
 
-          // 2. QUAN TRỌNG: Lưu thông tin User để lấy ID cho phần đánh giá
           sessionStorage.setItem('user', JSON.stringify(data.user));
 
-          // 3. Cập nhật Context
           login(data.user);
 
           console.log('Đăng nhập thành công:', data);
           alert('Đăng nhập thành công!');
-
-          // 4. Chuyển về trang chủ
-          navigate('/');
+          if (data.user.email && data.user.email.endsWith('.admin')) {
+            navigate('/admin');
+          } else {
+            navigate('/');
+          }
         } else {
           alert(data.message || 'Đăng nhập thất bại!');
         }
@@ -114,16 +112,18 @@ const Auth = () => {
       const data = await res.json();
 
       if (data.token) {
-        // 1. Lưu Token
         sessionStorage.setItem('accessToken', data.token);
 
-        // 2. Lưu User (QUAN TRỌNG)
         sessionStorage.setItem('user', JSON.stringify(data.user));
 
-        // 3. Cập nhật Context & Chuyển trang
         login(data.user);
         console.log('Đăng nhập Google thành công.');
-        navigate('/');
+        alert('Đăng nhập thành công!');
+        if (data.user.email && data.user.email.endsWith('.admin')) {
+          navigate('/admin');
+        } else {
+          navigate('/');
+        }
       } else {
         alert('Login thất bại!');
       }

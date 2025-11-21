@@ -19,7 +19,7 @@ export default function ManageTopics() {
       setLoading(true);
       setError(null);
       try {
-        const token = sessionStorage.getItem('token');
+        const token = sessionStorage.getItem('accessToken');
         if (!token) throw new Error('Không tìm thấy token');
 
         const res = await fetch(

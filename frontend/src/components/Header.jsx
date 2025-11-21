@@ -1,5 +1,14 @@
 import { useEffect, useState, useRef } from 'react';
-import { Menu, X, User, Snowflake, Search, LogOut, ChevronDown } from 'lucide-react';
+import {
+  Menu,
+  X,
+  User,
+  Snowflake,
+  Search,
+  LogOut,
+  ChevronDown,
+  LayoutDashboard,
+} from 'lucide-react';
 import { Link, useNavigate, useLocation, matchPath } from 'react-router-dom';
 import ThemeToggle from './themeToggle';
 import { useAuth } from '../context/AuthContext';
@@ -15,21 +24,16 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // --- HÀM ĐĂNG XUẤT SẠCH SẼ (MỚI THÊM) ---
   const handleLogout = () => {
-    // 1. Xóa sạch mọi nơi lưu trữ
     sessionStorage.removeItem('accessToken');
     sessionStorage.removeItem('user');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('user');
 
-    // 2. Gọi hàm logout của Context (để set user = null trong app)
     logout();
 
-    // 3. Chuyển về trang Auth
     navigate('/Auth');
   };
-  // ----------------------------------------
 
   useEffect(() => {
     document.documentElement.style.overflowX = 'hidden';
@@ -218,6 +222,18 @@ export default function Header() {
                       </p>
                     </div>
                     <div className="py-1">
+                      {/* check admin*/}
+                      {user.email && user.email.endsWith('.admin') && (
+                        <Link
+                          to="/admin"
+                          onClick={() => setShowUserMenu(false)}
+                          className="flex items-center gap-2 px-3 py-2 text-sm font-semibold text-amber-500 transition-colors hover:bg-white/10 hover:text-amber-400"
+                        >
+                          <LayoutDashboard className="h-4 w-4" />
+                          Trang Quản trị
+                        </Link>
+                      )}
+
                       <Link
                         to="/Account"
                         onClick={() => setShowUserMenu(false)}
@@ -227,7 +243,6 @@ export default function Header() {
                       </Link>
                     </div>
                     <div className="border-t border-white/10 py-1 dark:border-gray-100">
-                      {/* NÚT ĐĂNG XUẤT DESKTOP - GỌI HÀM MỚI */}
                       <button
                         onClick={() => {
                           handleLogout(); // Gọi hàm xóa sạch session
@@ -254,7 +269,7 @@ export default function Header() {
         </div>
       </header>
 
-      {/* --- MOBILE MENU OVERLAY --- */}
+      {/* MOBILE MENU OVERLAY */}
       <div
         className={`fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm transition-opacity duration-300 md:hidden ${
           isOpen ? 'visible opacity-100' : 'invisible opacity-0'

@@ -10,7 +10,7 @@ const AdminPage = () => {
     // Fetch User Logic cũ của bạn
     const fetchUsers = async () => {
       try {
-        const token = sessionStorage.getItem('accessToken'); // Nhớ dùng đúng key token
+        const token = sessionStorage.getItem('accessToken');
         if (!token) return;
 
         const res = await fetch('https://project-doan1-backend.onrender.com/api/admin/users', {

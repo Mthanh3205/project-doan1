@@ -1,15 +1,12 @@
-// File: src/pages/admin/ManageTopicsWords.jsx
-
 import React, { useState } from 'react';
 import axios from 'axios';
-import FlashcardItem from '../../components/FlashcardItem'; // <-- Đảm bảo đường dẫn này đúng
+import FlashcardItem from '../../components/FlashcardItem';
 import { toast } from 'sonner';
-import { useDecks } from '../../context/DeckContext'; // <-- 1. IMPORT HOOK
+import { useDecks } from '../../context/DeckContext';
 
 const API_URL = 'https://project-doan1-backend.onrender.com/api/gettopiccard';
 
 export default function ManageTopicsWords() {
-  // --- 2. LẤY STATE TOÀN CỤC ---
   const {
     decks,
     selectedDeck,
@@ -23,10 +20,9 @@ export default function ManageTopicsWords() {
     createDeck,
     updateDeck,
     deleteDeck,
-    getAuthHeaders, // Lấy hàm này từ context
+    getAuthHeaders,
   } = useDecks();
 
-  // --- STATE LOCAL (chỉ cho UI form) ---
   const [editingCardId, setEditingCardId] = useState(null);
   const [isAddingDeck, setIsAddingDeck] = useState(false);
   const [newDeckTitle, setNewDeckTitle] = useState('');
@@ -39,8 +35,6 @@ export default function ManageTopicsWords() {
     example: '',
   });
 
-  // --- 3. HÀM XỬ LÝ CHỦ ĐỀ (GỌI CONTEXT) ---
-
   const handleSelectDeck = (deckId) => {
     setEditingCardId(null);
     setIsAddingCard(false);
@@ -51,14 +45,11 @@ export default function ManageTopicsWords() {
     e.preventDefault();
     if (!selectedDeck) return;
     try {
-      // Dùng setSelectedDeck của context để cập nhật form
       await updateDeck(selectedDeck.deck_id, {
         title: selectedDeck.title,
         description: selectedDeck.description,
       });
-    } catch (err) {
-      /* Lỗi đã được context xử lý */
-    }
+    } catch (err) {}
   };
 
   const handleDeleteDeck = async () => {
@@ -66,9 +57,7 @@ export default function ManageTopicsWords() {
     if (window.confirm(`Bạn có chắc muốn xóa chủ đề "${selectedDeck.title}"?`)) {
       try {
         await deleteDeck(selectedDeck.deck_id);
-      } catch (err) {
-        /* Lỗi đã được context xử lý */
-      }
+      } catch (err) {}
     }
   };
 
@@ -80,12 +69,8 @@ export default function ManageTopicsWords() {
       setNewDeckTitle('');
       setNewDeckDescription('');
       setIsAddingDeck(false);
-    } catch (err) {
-      /* Lỗi đã được context xử lý */
-    }
+    } catch (err) {}
   };
-
-  // --- 4. CÁC HÀM CỦA TỪ VỰNG (CARD) (GIỮ NGUYÊN) ---
 
   const handleUpdateCard = async (cardId, updatedData) => {
     const authHeaders = getAuthHeaders();
@@ -137,11 +122,9 @@ export default function ManageTopicsWords() {
   };
 
   if (error) {
-    // Lỗi tải danh sách chủ đề
     return <div className="p-4 text-red-500">{error}</div>;
   }
 
-  // --- 5. JSX HOÀN CHỈNH (KHÔNG RÚT GỌN) ---
   return (
     <div className="grid h-full grid-cols-1 gap-6 lg:grid-cols-3">
       {/* CỘT BÊN TRÁI (DANH SÁCH CHỦ ĐỀ) */}

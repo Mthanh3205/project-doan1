@@ -19,7 +19,7 @@ export default function ManageUsers() {
       setLoading(true);
       setError(null);
       try {
-        const token = sessionStorage.getItem('token');
+        const token = sessionStorage.getItem('accessToken');
         if (!token) {
           throw new Error('Không tìm thấy token');
         }
@@ -73,7 +73,6 @@ export default function ManageUsers() {
         </button>
       </div>
 
-      {/* --- HIỂN THỊ TỔNG SỐ LƯỢNG Ở ĐÂY --- */}
       <div className="mb-4 text-lg dark:text-gray-300">
         Tổng số tài khoản:
         <span className="ml-2 font-bold text-blue-500 dark:text-blue-400">
