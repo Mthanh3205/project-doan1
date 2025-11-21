@@ -36,13 +36,13 @@ import routeAuth from './routes/routeAuth.js';
 import routeCards from './routes/routeCards.js';
 import routeTopics from './routes/routeTopics.js';
 import routeVocabulary from './routes/routeVocabulary.js';
-import routeGetTopicCard from './routes/routeGetTopicCard.js'; // Route chính bạn đang sửa
+import routeGetTopicCard from './routes/routeGetTopicCard.js';
 import adminRoutes from './routes/adminRoutes.js';
 import routeFavorites from './routes/routeFavorites.js';
 import userRoutes from './routes/userRoutes.js';
 import siteRoutes from './routes/site.js';
 import progressRoutes from './routes/progressRoutes.js';
-import routeFeedback from
+import routeFeedback from './routes/routeFeedback.js';
 
 // Khai báo các route
 app.use('/api/auth', routeAuth);
