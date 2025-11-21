@@ -19,7 +19,7 @@ const HomePage = () => {
   const [reviews, setReviews] = useState([]);
   useEffect(() => {
     // Gọi API lấy danh sách review cho website
-    fetch('https://project-doan1-backend.onrender.com/api/feedback/list?type=website')
+    fetch('https://project-doan1-backend.onrender.com/api/feedback/list')
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data.length > 0) {
@@ -230,33 +230,23 @@ const HomePage = () => {
           {/* Đánh giá */}
           <section className="px-6 py-16">
             <h2 className="mb-10 text-center text-3xl font-bold text-amber-500">
-              Học viên nói gì về Flashcard?
+              Học viên nói gì?
             </h2>
             <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
-              {/* Loop qua mảng reviews */}
-              {reviews.map((review, i) => (
-                <div
-                  key={i}
-                  className="rounded-xl border border-gray-800 bg-[#1d1d1d] p-6 shadow-lg"
-                >
-                  <div className="mb-4 flex items-center justify-between">
-                    {/* Avatar chữ cái đầu */}
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-tr from-amber-400 to-pink-500 font-bold text-white">
-                      {review.name.charAt(0).toUpperCase()}
-                    </div>
-                    {/* Số sao */}
-                    <div className="flex text-amber-500">
-                      {[...Array(review.rating)].map((_, idx) => (
-                        <span key={idx}>★</span>
-                      ))}
-                    </div>
+              {reviews.length > 0 ? (
+                reviews.map((rev, i) => (
+                  <div
+                    key={i}
+                    className="rounded-xl border border-gray-800 bg-[#1d1d1d] p-6 shadow-lg"
+                  >
+                    <div className="mb-2 text-amber-500">{'★'.repeat(rev.rating)}</div>
+                    <p className="mb-4 text-gray-300 italic">"{rev.comment}"</p>
+                    <div className="text-right font-bold text-white">- {rev.name}</div>
                   </div>
-
-                  <p className="mb-4 min-h-[60px] text-gray-300 italic">"{review.comment}"</p>
-
-                  <div className="font-bold text-white">{review.name}</div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="col-span-3 text-center text-gray-500">Chưa có đánh giá nào.</p>
+              )}
             </div>
           </section>
 

@@ -23,20 +23,15 @@ import { useNavigate } from 'react-router-dom';
 const Footer = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
-  const course = [];
   const handleReviewClick = () => {
-    const isLoggedIn = localStorage.getItem('accessToken') || localStorage.getItem('user');
-
-    if (!isLoggedIn) {
-      const confirmLogin = window.confirm(
-        'Bạn cần đăng nhập để gửi đánh giá. Bạn có muốn đăng nhập ngay không?'
-      );
-      if (confirmLogin) {
+    const token = localStorage.getItem('accessToken');
+    // Kiểm tra nếu chưa có token -> bắt login
+    if (!token) {
+      if (window.confirm('Bạn cần đăng nhập để đánh giá. Đi đến trang đăng nhập?')) {
         navigate('/Auth');
       }
       return;
     }
-
     setIsModalOpen(true);
   };
 
@@ -157,14 +152,12 @@ const Footer = () => {
                 <li key={index}>
                   {item.isButton ? (
                     <button
-                      onClick={handleReviewClick} // 4. Thay đổi sự kiện onClick gọi hàm mới
-                      className="relative inline-block h-9 w-full cursor-pointer rounded-2xl bg-[#1d1d1d] text-left text-base text-white transition-all duration-300 hover:translate-x-1 hover:bg-white hover:text-gray-900 hover:after:w-full dark:bg-white dark:text-stone-600 dark:hover:bg-green-500 dark:hover:text-white"
+                      onClick={handleReviewClick}
+                      className="relative inline-block h-9 w-full cursor-pointer rounded-2xl bg-[#1d1d1d] text-left text-base text-white transition-all hover:bg-white hover:text-black"
                     >
-                      <span className="relative z-10 flex h-full items-center pl-3">
-                        {item.icon && <span className="mr-2">{item.icon}</span>}
-                        {item.name}
+                      <span className="relative z-10 flex h-full items-center gap-2 pl-3">
+                        {item.icon} {item.name}
                       </span>
-                      <div className="absolute inset-0 -z-10 scale-0 rounded bg-blue-500/20 transition-transform duration-300 group-hover:scale-100"></div>
                     </button>
                   ) : (
                     <a

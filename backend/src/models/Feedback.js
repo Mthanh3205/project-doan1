@@ -1,7 +1,7 @@
-//Đánh giá
 import { DataTypes } from 'sequelize';
-import sequelize from '../config/db.js';
-import User from './User.js';
+import sequelize from '../config/db.js'; // Sửa đường dẫn theo project của bạn
+import User from './User.js'; // Import model User để liên kết
+
 const Feedback = sequelize.define(
   'Feedback',
   {
@@ -10,54 +10,30 @@ const Feedback = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    // Nội dung đánh giá
+    name: { type: DataTypes.STRING, allowNull: false }, // Tên người đánh giá (snapshot)
+    rating: { type: DataTypes.INTEGER, allowNull: false, validate: { min: 1, max: 5 } },
+    comment: { type: DataTypes.TEXT, allowNull: true },
 
-    name: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    // Số sao
-    rating: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: { min: 1, max: 5 },
-    },
-    // Nội dung bình luận
-    comment: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    //Loại đánh giá
-    type: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      defaultValue: 'website',
-    },
-    //id của đối tượng
-    target_id: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-    },
-    // Trạng thái hiển thị (để Admin ẩn review xấu)
-    isVisible: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: true,
-    },
+    // Phân loại (để sau này dùng đánh giá bộ thẻ cũng được)
+    type: { type: DataTypes.STRING, defaultValue: 'website' }, // 'website', 'deck'
+    target_id: { type: DataTypes.INTEGER, allowNull: true }, // ID của bộ thẻ (nếu có)
+
+    // LIÊN KẾT VỚI USER (QUAN TRỌNG)
     user_id: {
       type: DataTypes.INTEGER,
-      allowNull: true,
-      references: {
-        model: 'users',
-        key: 'id',
-      },
+      allowNull: false, // Bắt buộc phải có user mới được đánh giá
+      references: { model: 'users', key: 'id' },
     },
+    isVisible: { type: DataTypes.BOOLEAN, defaultValue: true },
   },
   {
     tableName: 'feedbacks',
     timestamps: true,
   }
 );
-Feedback.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
-User.hasMany(Feedback, { foreignKey: 'user_id', as: 'feedbacks' });
+// Thiết lập mối quan hệ
+Feedback.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
 export default Feedback;

@@ -42,6 +42,7 @@ import routeFavorites from './routes/routeFavorites.js';
 import userRoutes from './routes/userRoutes.js';
 import siteRoutes from './routes/site.js';
 import progressRoutes from './routes/progressRoutes.js';
+import routeFeedback from
 
 // Khai báo các route
 app.use('/api/auth', routeAuth);
@@ -58,6 +59,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/favorites', routeFavorites);
 app.use('/api/user', userRoutes);
 app.use('/api', siteRoutes);
+app.use('/api/feedback', routeFeedback);
 
 // Test route
 app.get('/', (req, res) => {

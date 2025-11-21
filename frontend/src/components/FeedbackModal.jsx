@@ -1,147 +1,101 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X, Star } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
-const FeedbackModal = ({ isOpen, onClose, reviewType = 'website', targetId = null }) => {
+const FeedbackModal = ({ isOpen, onClose }) => {
   const [rating, setRating] = useState(5);
-  const [name, setName] = useState('');
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      const userStr = localStorage.getItem('user');
-      if (userStr) {
-        const user = JSON.parse(userStr);
-        setName(user.name || user.firstName || '');
-      }
-    }
-  }, [isOpen]);
+  // Lấy tên user từ localStorage để điền sẵn (cho đẹp thôi)
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const [name, setName] = useState(user.name || '');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // 1. Lấy Token từ LocalStorage (Backend cần cái này để biết ai đang đánh giá)
+    // Lấy Token
     const token = localStorage.getItem('accessToken');
-
-    // Kiểm tra an toàn: Nếu mất token thì bắt đăng nhập lại
     if (!token) {
-      alert('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
-      setIsSubmitting(false);
+      alert('Bạn cần đăng nhập lại.');
+      window.location.href = '/Auth';
       return;
     }
 
     try {
-      const response = await fetch(
-        'https://project-doan1-backend.onrender.com/api/feedback/create',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            // 2. QUAN TRỌNG: Gửi Token kèm theo Header
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            name,
-            rating,
-            comment,
-            type: reviewType,
-            target_id: targetId,
-            // LƯU Ý: Không cần gửi user_id ở đây nữa, Backend tự lấy từ Token rồi
-          }),
-        }
-      );
+      const res = await fetch('http://localhost:5000/api/feedback/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`, // GỬI KÈM TOKEN Ở ĐÂY
+        },
+        body: JSON.stringify({ name, rating, comment, type: 'website' }),
+      });
 
-      const data = await response.json();
-
+      const data = await res.json();
       if (data.success) {
-        alert('Cảm ơn đánh giá của bạn!');
-        setComment('');
+        alert('Cảm ơn bạn đã đánh giá!');
         onClose();
+        setComment('');
       } else {
-        alert(data.message || 'Có lỗi xảy ra.');
+        alert(data.message);
       }
     } catch (error) {
-      console.error('Lỗi gửi đánh giá:', error);
-      alert('Lỗi kết nối server.');
+      console.error(error);
+      alert('Lỗi kết nối server');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="relative w-full max-w-md rounded-2xl border border-amber-500/20 bg-[#1d1d1d] p-6 shadow-2xl"
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+      <div className="relative w-full max-w-md rounded-2xl border border-amber-500/30 bg-[#1d1d1d] p-6">
+        <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white">
+          <X />
+        </button>
+        <h2 className="mb-4 text-center text-2xl font-bold text-amber-500">Gửi Đánh Giá</h2>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Chọn Sao */}
+          <div className="flex justify-center gap-2">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <Star
+                key={star}
+                size={32}
+                className={`cursor-pointer ${star <= rating ? 'fill-amber-500 text-amber-500' : 'text-gray-600'}`}
+                onClick={() => setRating(star)}
+              />
+            ))}
+          </div>
+
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Tên hiển thị"
+            className="w-full rounded border border-gray-700 bg-black/30 p-3 text-white"
+            required
+          />
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Nhập nhận xét..."
+            rows="3"
+            className="w-full rounded border border-gray-700 bg-black/30 p-3 text-white"
+            required
+          />
+
+          <button
+            disabled={isSubmitting}
+            className="w-full rounded bg-gradient-to-r from-amber-500 to-orange-600 p-3 font-bold text-white transition hover:scale-105"
           >
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white"
-            >
-              <X size={24} />
-            </button>
-
-            <h2 className="mb-2 text-center text-2xl font-bold text-amber-500">Gửi đánh giá</h2>
-            <p className="mb-6 text-center text-sm text-gray-400">
-              {reviewType === 'website'
-                ? 'Bạn cảm thấy thế nào về Flashcard?'
-                : 'Bạn thấy bộ từ vựng này thế nào?'}
-            </p>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="mb-4 flex justify-center gap-2">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => setRating(star)}
-                    className="transition-transform hover:scale-110 focus:outline-none"
-                  >
-                    <Star
-                      size={32}
-                      fill={star <= rating ? '#f59e0b' : 'none'}
-                      className={star <= rating ? 'text-amber-500' : 'text-gray-600'}
-                    />
-                  </button>
-                ))}
-              </div>
-
-              <input
-                required
-                type="text"
-                placeholder="Tên hiển thị của bạn"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-lg border border-gray-700 bg-black/30 p-3 text-white focus:border-amber-500 focus:outline-none"
-              />
-
-              <textarea
-                required
-                rows="4"
-                placeholder="Nhập nội dung đánh giá..."
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                className="w-full rounded-lg border border-gray-700 bg-black/30 p-3 text-white focus:border-amber-500 focus:outline-none"
-              />
-
-              <button
-                disabled={isSubmitting}
-                type="submit"
-                className="w-full rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 p-3 font-bold text-white transition-all hover:from-amber-400 hover:to-orange-500 disabled:opacity-50"
-              >
-                {isSubmitting ? 'Đang gửi...' : 'Gửi đánh giá'}
-              </button>
-            </form>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
+            {isSubmitting ? 'Đang gửi...' : 'Gửi ngay'}
+          </button>
+        </form>
+      </div>
+    </div>
   );
 };
 
