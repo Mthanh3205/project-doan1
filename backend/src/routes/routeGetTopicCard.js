@@ -12,7 +12,7 @@ import {
 } from '../controllers/createController.js';
 
 import Topics from '../models/Topics.js';
-import Cards from '../models/Flashcards.js';
+import Cards from '../models/Flashcard.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
