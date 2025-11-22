@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { Users, BookCopy, FileText, CheckCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   LineChart,
   Line,
@@ -7,184 +9,268 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
 } from 'recharts';
-import { Users, BookOpen, Layers, MessageSquare } from 'lucide-react';
+
+// Màu sắc cho biểu đồ tròn
+const COLORS = ['#f59e0b', '#f97316', '#eab308', '#ef4444', '#84cc16', '#22c55e'];
+
+// Component thẻ thống kê nhỏ
+const StatCard = ({ icon, title, value, bgColor }) => (
+  <div className={`flex items-center space-x-4 bg-[#1a1a1a] p-6 shadow-lg`}>
+    <div className={`p-3 ${bgColor} bg-opacity-20`}>{icon}</div>
+    <div>
+      <p className="text-sm font-medium text-gray-400">{title}</p>
+      <p className="h-8 text-2xl font-bold text-white">{value}</p>
+    </div>
+  </div>
+);
 
 export default function DashboardOverview() {
-  const [stats, setStats] = useState({
-    userCount: 0,
-    topicCount: 0,
-    wordCount: 0,
-    feedbackCount: 0,
-    chartData: [], // Dữ liệu biểu đồ từ backend
-    recentUsers: [],
-    recentTopics: [],
+  const [stats, setStats] = useState(null);
+  const [chartData, setChartData] = useState({
+    userGrowth: [], // Dữ liệu biểu đồ đường
+    topicDist: [], // Dữ liệu biểu đồ tròn
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         const token = sessionStorage.getItem('accessToken');
+        if (!token) throw new Error('Không tìm thấy token');
+
         const res = await fetch('https://project-doan1-backend.onrender.com/api/admin/stats', {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (!res.ok) throw new Error('Lỗi tải dữ liệu');
+        if (!res.ok) throw new Error('Không thể tải dữ liệu');
 
         const data = await res.json();
         setStats(data);
-      } catch (error) {
-        console.error('Lỗi tải thống kê dashboard', error);
+
+        // Cập nhật dữ liệu biểu đồ từ API
+        setChartData({
+          userGrowth: data.chartData || [], // API trả về 'chartData' cho Line
+          topicDist: data.pieData || [], // API trả về 'pieData' cho Pie
+        });
+      } catch (err) {
+        setError(err.message);
       } finally {
         setLoading(false);
       }
     };
+
     fetchStats();
   }, []);
 
-  if (loading)
-    return <div className="p-10 text-center text-white">Đang tải dữ liệu tổng quan...</div>;
+  const userValue = loading || !stats ? '--' : stats.userCount;
+  const topicValue = loading || !stats ? '--' : stats.topicCount;
+  const wordValue = loading || !stats ? '--' : stats.wordCount;
+  const feedbackValue = loading || !stats ? '--' : stats.feedbackCount || 0;
+
+  if (error) return <div className="p-6 text-red-500">Lỗi: {error}</div>;
 
   return (
-    <div className="space-y-6 text-white">
-      {/* --- 1. CÁC THẺ THỐNG KÊ (CARDS) --- */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Card User */}
-        <div className="rounded-lg border border-gray-700 bg-[#1d1d1d] p-4 shadow transition-colors hover:border-blue-500">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-blue-600/20 p-3 text-blue-500">
-              <Users size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-gray-400">Người dùng</p>
-              <h3 className="text-2xl font-bold">{stats.userCount}</h3>
-            </div>
-          </div>
-        </div>
+    <div className="space-y-8">
+      <h1 className="text-3xl font-bold text-white">Tổng quan hệ thống</h1>
 
-        {/* Card Topic */}
-        <div className="rounded-lg border border-gray-700 bg-[#1d1d1d] p-4 shadow transition-colors hover:border-amber-500">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-amber-600/20 p-3 text-amber-500">
-              <Layers size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-gray-400">Chủ đề</p>
-              <h3 className="text-2xl font-bold">{stats.topicCount}</h3>
-            </div>
-          </div>
-        </div>
-
-        {/* Card Word */}
-        <div className="rounded-lg border border-gray-700 bg-[#1d1d1d] p-4 shadow transition-colors hover:border-green-500">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-green-600/20 p-3 text-green-500">
-              <BookOpen size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-gray-400">Từ vựng</p>
-              <h3 className="text-2xl font-bold">{stats.wordCount}</h3>
-            </div>
-          </div>
-        </div>
-
-        {/* Card Feedback */}
-        <div className="rounded-lg border border-gray-700 bg-[#1d1d1d] p-4 shadow transition-colors hover:border-pink-500">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-pink-600/20 p-3 text-pink-500">
-              <MessageSquare size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-gray-400">Đánh giá</p>
-              <h3 className="text-2xl font-bold">{stats.feedbackCount}</h3>
-            </div>
-          </div>
-        </div>
+      {/* 1. CÁC THẺ THỐNG KÊ (STAT CARDS) */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          icon={<Users size={28} className="text-amber-500" />}
+          title="Tổng Người dùng"
+          value={userValue}
+          bgColor="bg-[#121212]"
+        />
+        <StatCard
+          icon={<BookCopy size={28} className="text-amber-500" />}
+          title="Tổng Chủ đề"
+          value={topicValue}
+          bgColor="bg-[#121212]"
+        />
+        <StatCard
+          icon={<FileText size={28} className="text-amber-500" />}
+          title="Tổng Từ vựng"
+          value={wordValue}
+          bgColor="bg-[#121212]"
+        />
+        <StatCard
+          icon={<CheckCircle size={28} className="text-amber-500" />}
+          title="Góp ý đã nhận"
+          value={feedbackValue}
+          bgColor="bg-[#121212]"
+        />
       </div>
 
-      {/* --- 2. BIỂU ĐỒ VÀ DANH SÁCH MỚI --- */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* CỘT BIỂU ĐỒ (Chiếm 2/3) */}
-        <div className="rounded-lg border border-gray-700 bg-[#1d1d1d] p-6 shadow lg:col-span-2">
+      {/* 2. KHU VỰC BIỂU ĐỒ */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* BIỂU ĐỒ ĐƯỜNG (Tần suất học) */}
+        <div className="bg-[#1a1a1a] p-6 shadow-lg">
           <div className="mb-6 flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-white">Hoạt động học tập (7 ngày qua)</h3>
-            <span className="rounded bg-gray-800 px-2 py-1 text-xs text-gray-400">
-              Số lượt ôn bài
-            </span>
+            <h2 className="text-xl font-semibold text-white">Tần suất học tập (7 ngày)</h2>
+            <span className="rounded bg-gray-800 px-2 py-1 text-xs text-gray-400">Số lượt ôn</span>
           </div>
-
-          <div className="h-[300px] w-full">
+          <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={stats.chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
+              <LineChart data={chartData.userGrowth}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.5} />
                 <XAxis
-                  dataKey="name"
-                  stroke="#9CA3AF"
-                  tick={{ fill: '#9CA3AF' }}
-                  axisLine={false}
-                  tickLine={false}
-                  dy={10}
+                  dataKey="name" // Sử dụng key 'name' (T2, T3...) từ backend
+                  stroke="#9ca3af"
+                  tick={{ fill: '#9ca3af' }}
                 />
-                <YAxis
-                  stroke="#9CA3AF"
-                  tick={{ fill: '#9CA3AF' }}
-                  axisLine={false}
-                  tickLine={false}
-                  allowDecimals={false}
-                />
+                <YAxis stroke="#9ca3af" tick={{ fill: '#9ca3af' }} allowDecimals={false} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#1F2937',
-                    borderColor: '#374151',
-                    color: '#fff',
+                    backgroundColor: '#000',
+                    border: '1px solid #333',
                     borderRadius: '8px',
+                    color: '#fff',
                   }}
-                  itemStyle={{ color: '#10B981' }} // Màu chữ tooltip xanh lá
-                  labelStyle={{ color: '#9CA3AF', marginBottom: '0.5rem' }}
-                  cursor={{ stroke: '#4B5563', strokeWidth: 1 }}
+                  itemStyle={{ color: '#fbbf24' }}
                   formatter={(value) => [`${value} lượt`, 'Đã học']}
                 />
                 <Line
                   type="monotone"
-                  dataKey="count" // Khớp với key trả về từ backend
-                  stroke="#10B981" // Màu xanh Emerald (Learning)
+                  dataKey="count"
+                  stroke="#f59e0b"
                   strokeWidth={3}
-                  dot={{ fill: '#10B981', r: 4, strokeWidth: 0 }}
-                  activeDot={{ r: 6, fill: '#fff', stroke: '#10B981', strokeWidth: 2 }}
-                  animationDuration={1500}
+                  dot={{ r: 4, fill: '#f59e0b' }}
+                  activeDot={{ r: 8 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* CỘT THÀNH VIÊN MỚI (Chiếm 1/3) */}
-        <div className="rounded-lg border border-gray-700 bg-[#1d1d1d] p-6 shadow">
-          <h3 className="mb-4 text-lg font-semibold">Thành viên mới nhất</h3>
-          <div className="space-y-4">
-            {stats.recentUsers.length > 0 ? (
-              stats.recentUsers.map((user) => (
-                <div
-                  key={user.id}
-                  className="flex items-center gap-3 border-b border-gray-800 pb-3 last:border-0 last:pb-0"
-                >
-                  <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-xs font-bold shadow-lg">
-                    {user.picture ? (
-                      <img src={user.picture} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      user.name.charAt(0).toUpperCase()
-                    )}
-                  </div>
-                  <div className="overflow-hidden">
-                    <p className="truncate text-sm font-medium text-white">{user.name}</p>
-                    <p className="truncate text-xs text-gray-400">{user.email}</p>
-                  </div>
-                </div>
-              ))
+        {/* BIỂU ĐỒ TRÒN (Phân bố chủ đề) */}
+        <div className="bg-[#1a1a1a] p-6 shadow-lg">
+          <h2 className="mb-6 text-xl font-semibold text-white">Top Chủ đề (Theo số lượng từ)</h2>
+          <div className="h-80 w-full">
+            {chartData.topicDist.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={chartData.topicDist}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={5}
+                    dataKey="value" // Key 'value' từ backend
+                  >
+                    {chartData.topicDist.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                        stroke="none"
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#000',
+                      border: '1px solid #333',
+                      borderRadius: '8px',
+                      color: '#fff',
+                    }}
+                    formatter={(value) => [`${value} từ`, 'Số lượng']}
+                  />
+                  <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                </PieChart>
+              </ResponsiveContainer>
             ) : (
-              <p className="text-sm text-gray-500 italic">Chưa có thành viên nào.</p>
+              <div className="flex h-full items-center justify-center text-gray-500">
+                Chưa có dữ liệu chủ đề
+              </div>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* 3. DANH SÁCH MỚI NHẤT */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Bảng Người dùng mới */}
+        <div className="bg-[#1a1a1a] p-6 shadow-lg">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-white">Người dùng mới nhất</h2>
+            <Link to="users" className="text-sm text-amber-500 hover:underline">
+              Xem tất cả
+            </Link>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <tbody className="divide-y divide-white/10">
+                {loading || !stats?.recentUsers ? (
+                  <tr>
+                    <td className="p-4 text-center text-gray-500">Đang tải...</td>
+                  </tr>
+                ) : (
+                  stats.recentUsers.map((user) => (
+                    <tr key={user.id}>
+                      <td className="py-3 pr-4">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-gray-700 text-xs text-white">
+                            {user.picture ? (
+                              <img src={user.picture} alt="" />
+                            ) : (
+                              user.name?.charAt(0)
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium text-white">{user.name}</p>
+                            <p className="text-sm text-gray-500">{user.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 text-right text-sm text-gray-500">
+                        {new Date(user.createdAt).toLocaleDateString('vi-VN')}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Bảng Chủ đề mới */}
+        <div className="bg-[#1a1a1a] p-6 shadow-lg">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-white">Chủ đề mới nhất</h2>
+            <Link to="topics" className="text-sm text-amber-500 hover:underline">
+              Xem tất cả
+            </Link>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <tbody className="divide-y divide-white/10">
+                {loading || !stats?.recentTopics ? (
+                  <tr>
+                    <td className="p-4 text-center text-gray-500">Đang tải...</td>
+                  </tr>
+                ) : (
+                  stats.recentTopics.map((topic) => (
+                    <tr key={topic.deck_id}>
+                      <td className="py-3 pr-4">
+                        <p className="font-medium text-white">{topic.title}</p>
+                        <p className="max-w-xs truncate text-sm text-gray-500">
+                          {topic.description || 'Không có mô tả'}
+                        </p>
+                      </td>
+                      <td className="py-3 text-right text-sm text-gray-500">
+                        {new Date(topic.created_at).toLocaleDateString('vi-VN')}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

@@ -43,11 +43,7 @@ export const getDashboardStats = async (req, res) => {
     sevenDaysAgo.setHours(0, 0, 0, 0);
 
     const progressLogs = await UserProgress.findAll({
-      where: {
-        updatedAt: {
-          [Op.gte]: sevenDaysAgo,
-        },
-      },
+      where: { updatedAt: { [Op.gte]: sevenDaysAgo } },
       attributes: ['updatedAt'],
     });
 
@@ -57,20 +53,37 @@ export const getDashboardStats = async (req, res) => {
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-
       const dateString = d.toISOString().split('T')[0];
 
-      // Đếm xem có bao nhiêu lượt học trong ngày này
       const count = progressLogs.filter(
         (log) => log.updatedAt.toISOString().split('T')[0] === dateString
       ).length;
 
       chartData.push({
         name: daysOfWeek[d.getDay()],
-        fullDate: dateString,
+        date: dateString,
         count: count,
       });
     }
+
+    const topTopics = await Topics.findAll({
+      attributes: ['title', [Sequelize.fn('COUNT', Sequelize.col('flashcards.card_id')), 'value']],
+      include: [
+        {
+          model: Flashcard,
+          as: 'flashcards',
+          attributes: [],
+        },
+      ],
+      group: ['Topics.deck_id'],
+      order: [[Sequelize.literal('value'), 'DESC']],
+      limit: 5,
+    });
+
+    const pieData = topTopics.map((t) => ({
+      name: t.title,
+      value: parseInt(t.dataValues.value),
+    }));
 
     const recentUsers = await User.findAll({
       limit: 5,
@@ -88,11 +101,12 @@ export const getDashboardStats = async (req, res) => {
       wordCount,
       feedbackCount,
       chartData,
+      pieData,
       recentUsers,
       recentTopics,
     });
   } catch (error) {
-    console.error('Lỗi khi lấy số liệu thống kê dashboard:', error);
+    console.error('Lỗi dashboard stats:', error);
     res.status(500).json({ message: 'Lỗi server' });
   }
 };
