@@ -26,7 +26,7 @@ import ManageUsers from './pages/admin/ManageUsers';
 import ManageTopics from './pages/admin/ManageTopics';
 import AdminSettings from './pages/admin/AdminSettings';
 import ManageWords from './pages/admin/ManageWords';
-
+import AiRoleplayPage from './pages/AiRoleplayPage';
 //Login thì mới cho sử dụng chức năng trong web
 import ProtectedRoute from './components/ProtectedRoute';
 //Route bảo vệ admin
@@ -93,6 +93,14 @@ function AppContent() {
               element={
                 <ProtectedRoute>
                   <ProgressPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/study/:deckId/roleplay"
+              element={
+                <ProtectedRoute>
+                  <AiRoleplayPage />
                 </ProtectedRoute>
               }
             />

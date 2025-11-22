@@ -46,7 +46,6 @@ export default function ProgressPage() {
   const [userId, setUserId] = useState(null);
   const navigate = useNavigate();
 
-  // 1. Lấy userId từ sessionStorage
   useEffect(() => {
     const storedUser = sessionStorage.getItem('user');
     if (storedUser) {
@@ -58,7 +57,6 @@ export default function ProgressPage() {
     }
   }, [navigate]);
 
-  // 2. Gọi API lấy dữ liệu tiến trình (API MỚI)
   useEffect(() => {
     if (userId) {
       const fetchProgress = async () => {
@@ -67,7 +65,7 @@ export default function ProgressPage() {
           const res = await axios.get(
             `https://project-doan1-backend.onrender.com/api/progress/modes/${userId}`
           );
-          // API trả về mảng [{ deck_id, deck_name, total_cards, flip_learned, ... }, ...]
+
           setProgressData(res.data);
           setError(null);
         } catch (err) {
@@ -84,16 +82,16 @@ export default function ProgressPage() {
   // Xử lý các trạng thái
   if (loading || !userId) {
     return (
-      <div className="min-h-screen bg-[#121212] dark:from-amber-100 dark:via-white dark:to-gray-100">
+      <div className="min-h-screen bg-[#121212]">
         <Header />
-        <p className="mt-20 text-center text-gray-500">Đang tải tiến trình...</p>
+        <p className="pt-20 text-center text-gray-500">Đang tải tiến trình...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#121212] dark:from-amber-100 dark:via-white dark:to-gray-100">
+      <div className="min-h-screen bg-[#121212]">
         <Header />
         <p className="mt-20 text-center text-red-500">{error}</p>
       </div>
@@ -101,7 +99,7 @@ export default function ProgressPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#121212] bg-gradient-to-br font-sans text-gray-900 dark:from-amber-100 dark:via-white dark:to-gray-100">
+    <div className="min-h-screen bg-[#121212] bg-gradient-to-br font-sans text-gray-900">
       <Header />
 
       <main className="mx-auto max-w-4xl px-4 py-22">
@@ -113,10 +111,8 @@ export default function ProgressPage() {
         <div className="space-y-6">
           {progressData.length > 0 ? (
             progressData.map((item) => {
-              // API đã trả về dữ liệu phẳng, chúng ta dùng trực tiếp
               const total = item.total_cards;
 
-              // Tính tổng tiến trình chung (lấy số lớn nhất trong các mode)
               const overallLearned = Math.max(
                 item.flip_learned,
                 item.typing_learned,
@@ -128,7 +124,7 @@ export default function ProgressPage() {
               return (
                 <div
                   key={item.deck_id}
-                  className="bg-[#1d1d1d] p-6 text-white shadow-lg dark:bg-green-100 dark:text-gray-900"
+                  className="bg-[#1d1d1d] p-6 text-white shadow-lg dark:text-gray-900"
                 >
                   {/* Tiêu đề và tổng quan */}
                   <div className="flex flex-col justify-between border-b border-gray-700 pb-4 md:flex-row md:items-center dark:border-green-200">

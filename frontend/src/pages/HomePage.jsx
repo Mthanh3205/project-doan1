@@ -103,7 +103,7 @@ const HomePage = () => {
 
               <div className="mt-8 flex justify-center gap-4">
                 <a
-                  href="/test"
+                  href="/topics"
                   className="rounded-full border px-6 py-3 font-semibold transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
                 >
                   Bắt đầu học ngay
