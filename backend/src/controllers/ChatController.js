@@ -31,7 +31,7 @@ export const chatRoleplay = async (req, res) => {
     });
 
     // 4. Gọi API Google
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent?key=${apiKey}`;
 
     const response = await fetch(url, {
       method: 'POST',
