@@ -3,6 +3,7 @@ import User from '../models/User.js';
 import Topics from '../models/Topics.js';
 import Flashcard from '../models/Flashcard.js';
 import Feedback from '../models/Feedback.js';
+import { Sequelize } from 'sequelize';
 
 export const getAllUsers = async (req, res) => {
   try {
@@ -64,11 +65,28 @@ export const getAllTopics = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
+    const search = req.query.search ? req.query.search.trim() : '';
     const offset = (page - 1) * limit;
 
+    let whereCondition = {};
+    let replacements = {};
+
+    if (search) {
+      // POSTGRESQL FULL-TEXT SEARCH
+
+      whereCondition = Sequelize.literal(`
+        to_tsvector('simple', "title" || ' ' || coalesce("description", '')) 
+        @@ plainto_tsquery('simple', :search)
+      `);
+      replacements.search = search;
+    }
+
     const { count, rows } = await Topics.findAndCountAll({
+      where: whereCondition,
+      replacements: replacements,
       limit: limit,
       offset: offset,
+
       order: [['created_at', 'DESC']],
     });
 
@@ -79,7 +97,7 @@ export const getAllTopics = async (req, res) => {
       currentPage: page,
     });
   } catch (error) {
-    console.error('Lỗi khi lấy danh sách chủ đề:', error);
+    console.error('Lỗi Topic:', error);
     res.status(500).json({ message: 'Lỗi server' });
   }
 };
@@ -87,7 +105,7 @@ export const getAllTopics = async (req, res) => {
 export const createTopicAdmin = async (req, res) => {
   try {
     const { title, description } = req.body;
-    const userId = req.user.id; // Lấy ID admin từ token
+    const userId = req.user.id;
 
     const newTopic = await Topics.create({
       title,
@@ -139,9 +157,38 @@ export const getAllWords = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
+    const search = req.query.search ? req.query.search.trim() : '';
+    const deckId = req.query.deck_id || '';
     const offset = (page - 1) * limit;
 
+    let whereCondition = {};
+    let replacements = {};
+    const andConditions = [];
+
+    // Full-text Search
+    if (search) {
+      andConditions.push(
+        Sequelize.literal(`
+          to_tsvector('simple', "front_text" || ' ' || "back_text") 
+          @@ plainto_tsquery('simple', :search)
+        `)
+      );
+      replacements.search = search;
+    }
+
+    // Lọc theo Deck ID
+    if (deckId) {
+      whereCondition.deck_id = deckId;
+    }
+
+    // Gộp điều kiện Full-text vào where chính
+    if (andConditions.length > 0) {
+      whereCondition[Sequelize.Op.and] = andConditions;
+    }
+
     const { count, rows } = await Flashcard.findAndCountAll({
+      where: whereCondition,
+      replacements: replacements,
       limit: limit,
       offset: offset,
       order: [['card_id', 'DESC']],
@@ -154,7 +201,7 @@ export const getAllWords = async (req, res) => {
       currentPage: page,
     });
   } catch (error) {
-    console.error('Lỗi khi lấy danh sách từ vựng:', error);
+    console.error('Lỗi Words:', error);
     res.status(500).json({ message: 'Lỗi server' });
   }
 };

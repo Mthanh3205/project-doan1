@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Plus, ChevronLeft, ChevronRight, X, Edit, Trash2 } from 'lucide-react';
-import { toast } from 'sonner'; // Nếu project chưa có sonner, bạn có thể thay bằng alert
+import { Plus, ChevronLeft, ChevronRight, X, Edit, Trash2, Search } from 'lucide-react'; // Thêm Search icon
+import { toast } from 'sonner';
 
 export default function ManageTopics() {
-  // --- STATE QUẢN LÝ DỮ LIỆU ---
   const [data, setData] = useState({
     topics: [],
     totalTopics: 0,
@@ -14,20 +13,38 @@ export default function ManageTopics() {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
 
-  // --- STATE QUẢN LÝ MODAL & FORM ---
+  // State tìm kiếm
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState(''); // Để tránh gọi API liên tục khi gõ
+
+  // ... (State Modal giữ nguyên) ...
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTopic, setEditingTopic] = useState(null); // null = mode thêm mới
+  const [editingTopic, setEditingTopic] = useState(null);
   const [formData, setFormData] = useState({ title: '', description: '' });
 
-  // --- LẤY DỮ LIỆU ---
+  // Xử lý tìm kiếm: Khi nhấn Enter hoặc nút Search mới setDebouncedSearch
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setPage(1); // Reset về trang 1 khi tìm kiếm mới
+    setDebouncedSearch(searchTerm);
+  };
+
+  // Hàm reset tìm kiếm
+  const clearSearch = () => {
+    setSearchTerm('');
+    setDebouncedSearch('');
+    setPage(1);
+  };
+
   const fetchTopics = async () => {
     setLoading(true);
     try {
       const token = sessionStorage.getItem('accessToken');
       if (!token) throw new Error('Không tìm thấy token');
 
+      // THÊM search=${debouncedSearch} VÀO URL
       const res = await fetch(
-        `https://project-doan1-backend.onrender.com/api/admin/topics?page=${page}`,
+        `https://project-doan1-backend.onrender.com/api/admin/topics?page=${page}&search=${encodeURIComponent(debouncedSearch)}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -43,11 +60,14 @@ export default function ManageTopics() {
     }
   };
 
+  // Gọi fetchTopics khi page hoặc từ khóa tìm kiếm thay đổi
   useEffect(() => {
     fetchTopics();
-  }, [page]);
+  }, [page, debouncedSearch]);
 
-  // --- XỬ LÝ FORM ---
+  // ... (Các hàm openModal, closeModal, handleSave, handleDelete giữ nguyên) ...
+
+  // (Giữ nguyên logic CRUD)
   const openModal = (topic = null) => {
     if (topic) {
       setEditingTopic(topic);
@@ -58,14 +78,9 @@ export default function ManageTopics() {
     }
     setIsModalOpen(true);
   };
-
   const closeModal = () => setIsModalOpen(false);
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  // --- XỬ LÝ API THÊM / SỬA ---
   const handleSave = async (e) => {
     e.preventDefault();
     const token = sessionStorage.getItem('accessToken');
@@ -77,37 +92,28 @@ export default function ManageTopics() {
     try {
       const res = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(formData),
       });
-
-      if (!res.ok) throw new Error('Lỗi khi lưu chủ đề');
-
+      if (!res.ok) throw new Error('Lỗi khi lưu');
       toast.success(editingTopic ? 'Cập nhật thành công!' : 'Thêm mới thành công!');
       closeModal();
-      fetchTopics(); // Reload lại dữ liệu
+      fetchTopics();
     } catch (err) {
       toast.error(err.message);
     }
   };
 
-  // --- XỬ LÝ API XÓA ---
   const handleDelete = async (id) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa chủ đề này?')) return;
-
+    if (!window.confirm('Xóa chủ đề này?')) return;
     const token = sessionStorage.getItem('accessToken');
     try {
       const res = await fetch(`https://project-doan1-backend.onrender.com/api/admin/topics/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      if (!res.ok) throw new Error('Không thể xóa chủ đề');
-
-      toast.success('Đã xóa chủ đề!');
+      if (!res.ok) throw new Error('Lỗi xóa');
+      toast.success('Đã xóa!');
       fetchTopics();
     } catch (err) {
       toast.error(err.message);
@@ -121,25 +127,55 @@ export default function ManageTopics() {
 
   return (
     <div className="relative">
-      {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      {/* Header & Search Bar */}
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <h1 className="text-3xl font-bold text-white">Quản lý Chủ đề</h1>
-        <button
-          onClick={() => openModal(null)}
-          className="flex items-center space-x-2 rounded bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
-        >
-          <Plus size={20} />
-          <span>Thêm chủ đề</span>
-        </button>
+
+        <div className="flex gap-2">
+          {/* Form Tìm kiếm */}
+          <form onSubmit={handleSearch} className="relative flex items-center">
+            <input
+              type="text"
+              placeholder="Tìm chủ đề..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-64 rounded-l-md border border-gray-600 bg-[#121212] px-4 py-2 text-white outline-none focus:border-blue-500"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={clearSearch}
+                className="absolute right-12 text-gray-400 hover:text-white"
+              >
+                <X size={16} />
+              </button>
+            )}
+            <button
+              type="submit"
+              className="rounded-r-md border border-l-0 border-gray-600 bg-gray-700 px-3 py-2 text-white hover:bg-gray-600"
+            >
+              <Search size={20} />
+            </button>
+          </form>
+
+          <button
+            onClick={() => openModal(null)}
+            className="flex items-center space-x-2 rounded bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+          >
+            <Plus size={20} />
+            <span className="hidden sm:inline">Thêm</span>
+          </button>
+        </div>
       </div>
 
       <div className="mb-4 text-lg text-gray-300">
-        Tổng số chủ đề:
+        {debouncedSearch ? `Kết quả cho "${debouncedSearch}":` : 'Tổng số chủ đề:'}
         <span className="ml-2 font-bold text-green-500">{loading ? '--' : data.totalTopics}</span>
       </div>
 
-      {/* Table */}
+      {/* Table (Giữ nguyên) */}
       <div className="w-full overflow-hidden rounded-lg border border-gray-700 shadow-md">
+        {/* ... Code Table giữ nguyên ... */}
         <div className="overflow-x-auto bg-[#1d1d1d]">
           <table className="min-w-full divide-y divide-gray-700">
             <thead className="bg-[#121212]">
@@ -166,6 +202,12 @@ export default function ManageTopics() {
                 <tr>
                   <td colSpan="5" className="p-4 text-center">
                     Đang tải...
+                  </td>
+                </tr>
+              ) : data.topics.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="p-8 text-center text-gray-500">
+                    Không tìm thấy dữ liệu.
                   </td>
                 </tr>
               ) : (
@@ -205,7 +247,7 @@ export default function ManageTopics() {
           </table>
         </div>
 
-        {/* Pagination */}
+        {/* Pagination (Giữ nguyên) */}
         <div className="flex items-center justify-between border-t border-gray-700 bg-[#121212] px-4 py-3">
           <button
             onClick={handlePrevPage}
@@ -227,9 +269,10 @@ export default function ManageTopics() {
         </div>
       </div>
 
-      {/* --- MODAL ADD/EDIT --- */}
+      {/* Modal (Giữ nguyên) */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          {/* ... Code form modal giữ nguyên ... */}
           <div className="w-full max-w-md rounded-lg border border-gray-700 bg-[#1d1d1d] p-6 shadow-xl">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-xl font-bold text-white">
@@ -250,7 +293,6 @@ export default function ManageTopics() {
                   value={formData.title}
                   onChange={handleChange}
                   className="w-full rounded border border-gray-600 bg-[#121212] px-3 py-2 text-white outline-none focus:border-blue-500"
-                  placeholder="Nhập tên chủ đề..."
                 />
               </div>
               <div>
@@ -261,10 +303,8 @@ export default function ManageTopics() {
                   value={formData.description}
                   onChange={handleChange}
                   className="w-full rounded border border-gray-600 bg-[#121212] px-3 py-2 text-white outline-none focus:border-blue-500"
-                  placeholder="Mô tả ngắn..."
                 />
               </div>
-
               <div className="mt-6 flex justify-end gap-2">
                 <button
                   type="button"

@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Plus, ChevronLeft, ChevronRight, X, Edit, Trash2 } from 'lucide-react';
+import { Plus, ChevronLeft, ChevronRight, X, Edit, Trash2, Search, Filter } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ManageWords() {
-  // --- STATE DỮ LIỆU ---
   const [data, setData] = useState({
     words: [],
     totalWords: 0,
@@ -14,7 +13,14 @@ export default function ManageWords() {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
 
-  // --- STATE MODAL ---
+  // State Tìm kiếm và Lọc
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterDeckId, setFilterDeckId] = useState(''); // Lọc theo ID chủ đề
+
+  // State query thực tế gửi đi (để tránh reload khi đang gõ)
+  const [query, setQuery] = useState({ search: '', deckId: '' });
+
+  // ... (State Modal giữ nguyên) ...
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingWord, setEditingWord] = useState(null);
   const [formData, setFormData] = useState({
@@ -24,19 +30,35 @@ export default function ManageWords() {
     deck_id: '',
   });
 
-  // --- API LẤY DỮ LIỆU ---
+  // Xử lý tìm kiếm
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setPage(1);
+    setQuery({ search: searchTerm, deckId: filterDeckId });
+  };
+
+  // Reset
+  const clearFilters = () => {
+    setSearchTerm('');
+    setFilterDeckId('');
+    setQuery({ search: '', deckId: '' });
+    setPage(1);
+  };
+
   const fetchWords = async () => {
     setLoading(true);
     try {
       const token = sessionStorage.getItem('accessToken');
       if (!token) throw new Error('Không tìm thấy token');
 
-      const res = await fetch(
-        `https://project-doan1-backend.onrender.com/api/admin/words?page=${page}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      // THÊM search & deck_id VÀO URL
+      let url = `https://project-doan1-backend.onrender.com/api/admin/words?page=${page}`;
+      if (query.search) url += `&search=${encodeURIComponent(query.search)}`;
+      if (query.deckId) url += `&deck_id=${encodeURIComponent(query.deckId)}`;
+
+      const res = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (!res.ok) throw new Error('Lỗi tải dữ liệu');
       const jsonData = await res.json();
@@ -50,9 +72,9 @@ export default function ManageWords() {
 
   useEffect(() => {
     fetchWords();
-  }, [page]);
+  }, [page, query]);
 
-  // --- FORM HANDLERS ---
+  // ... (Giữ nguyên CRUD handlers openModal, handleSave, handleDelete...) ...
   const openModal = (word = null) => {
     if (word) {
       setEditingWord(word);
@@ -64,23 +86,13 @@ export default function ManageWords() {
       });
     } else {
       setEditingWord(null);
-      setFormData({
-        front_text: '',
-        back_text: '',
-        pronunciation: '',
-        deck_id: '',
-      });
+      setFormData({ front_text: '', back_text: '', pronunciation: '', deck_id: '' });
     }
     setIsModalOpen(true);
   };
-
   const closeModal = () => setIsModalOpen(false);
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  // --- API THÊM / SỬA ---
   const handleSave = async (e) => {
     e.preventDefault();
     const token = sessionStorage.getItem('accessToken');
@@ -88,20 +100,14 @@ export default function ManageWords() {
       ? `https://project-doan1-backend.onrender.com/api/admin/words/${editingWord.card_id}`
       : `https://project-doan1-backend.onrender.com/api/admin/words`;
     const method = editingWord ? 'PUT' : 'POST';
-
     try {
       const res = await fetch(url, {
         method,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify(formData),
       });
-
-      if (!res.ok) throw new Error('Lỗi khi lưu từ vựng');
-
-      toast.success(editingWord ? 'Đã cập nhật từ vựng' : 'Đã thêm từ vựng mới');
+      if (!res.ok) throw new Error('Lỗi khi lưu');
+      toast.success(editingWord ? 'Đã cập nhật' : 'Đã thêm mới');
       closeModal();
       fetchWords();
     } catch (err) {
@@ -109,19 +115,16 @@ export default function ManageWords() {
     }
   };
 
-  // --- API XÓA ---
   const handleDelete = async (id) => {
-    if (!window.confirm('Bạn có chắc muốn xóa từ này không?')) return;
+    if (!window.confirm('Xóa từ này?')) return;
     const token = sessionStorage.getItem('accessToken');
     try {
       const res = await fetch(`https://project-doan1-backend.onrender.com/api/admin/words/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      if (!res.ok) throw new Error('Lỗi khi xóa');
-
-      toast.success('Đã xóa từ vựng');
+      if (!res.ok) throw new Error('Lỗi xóa');
+      toast.success('Đã xóa');
       fetchWords();
     } catch (err) {
       toast.error(err.message);
@@ -135,16 +138,68 @@ export default function ManageWords() {
 
   return (
     <div className="relative">
-      {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      {/* Header & Filters */}
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <h1 className="text-3xl font-bold text-white">Quản lý Từ vựng</h1>
-        <button
-          onClick={() => openModal(null)}
-          className="flex items-center space-x-2 rounded bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
-        >
-          <Plus size={20} />
-          <span>Thêm từ vựng</span>
-        </button>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Form Tìm kiếm & Lọc */}
+          <form
+            onSubmit={handleSearch}
+            className="flex items-center gap-2 rounded border border-gray-600 bg-[#121212] p-1"
+          >
+            {/* Input Tìm kiếm */}
+            <div className="relative">
+              <Search size={16} className="absolute top-2.5 left-2 text-gray-500" />
+              <input
+                type="text"
+                placeholder="Tìm từ..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-32 bg-transparent py-2 pr-2 pl-8 text-sm text-white outline-none sm:w-48"
+              />
+            </div>
+
+            {/* Input Lọc Deck ID */}
+            <div className="relative border-l border-gray-600 pl-2">
+              <Filter size={16} className="absolute top-2.5 left-3 text-gray-500" />
+              <input
+                type="number"
+                placeholder="Deck ID"
+                value={filterDeckId}
+                onChange={(e) => setFilterDeckId(e.target.value)}
+                className="w-24 bg-transparent py-2 pr-2 pl-8 text-sm text-white outline-none"
+              />
+            </div>
+
+            {/* Nút Search */}
+            <button
+              type="submit"
+              className="rounded bg-blue-600 px-3 py-1.5 text-xs font-bold text-white uppercase hover:bg-blue-500"
+            >
+              Lọc
+            </button>
+
+            {/* Nút Xóa Lọc */}
+            {(searchTerm || filterDeckId) && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="px-2 text-gray-400 hover:text-white"
+              >
+                <X size={18} />
+              </button>
+            )}
+          </form>
+
+          <button
+            onClick={() => openModal(null)}
+            className="flex items-center space-x-2 rounded bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700"
+          >
+            <Plus size={20} />
+            <span className="hidden sm:inline">Thêm</span>
+          </button>
+        </div>
       </div>
 
       <div className="mb-4 text-lg text-gray-300">
@@ -180,6 +235,12 @@ export default function ManageWords() {
                 <tr>
                   <td colSpan="5" className="p-4 text-center">
                     Đang tải...
+                  </td>
+                </tr>
+              ) : data.words.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="p-8 text-center text-gray-500">
+                    Không tìm thấy dữ liệu.
                   </td>
                 </tr>
               ) : (
@@ -238,9 +299,10 @@ export default function ManageWords() {
         </div>
       </div>
 
-      {/* --- MODAL ADD/EDIT --- */}
+      {/* Modal Form (Giữ nguyên) */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          {/* ... Form modal ... */}
           <div className="w-full max-w-md rounded-lg border border-gray-700 bg-[#1d1d1d] p-6 shadow-xl">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-xl font-bold text-white">
@@ -253,9 +315,7 @@ export default function ManageWords() {
 
             <form onSubmit={handleSave} className="space-y-3">
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-400">
-                  Từ vựng (Mặt trước)
-                </label>
+                <label className="mb-1 block text-xs font-medium text-gray-400">Từ vựng</label>
                 <input
                   type="text"
                   name="front_text"
@@ -263,13 +323,10 @@ export default function ManageWords() {
                   value={formData.front_text}
                   onChange={handleChange}
                   className="w-full rounded border border-gray-600 bg-[#121212] px-3 py-2 text-white outline-none focus:border-blue-500"
-                  placeholder="VD: Hello"
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-400">
-                  Nghĩa (Mặt sau)
-                </label>
+                <label className="mb-1 block text-xs font-medium text-gray-400">Nghĩa</label>
                 <input
                   type="text"
                   name="back_text"
@@ -277,7 +334,6 @@ export default function ManageWords() {
                   value={formData.back_text}
                   onChange={handleChange}
                   className="w-full rounded border border-gray-600 bg-[#121212] px-3 py-2 text-white outline-none focus:border-blue-500"
-                  placeholder="VD: Xin chào"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -289,7 +345,6 @@ export default function ManageWords() {
                     value={formData.pronunciation}
                     onChange={handleChange}
                     className="w-full rounded border border-gray-600 bg-[#121212] px-3 py-2 text-white outline-none focus:border-blue-500"
-                    placeholder="/həˈləʊ/"
                   />
                 </div>
                 <div>
@@ -301,11 +356,9 @@ export default function ManageWords() {
                     value={formData.deck_id}
                     onChange={handleChange}
                     className="w-full rounded border border-gray-600 bg-[#121212] px-3 py-2 text-white outline-none focus:border-blue-500"
-                    placeholder="Nhập ID chủ đề"
                   />
                 </div>
               </div>
-
               <div className="mt-6 flex justify-end gap-2">
                 <button
                   type="button"
