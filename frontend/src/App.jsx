@@ -23,7 +23,7 @@ import { DeckProvider } from './context/DeckContext';
 import AdminLayout from './components/admin/AdminLayout';
 import DashboardOverview from './pages/admin/DashboardOverview';
 import ManageUsers from './pages/admin/ManageUsers';
-import ManageTopicsWords from './pages/admin/ManageTopicsWords';
+import ManageTopics from './pages/admin/ManageTopics';
 import AdminSettings from './pages/admin/AdminSettings';
 import ManageWords from './pages/admin/ManageWords';
 
@@ -102,7 +102,7 @@ function AppContent() {
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<DashboardOverview />} />
                 <Route path="users" element={<ManageUsers />} />
-                <Route path="topics" element={<ManageTopicsWords />} />
+                <Route path="topics" element={<ManageTopics />} />
                 <Route path="words" element={<ManageWords />} />
                 <Route path="settings" element={<AdminSettings />} />
                 <Route path="reviews" element={<ReviewsManager />} />

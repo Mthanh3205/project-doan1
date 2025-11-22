@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import FlashcardItem from '../components/FlashcardItem';
-import { Snowflake, Menu, X, PlusCircle, FolderOpen, Trash2, Save } from 'lucide-react';
+import { Snowflake, Menu, X, PlusCircle, FolderOpen, Trash2, Save, User } from 'lucide-react';
 import ThemeToggle from '../components/themeToggle';
 import { toast } from 'sonner';
 import { useDecks } from '../context/DeckContext';
 import { useAuth } from '../context/AuthContext';
 
-// URL chuẩn khớp với Route vừa sửa (không còn /decks ở đuôi nữa)
 const API_URL = 'https://project-doan1-backend.onrender.com/api/gettopiccard';
 
 export default function CreateVocabulary() {
@@ -21,8 +20,6 @@ export default function CreateVocabulary() {
     setCards,
     setSelectedDeck,
     selectDeck,
-    // Chúng ta sẽ không dùng createDeck/updateDeck từ Context để tránh lỗi đường dẫn ẩn
-    getAuthHeaders,
   } = useDecks();
 
   const { user } = useAuth();
@@ -43,7 +40,24 @@ export default function CreateVocabulary() {
     example: '',
   });
 
-  // --- XỬ LÝ TOPIC (Gọi trực tiếp Axios để đảm bảo đúng Route) ---
+  const getHeaders = () => {
+    const token = sessionStorage.getItem('accessToken') || sessionStorage.getItem('token');
+
+    if (!token) {
+      console.error('Không tìm thấy token trong sessionStorage!');
+      toast.error('Phiên đăng nhập hết hạn hoặc không tìm thấy Token.');
+      return null;
+    }
+
+    return {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    };
+  };
+
+  //  XỬ LÝ TOPIC
   const handleSelectDeck = (deckId) => {
     setEditingCardId(null);
     setIsAddingCard(false);
@@ -55,26 +69,23 @@ export default function CreateVocabulary() {
     e.preventDefault();
     if (!newDeckTitle.trim()) return toast.warning('Vui lòng nhập tiêu đề');
 
-    const authHeaders = getAuthHeaders();
-    if (!authHeaders) return;
+    const config = getHeaders();
+    if (!config) return;
 
     try {
-      // Gọi POST /api/gettopiccard/ (Khớp với backend route '/')
       await axios.post(
         `${API_URL}/`,
         {
           title: newDeckTitle,
           description: newDeckDescription,
         },
-        authHeaders
+        config
       );
 
       setNewDeckTitle('');
       setNewDeckDescription('');
       setIsAddingDeck(false);
-      toast.success('Tạo chủ đề thành công! Vui lòng tải lại trang để thấy.');
-
-      // Tự động reload để cập nhật danh sách vì chúng ta bypass Context
+      toast.success('Tạo chủ đề thành công! Đang tải lại...');
       setTimeout(() => window.location.reload(), 1000);
     } catch (err) {
       toast.error('Lỗi tạo chủ đề: ' + (err.response?.data?.message || err.message));
@@ -84,17 +95,18 @@ export default function CreateVocabulary() {
   const handleUpdateDeck = async (e) => {
     e.preventDefault();
     if (!selectedDeck) return;
-    const authHeaders = getAuthHeaders();
+
+    const config = getHeaders();
+    if (!config) return;
 
     try {
-      // Gọi PUT /api/gettopiccard/:id
       await axios.put(
         `${API_URL}/${selectedDeck.deck_id}`,
         {
           title: selectedDeck.title,
           description: selectedDeck.description,
         },
-        authHeaders
+        config
       );
       toast.success('Cập nhật chủ đề thành công');
     } catch (err) {
@@ -110,10 +122,11 @@ export default function CreateVocabulary() {
         : `Bạn có chắc muốn xóa chủ đề này?`;
 
     if (window.confirm(confirmMsg)) {
-      const authHeaders = getAuthHeaders();
+      const config = getHeaders();
+      if (!config) return;
+
       try {
-        // Gọi DELETE /api/gettopiccard/:id
-        await axios.delete(`${API_URL}/${selectedDeck.deck_id}`, authHeaders);
+        await axios.delete(`${API_URL}/${selectedDeck.deck_id}`, config);
         toast.success('Đã xóa chủ đề');
         setTimeout(() => window.location.reload(), 500);
       } catch (err) {
@@ -122,36 +135,40 @@ export default function CreateVocabulary() {
     }
   };
 
-  // --- XỬ LÝ FLASHCARD ---
+  //XỬ LÝ FLASHCARD
   const handleCreateCard = async (e) => {
     e.preventDefault();
     if (!newCardData.front_text.trim() || !newCardData.back_text.trim()) {
       return toast.warning('Mặt trước và mặt sau là bắt buộc.');
     }
-    const authHeaders = getAuthHeaders();
+
+    const config = getHeaders();
+    if (!config) return;
+
     try {
-      // Gọi POST /api/gettopiccard/flashcards (Khớp backend)
       const response = await axios.post(
         `${API_URL}/flashcards`,
         {
           ...newCardData,
           deck_id: selectedDeck.deck_id,
         },
-        authHeaders
+        config
       );
 
       setCards([...cards, response.data]);
       setNewCardData({ front_text: '', back_text: '', pronunciation: '', example: '' });
       toast.success('Thêm từ vựng thành công!');
     } catch (err) {
-      toast.error('Lỗi thêm từ vựng');
+      toast.error('Lỗi thêm từ vựng: ' + (err.response?.data?.message || err.message));
     }
   };
 
   const handleUpdateCard = async (cardId, updatedData) => {
-    const authHeaders = getAuthHeaders();
+    const config = getHeaders();
+    if (!config) return;
+
     try {
-      const response = await axios.put(`${API_URL}/flashcards/${cardId}`, updatedData, authHeaders);
+      const response = await axios.put(`${API_URL}/flashcards/${cardId}`, updatedData, config);
       setCards(cards.map((c) => (c.card_id === cardId ? response.data : c)));
       setEditingCardId(null);
       toast.success('Cập nhật thành công!');
@@ -161,11 +178,13 @@ export default function CreateVocabulary() {
   };
 
   const handleDeleteCard = async (cardId) => {
-    const authHeaders = getAuthHeaders();
     if (!window.confirm('Xóa từ vựng này?')) return;
 
+    const config = getHeaders();
+    if (!config) return;
+
     try {
-      await axios.delete(`${API_URL}/flashcards/${cardId}`, authHeaders);
+      await axios.delete(`${API_URL}/flashcards/${cardId}`, config);
       setCards(cards.filter((c) => c.card_id !== cardId));
       toast.success('Đã xóa từ vựng');
     } catch (err) {
@@ -275,10 +294,10 @@ export default function CreateVocabulary() {
                     <span className="font-semibold text-zinc-200 dark:text-stone-800">
                       {deck.title}
                     </span>
-                    <span className="truncate text-xs text-stone-500">{deck.description}</span>
+                    <span className="truncate text-xs text-stone-300">{deck.description}</span>
                     {user?.id === 1 && deck.author && (
-                      <span className="mt-1 w-fit rounded bg-stone-800 px-2 py-0.5 text-[10px] text-stone-400">
-                        👤 {deck.author.name}
+                      <span className="mt-1 inline-flex w-fit items-center justify-center gap-1 rounded bg-stone-800 px-2 py-0.5 text-center text-[10px] text-stone-400">
+                        <User className="h-3 w-3" /> {deck.author.name}
                       </span>
                     )}
                   </div>

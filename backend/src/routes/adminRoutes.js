@@ -1,3 +1,4 @@
+//Admin Routes
 import express from 'express';
 const router = express.Router();
 import Notification from '../models/Notification.js';
@@ -5,18 +6,34 @@ import { authenticateToken, admin } from '../middleware/auth.js';
 import {
   getAllUsers,
   getDashboardStats,
+  // Topics Controller
   getAllTopics,
+  createTopicAdmin,
+  updateTopicAdmin,
+  deleteTopicAdmin,
+  // Words Controller
   getAllWords,
+  createWordAdmin,
+  updateWordAdmin,
+  deleteWordAdmin,
 } from '../controllers/adminController.js';
 import Feedback from '../models/Feedback.js';
 import User from '../models/User.js';
 
 router.get('/users', authenticateToken, admin, getAllUsers);
 router.get('/stats', authenticateToken, admin, getDashboardStats);
-router.get('/topics', authenticateToken, admin, getAllTopics);
-router.get('/words', authenticateToken, admin, getAllWords);
 
-//LẤY DANH SÁCH ĐÁNH GIÁ
+router.get('/topics', authenticateToken, admin, getAllTopics);
+router.post('/topics', authenticateToken, admin, createTopicAdmin);
+router.put('/topics/:id', authenticateToken, admin, updateTopicAdmin);
+router.delete('/topics/:id', authenticateToken, admin, deleteTopicAdmin);
+
+router.get('/words', authenticateToken, admin, getAllWords);
+router.post('/words', authenticateToken, admin, createWordAdmin);
+router.put('/words/:id', authenticateToken, admin, updateWordAdmin);
+router.delete('/words/:id', authenticateToken, admin, deleteWordAdmin);
+
+//Đánh giá
 router.get('/reviews', authenticateToken, admin, async (req, res) => {
   try {
     const reviews = await Feedback.findAll({
@@ -36,7 +53,6 @@ router.get('/reviews', authenticateToken, admin, async (req, res) => {
   }
 });
 
-//XÓA ĐÁNH GIÁ
 router.delete('/reviews/:id', authenticateToken, admin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -47,7 +63,6 @@ router.delete('/reviews/:id', authenticateToken, admin, async (req, res) => {
   }
 });
 
-//ẨN HIỆN ĐÁNH GIÁ
 router.patch('/reviews/:id/toggle', authenticateToken, admin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -55,7 +70,6 @@ router.patch('/reviews/:id/toggle', authenticateToken, admin, async (req, res) =
 
     if (!review) return res.status(404).json({ message: 'Không tìm thấy đánh giá' });
 
-    // Đảo ngược trạng thái
     review.isVisible = !review.isVisible;
     await review.save();
 
@@ -69,34 +83,6 @@ router.patch('/reviews/:id/toggle', authenticateToken, admin, async (req, res) =
   }
 });
 
-//Thông báo
-router.get('/notifications', authenticateToken, admin, async (req, res) => {
-  try {
-    const notis = await Notification.findAll({
-      limit: 5,
-      order: [['createdAt', 'DESC']], // Mới nhất lên đầu
-    });
-
-    // Đếm số thông báo chưa đọc
-    const unreadCount = await Notification.count({ where: { isRead: false } });
-
-    res.json({ data: notis, unread: unreadCount });
-  } catch (error) {
-    res.status(500).json({ message: 'Lỗi lấy thông báo' });
-  }
-});
-
-// Đánh dấu tất cả là đã đọc
-router.patch('/notifications/read-all', authenticateToken, admin, async (req, res) => {
-  try {
-    await Notification.update({ isRead: true }, { where: { isRead: false } });
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ message: 'Lỗi cập nhật' });
-  }
-});
-
-//LẤY CHI TIẾT 1 ĐÁNH GIÁ (Theo ID)
 router.get('/reviews/:id', authenticateToken, admin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -118,7 +104,7 @@ router.get('/reviews/:id', authenticateToken, admin, async (req, res) => {
     res.status(500).json({ message: 'Lỗi server' });
   }
 });
-//PHẢN HỒI ĐÁNH GIÁ
+
 router.patch('/reviews/:id/reply', authenticateToken, admin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -127,7 +113,6 @@ router.patch('/reviews/:id/reply', authenticateToken, admin, async (req, res) =>
     const review = await Feedback.findByPk(id);
     if (!review) return res.status(404).json({ message: 'Đánh giá không tồn tại' });
 
-    // Cập nhật phản hồi
     review.admin_reply = replyText;
     review.replied_at = new Date();
     await review.save();
@@ -136,6 +121,30 @@ router.patch('/reviews/:id/reply', authenticateToken, admin, async (req, res) =>
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Lỗi server' });
+  }
+});
+//Thông báo admin
+router.get('/notifications', authenticateToken, admin, async (req, res) => {
+  try {
+    const notis = await Notification.findAll({
+      limit: 5,
+      order: [['createdAt', 'DESC']],
+    });
+
+    const unreadCount = await Notification.count({ where: { isRead: false } });
+
+    res.json({ data: notis, unread: unreadCount });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi lấy thông báo' });
+  }
+});
+
+router.patch('/notifications/read-all', authenticateToken, admin, async (req, res) => {
+  try {
+    await Notification.update({ isRead: true }, { where: { isRead: false } });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi cập nhật' });
   }
 });
 

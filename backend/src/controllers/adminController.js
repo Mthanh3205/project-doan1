@@ -1,12 +1,9 @@
+//Admin CRUD
 import User from '../models/User.js';
 import Topics from '../models/Topics.js';
 import Flashcard from '../models/Flashcard.js';
 import Feedback from '../models/Feedback.js';
-/**
- * @desc    Lấy tất cả người dùng (cho Admin)
- * @route   GET /api/admin/users
- * @access  Private/Admin
- */
+
 export const getAllUsers = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
@@ -37,11 +34,11 @@ export const getDashboardStats = async (req, res) => {
     const userCount = await User.count();
     const topicCount = await Topics.count();
     const wordCount = await Flashcard.count();
-    const feedbackCount = 0;
+    const feedbackCount = await Feedback.count();
 
     const recentUsers = await User.findAll({
       limit: 5,
-      order: [['createdAt', 'DESC']], // Sắp xếp theo ngày tạo
+      order: [['createdAt', 'DESC']],
       attributes: { exclude: ['password', 'googleId'] },
     });
     const recentTopics = await Topics.findAll({
@@ -50,13 +47,10 @@ export const getDashboardStats = async (req, res) => {
     });
 
     res.json({
-      // Số đếm
       userCount,
       topicCount,
       wordCount,
       feedbackCount,
-
-      // Danh sách
       recentUsers,
       recentTopics,
     });
@@ -65,6 +59,7 @@ export const getDashboardStats = async (req, res) => {
     res.status(500).json({ message: 'Lỗi server' });
   }
 };
+
 export const getAllTopics = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
@@ -74,20 +69,72 @@ export const getAllTopics = async (req, res) => {
     const { count, rows } = await Topics.findAndCountAll({
       limit: limit,
       offset: offset,
-      order: [['deck_id', 'ASC']],
+      order: [['created_at', 'DESC']],
     });
 
     res.json({
+      topics: rows,
       totalTopics: count,
       totalPages: Math.ceil(count / limit),
       currentPage: page,
-      topics: rows,
     });
   } catch (error) {
     console.error('Lỗi khi lấy danh sách chủ đề:', error);
     res.status(500).json({ message: 'Lỗi server' });
   }
 };
+
+export const createTopicAdmin = async (req, res) => {
+  try {
+    const { title, description } = req.body;
+    const userId = req.user.id; // Lấy ID admin từ token
+
+    const newTopic = await Topics.create({
+      title,
+      description,
+      user_id: userId,
+    });
+
+    res.status(201).json(newTopic);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const updateTopicAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description } = req.body;
+
+    const topic = await Topics.findByPk(id);
+    if (!topic) return res.status(404).json({ message: 'Không tìm thấy chủ đề' });
+
+    topic.title = title;
+    topic.description = description;
+    await topic.save();
+
+    res.json(topic);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const deleteTopicAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await Flashcard.destroy({ where: { deck_id: id } });
+
+    const deleted = await Topics.destroy({ where: { deck_id: id } });
+
+    if (!deleted) return res.status(404).json({ message: 'Không tìm thấy chủ đề' });
+
+    res.status(200).json({ message: 'Đã xóa thành công' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 export const getAllWords = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
@@ -97,17 +144,63 @@ export const getAllWords = async (req, res) => {
     const { count, rows } = await Flashcard.findAndCountAll({
       limit: limit,
       offset: offset,
-      order: [['card_id', 'ASC']],
+      order: [['card_id', 'DESC']],
     });
 
     res.json({
+      words: rows,
       totalWords: count,
       totalPages: Math.ceil(count / limit),
       currentPage: page,
-      words: rows,
     });
   } catch (error) {
     console.error('Lỗi khi lấy danh sách từ vựng:', error);
     res.status(500).json({ message: 'Lỗi server' });
+  }
+};
+
+export const createWordAdmin = async (req, res) => {
+  try {
+    const { deck_id, front_text, back_text, pronunciation } = req.body;
+
+    const deck = await Topics.findByPk(deck_id);
+    if (!deck) return res.status(400).json({ message: 'Deck ID không tồn tại' });
+
+    const newWord = await Flashcard.create({
+      deck_id,
+      front_text,
+      back_text,
+      pronunciation,
+    });
+
+    res.status(201).json(newWord);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const updateWordAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updated = await Flashcard.update(req.body, { where: { card_id: id } });
+
+    if (!updated[0]) return res.status(404).json({ message: 'Không tìm thấy từ vựng' });
+
+    res.json({ message: 'Cập nhật thành công' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const deleteWordAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = await Flashcard.destroy({ where: { card_id: id } });
+
+    if (!deleted) return res.status(404).json({ message: 'Không tìm thấy từ vựng' });
+
+    res.json({ message: 'Đã xóa thành công' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };

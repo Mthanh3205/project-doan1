@@ -1,5 +1,3 @@
-// File: src/context/DeckContext.jsx
-
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
@@ -9,7 +7,6 @@ const API_URL = 'https://project-doan1-backend.onrender.com/api/gettopiccard';
 const DeckContext = createContext();
 
 export const DeckProvider = ({ children }) => {
-  // --- STATE TOÀN CỤC ---
   const [decks, setDecks] = useState([]);
   const [selectedDeck, setSelectedDeck] = useState(null);
   const [cards, setCards] = useState([]);
@@ -18,19 +15,18 @@ export const DeckProvider = ({ children }) => {
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [error, setError] = useState(null);
 
-  // 1. Helper Lấy Token (Thêm tham số silent để không hiện lỗi khi mới vào trang chưa đăng nhập)
-  const getAuthHeaders = (silent = false) => {
-    const token = sessionStorage.getItem('token');
+  const getAuthHeaders = useCallback((silent = false) => {
+    const token = sessionStorage.getItem('accessToken') || sessionStorage.getItem('token');
+
     if (!token) {
-      if (!silent) toast.error('Không tìm thấy token. Vui lòng đăng nhập lại.');
+      if (!silent) toast.error('Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
       return null;
     }
     return { headers: { Authorization: `Bearer ${token}` } };
-  };
+  }, []);
 
-  // 2. Tải danh sách chủ đề (ĐÃ SỬA: Thêm headers)
   const fetchDecks = useCallback(async () => {
-    const authHeaders = getAuthHeaders(true); // true = chế độ im lặng
+    const authHeaders = getAuthHeaders(true);
     if (!authHeaders) {
       setIsLoadingDecks(false);
       return;
@@ -38,57 +34,61 @@ export const DeckProvider = ({ children }) => {
 
     setIsLoadingDecks(true);
     try {
-      // --- QUAN TRỌNG: Thêm authHeaders vào đây ---
-      const response = await axios.get(`${API_URL}/decks`, authHeaders);
+      const response = await axios.get(`${API_URL}/`, authHeaders);
+
       setDecks(response.data);
       setError(null);
     } catch (err) {
       console.error('Lỗi tải decks:', err);
-      setError('Không thể tải danh sách chủ đề');
     } finally {
       setIsLoadingDecks(false);
     }
-  }, []);
+  }, [getAuthHeaders]);
 
   // Gọi khi mount
   useEffect(() => {
     fetchDecks();
   }, [fetchDecks]);
 
-  // 3. Chọn chủ đề (ĐÃ SỬA: Thêm headers)
-  const selectDeck = useCallback(async (deckId) => {
-    if (!deckId) {
-      setSelectedDeck(null);
-      setCards([]);
-      return;
-    }
+  // 3. Chọn chủ đề
+  const selectDeck = useCallback(
+    async (deckId) => {
+      if (!deckId) {
+        setSelectedDeck(null);
+        setCards([]);
+        return;
+      }
 
-    const authHeaders = getAuthHeaders();
-    if (!authHeaders) return;
+      const authHeaders = getAuthHeaders();
+      if (!authHeaders) return;
 
-    setIsLoadingDetails(true);
-    try {
-      // --- QUAN TRỌNG: Thêm authHeaders vào đây ---
-      const response = await axios.get(`${API_URL}/decks/${deckId}`, authHeaders);
-      setSelectedDeck(response.data);
-      setCards(response.data.flashcards || []);
-    } catch (err) {
-      toast.error('Không thể tải chi tiết chủ đề');
-      setSelectedDeck(null);
-      setCards([]);
-    } finally {
-      setIsLoadingDetails(false);
-    }
-  }, []);
+      setIsLoadingDetails(true);
+      try {
+        const response = await axios.get(`${API_URL}/${deckId}`, authHeaders);
+        setSelectedDeck(response.data);
 
-  // 4. Các hàm CRUD (Đã có headers rồi, giữ nguyên)
+        setCards(response.data.flashcards || []);
+      } catch (err) {
+        toast.error('Không thể tải chi tiết chủ đề');
+        setSelectedDeck(null);
+        setCards([]);
+      } finally {
+        setIsLoadingDetails(false);
+      }
+    },
+    [getAuthHeaders]
+  );
+
   const createDeck = async (newDeckData) => {
     const authHeaders = getAuthHeaders();
     if (!authHeaders) return;
     try {
-      const response = await axios.post(`${API_URL}/decks`, newDeckData, authHeaders);
+      const response = await axios.post(`${API_URL}/`, newDeckData, authHeaders);
+
       setDecks((prevDecks) => [response.data, ...prevDecks]);
       toast.success('Tạo chủ đề mới thành công!');
+
+      fetchDecks();
     } catch (err) {
       toast.error('Lỗi khi tạo chủ đề mới');
       throw err;
@@ -99,7 +99,7 @@ export const DeckProvider = ({ children }) => {
     const authHeaders = getAuthHeaders();
     if (!authHeaders) return;
     try {
-      const response = await axios.put(`${API_URL}/decks/${deckId}`, dataToUpdate, authHeaders);
+      const response = await axios.put(`${API_URL}/${deckId}`, dataToUpdate, authHeaders);
 
       setDecks((prevDecks) =>
         prevDecks.map((d) => (d.deck_id === response.data.deck_id ? response.data : d))
@@ -121,7 +121,7 @@ export const DeckProvider = ({ children }) => {
     const authHeaders = getAuthHeaders();
     if (!authHeaders) return;
     try {
-      await axios.delete(`${API_URL}/decks/${deckIdToDelete}`, authHeaders);
+      await axios.delete(`${API_URL}/${deckIdToDelete}`, authHeaders);
 
       setDecks((prevDecks) => prevDecks.filter((deck) => deck.deck_id !== deckIdToDelete));
 
@@ -150,7 +150,7 @@ export const DeckProvider = ({ children }) => {
     updateDeck,
     deleteDeck,
     getAuthHeaders,
-    fetchDecks, // Export thêm hàm này để gọi lại khi cần
+    fetchDecks,
   };
 
   return <DeckContext.Provider value={value}>{children}</DeckContext.Provider>;

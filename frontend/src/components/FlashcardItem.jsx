@@ -106,7 +106,7 @@ export default function FlashcardItem({
 
   // GIAO DIỆN KHI CHỈ HIỂN THỊ (Mặc định)
   return (
-    <div className="mx-5 bg-[#121212] p-4 text-zinc-300 shadow-sm dark:border-none dark:bg-green-100 dark:text-stone-600">
+    <div className="mx-5 border border-stone-600 bg-[#121212] p-4 text-zinc-300 shadow-sm dark:border-none dark:bg-green-100 dark:text-stone-600">
       <p>
         <strong>Front:</strong> {card.front_text}
       </p>
