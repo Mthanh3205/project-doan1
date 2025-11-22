@@ -33,22 +33,18 @@ export const getAllUsers = async (req, res) => {
 
 export const getDashboardStats = async (req, res) => {
   try {
-    // 1. Số liệu tổng quan
     const userCount = await User.count();
     const topicCount = await Topics.count();
     const wordCount = await Flashcard.count();
     const feedbackCount = await Feedback.count();
 
-    // -------------------------------------------------------
-    // 2. DỮ LIỆU BIỂU ĐỒ ĐƯỜNG (LINE CHART)
-    // -------------------------------------------------------
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
     sevenDaysAgo.setHours(0, 0, 0, 0);
 
-    // Kiểm tra xem bảng UserProgress có tồn tại không trước khi query để tránh crash
     let chartData = [];
     try {
+      // Lấy danh sách ngày đã học
       const progressLogs = await UserProgress.findAll({
         where: { updatedAt: { [Op.gte]: sevenDaysAgo } },
         attributes: ['updatedAt'],
@@ -60,6 +56,7 @@ export const getDashboardStats = async (req, res) => {
         d.setDate(d.getDate() - i);
         const dateString = d.toISOString().split('T')[0];
 
+        // Đếm số lượt học trong ngày
         const count = progressLogs.filter(
           (log) => log.updatedAt.toISOString().split('T')[0] === dateString
         ).length;
@@ -71,45 +68,33 @@ export const getDashboardStats = async (req, res) => {
         });
       }
     } catch (err) {
-      console.warn('Lỗi lấy UserProgress (có thể bảng chưa tạo):', err.message);
-      // Nếu lỗi bảng chưa tạo, trả về mảng rỗng để không sập trang Admin
-      chartData = Array(7).fill({ name: '-', count: 0 });
+      console.warn('Lỗi chartData:', err.message);
+      chartData = [];
     }
 
-    // -------------------------------------------------------
-    // 3. DỮ LIỆU BIỂU ĐỒ TRÒN (PIE CHART) - FIX LỖI POSTGRES
-    // -------------------------------------------------------
     let pieData = [];
     try {
-      const topTopics = await Topics.findAll({
-        attributes: [
-          'title',
-          [Sequelize.fn('COUNT', Sequelize.col('flashcards.card_id')), 'value'],
-        ],
-        include: [
-          {
-            model: Flashcard,
-            as: 'flashcards',
-            attributes: [],
-          },
-        ],
-        // --- QUAN TRỌNG: Postgres yêu cầu Group By cả Deck ID và Title ---
-        group: ['Topics.deck_id', 'Topics.title'],
-        order: [[Sequelize.literal('value'), 'DESC']],
-        limit: 5,
+      const allTopics = await Topics.findAll({
+        attributes: ['deck_id', 'title'],
       });
 
-      pieData = topTopics.map((t) => ({
-        name: t.title,
-        value: parseInt(t.dataValues.value),
-      }));
+      const topicStats = await Promise.all(
+        allTopics.map(async (topic) => {
+          const count = await Flashcard.count({
+            where: { deck_id: topic.deck_id },
+          });
+          return { name: topic.title, value: count };
+        })
+      );
+
+      pieData = topicStats
+        .filter((item) => item.value > 0)
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 5); // Lấy top 5
     } catch (err) {
-      console.warn('Lỗi lấy PieData:', err.message);
+      console.warn('Lỗi PieData:', err.message);
     }
 
-    // -------------------------------------------------------
-    // 4. Danh sách mới nhất
-    // -------------------------------------------------------
     const recentUsers = await User.findAll({
       limit: 5,
       order: [['createdAt', 'DESC']],
@@ -132,8 +117,8 @@ export const getDashboardStats = async (req, res) => {
       recentTopics,
     });
   } catch (error) {
-    console.error('Lỗi CRITICAL tại Dashboard Stats:', error);
-    res.status(500).json({ message: error.message || 'Lỗi server' });
+    console.error('Lỗi Dashboard:', error);
+    res.status(500).json({ message: 'Lỗi server' });
   }
 };
 
