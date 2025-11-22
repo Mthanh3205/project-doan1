@@ -10,7 +10,7 @@ export const chatRoleplay = async (req, res) => {
     const { userMessage, history, targetWords, topicTitle } = req.body;
 
     // Chọn model (gemini-1.5-flash cho nhanh và free)
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     // Tạo prompt
     const systemPrompt = `
