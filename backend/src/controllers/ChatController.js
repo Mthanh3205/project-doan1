@@ -7,10 +7,16 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export const chatRoleplay = async (req, res) => {
   try {
+    const models = await genAI.listModels(); // Liệt kê model
+    console.log('DANH SÁCH MODEL HỖ TRỢ:', models);
+  } catch (e) {
+    console.log('Lỗi liệt kê model:', e);
+  }
+  try {
     const { userMessage, history, targetWords, topicTitle } = req.body;
 
     // Chọn model (gemini-1.5-flash cho nhanh và free)
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     // Tạo prompt
     const systemPrompt = `
