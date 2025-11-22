@@ -88,7 +88,7 @@ export default function ManageUsers() {
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-        <div className="animate-in fade-in zoom-in w-full max-w-lg overflow-hidden rounded-xl border border-gray-700 bg-[#1d1d1d] shadow-2xl duration-200">
+        <div className="animate-in fade-in zoom-in w-full max-w-lg overflow-hidden rounded-xl bg-[#1d1d1d] shadow-2xl duration-200">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-gray-700 p-4">
             <h3 className="text-xl font-bold text-white">Thông tin chi tiết</h3>
@@ -103,7 +103,7 @@ export default function ManageUsers() {
           {/* Body */}
           <div className="space-y-4 p-6">
             <div className="mb-6 flex justify-center">
-              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-2 border-amber-500 bg-gray-600 text-2xl font-bold text-white">
+              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-2 bg-gray-600 text-2xl font-bold text-white">
                 {selectedUser.picture ? (
                   <img src={selectedUser.picture} className="h-full w-full object-cover" />
                 ) : (
@@ -149,7 +149,7 @@ export default function ManageUsers() {
               className={`flex items-center gap-2 rounded px-4 py-2 font-bold text-white transition-colors ${
                 selectedUser.isBanned
                   ? 'bg-green-600 hover:bg-green-700'
-                  : 'bg-red-600 hover:bg-red-700'
+                  : 'bg-amber-500 hover:bg-red-700'
               }`}
             >
               {selectedUser.isBanned ? <Unlock size={18} /> : <Lock size={18} />}
@@ -247,9 +247,7 @@ export default function ManageUsers() {
           </table>
         </div>
 
-        {/* Pagination (Giữ nguyên code cũ) */}
         <div className="flex items-center justify-between bg-[#121212] px-4 py-3 dark:bg-gray-800">
-          {/* ... (Giữ nguyên code phân trang của bạn) ... */}
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
