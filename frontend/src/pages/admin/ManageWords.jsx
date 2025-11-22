@@ -194,7 +194,7 @@ export default function ManageWords() {
 
           <button
             onClick={() => openModal(null)}
-            className="flex items-center space-x-2 rounded bg-green-600 px-4 py-2 text-white transition-colors hover:bg-green-700"
+            className="flex items-center space-x-2 rounded bg-amber-500 px-4 py-2 text-white transition-colors hover:bg-[#1d1d1d]"
           >
             <Plus size={20} />
             <span className="hidden sm:inline">Thêm</span>
@@ -299,10 +299,8 @@ export default function ManageWords() {
         </div>
       </div>
 
-      {/* Modal Form (Giữ nguyên) */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          {/* ... Form modal ... */}
           <div className="w-full max-w-md rounded-lg border border-gray-700 bg-[#1d1d1d] p-6 shadow-xl">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-xl font-bold text-white">
@@ -322,7 +320,7 @@ export default function ManageWords() {
                   required
                   value={formData.front_text}
                   onChange={handleChange}
-                  className="w-full rounded border border-gray-600 bg-[#121212] px-3 py-2 text-white outline-none focus:border-blue-500"
+                  className="w-full rounded border border-gray-600 bg-[#121212] px-3 py-2 text-white outline-none focus:border-stone-400"
                 />
               </div>
               <div>
@@ -333,7 +331,7 @@ export default function ManageWords() {
                   required
                   value={formData.back_text}
                   onChange={handleChange}
-                  className="w-full rounded border border-gray-600 bg-[#121212] px-3 py-2 text-white outline-none focus:border-blue-500"
+                  className="w-full rounded border border-gray-600 bg-[#121212] px-3 py-2 text-white outline-none focus:border-stone-400"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -344,7 +342,7 @@ export default function ManageWords() {
                     name="pronunciation"
                     value={formData.pronunciation}
                     onChange={handleChange}
-                    className="w-full rounded border border-gray-600 bg-[#121212] px-3 py-2 text-white outline-none focus:border-blue-500"
+                    className="w-full rounded border border-gray-600 bg-[#121212] px-3 py-2 text-white outline-none focus:border-stone-400"
                   />
                 </div>
                 <div>
@@ -355,7 +353,7 @@ export default function ManageWords() {
                     required
                     value={formData.deck_id}
                     onChange={handleChange}
-                    className="w-full rounded border border-gray-600 bg-[#121212] px-3 py-2 text-white outline-none focus:border-blue-500"
+                    className="w-full rounded border border-gray-600 bg-[#121212] px-3 py-2 text-white outline-none focus:border-stone-400"
                   />
                 </div>
               </div>

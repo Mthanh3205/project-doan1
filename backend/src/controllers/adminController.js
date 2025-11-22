@@ -87,7 +87,7 @@ export const getAllTopics = async (req, res) => {
       limit: limit,
       offset: offset,
 
-      order: [['created_at', 'DESC']],
+      order: [['deck_id', 'DESC']],
     });
 
     res.json({

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, ChevronLeft, ChevronRight, X, Edit, Trash2, Search } from 'lucide-react'; // Thêm Search icon
+import { Plus, ChevronLeft, ChevronRight, X, Edit, Trash2, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function ManageTopics() {
@@ -15,21 +15,18 @@ export default function ManageTopics() {
 
   // State tìm kiếm
   const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState(''); // Để tránh gọi API liên tục khi gõ
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  // ... (State Modal giữ nguyên) ...
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTopic, setEditingTopic] = useState(null);
   const [formData, setFormData] = useState({ title: '', description: '' });
 
-  // Xử lý tìm kiếm: Khi nhấn Enter hoặc nút Search mới setDebouncedSearch
   const handleSearch = (e) => {
     e.preventDefault();
-    setPage(1); // Reset về trang 1 khi tìm kiếm mới
+    setPage(1);
     setDebouncedSearch(searchTerm);
   };
 
-  // Hàm reset tìm kiếm
   const clearSearch = () => {
     setSearchTerm('');
     setDebouncedSearch('');
@@ -42,7 +39,6 @@ export default function ManageTopics() {
       const token = sessionStorage.getItem('accessToken');
       if (!token) throw new Error('Không tìm thấy token');
 
-      // THÊM search=${debouncedSearch} VÀO URL
       const res = await fetch(
         `https://project-doan1-backend.onrender.com/api/admin/topics?page=${page}&search=${encodeURIComponent(debouncedSearch)}`,
         {
@@ -60,14 +56,10 @@ export default function ManageTopics() {
     }
   };
 
-  // Gọi fetchTopics khi page hoặc từ khóa tìm kiếm thay đổi
   useEffect(() => {
     fetchTopics();
   }, [page, debouncedSearch]);
 
-  // ... (Các hàm openModal, closeModal, handleSave, handleDelete giữ nguyên) ...
-
-  // (Giữ nguyên logic CRUD)
   const openModal = (topic = null) => {
     if (topic) {
       setEditingTopic(topic);
@@ -139,7 +131,7 @@ export default function ManageTopics() {
               placeholder="Tìm chủ đề..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-64 rounded-l-md border border-gray-600 bg-[#121212] px-4 py-2 text-white outline-none focus:border-blue-500"
+              className="w-64 rounded-l-md border border-gray-700 bg-[#121212] px-4 py-2 text-white outline-none focus:border-stone-400"
             />
             {searchTerm && (
               <button
@@ -152,7 +144,7 @@ export default function ManageTopics() {
             )}
             <button
               type="submit"
-              className="rounded-r-md border border-l-0 border-gray-600 bg-gray-700 px-3 py-2 text-white hover:bg-gray-600"
+              className="rounded-r-md border border-l-0 border-gray-600 bg-[#121212] px-3 py-2 text-white hover:bg-gray-600"
             >
               <Search size={20} />
             </button>
@@ -160,7 +152,7 @@ export default function ManageTopics() {
 
           <button
             onClick={() => openModal(null)}
-            className="flex items-center space-x-2 rounded bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+            className="flex items-center space-x-2 rounded bg-amber-500 px-4 py-2 text-white transition-colors hover:bg-[#1d1d1d]"
           >
             <Plus size={20} />
             <span className="hidden sm:inline">Thêm</span>
@@ -173,9 +165,8 @@ export default function ManageTopics() {
         <span className="ml-2 font-bold text-green-500">{loading ? '--' : data.totalTopics}</span>
       </div>
 
-      {/* Table (Giữ nguyên) */}
+      {/* Table  */}
       <div className="w-full overflow-hidden rounded-lg border border-gray-700 shadow-md">
-        {/* ... Code Table giữ nguyên ... */}
         <div className="overflow-x-auto bg-[#1d1d1d]">
           <table className="min-w-full divide-y divide-gray-700">
             <thead className="bg-[#121212]">
@@ -247,7 +238,6 @@ export default function ManageTopics() {
           </table>
         </div>
 
-        {/* Pagination (Giữ nguyên) */}
         <div className="flex items-center justify-between border-t border-gray-700 bg-[#121212] px-4 py-3">
           <button
             onClick={handlePrevPage}
@@ -269,10 +259,8 @@ export default function ManageTopics() {
         </div>
       </div>
 
-      {/* Modal (Giữ nguyên) */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          {/* ... Code form modal giữ nguyên ... */}
           <div className="w-full max-w-md rounded-lg border border-gray-700 bg-[#1d1d1d] p-6 shadow-xl">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-xl font-bold text-white">
@@ -292,7 +280,7 @@ export default function ManageTopics() {
                   required
                   value={formData.title}
                   onChange={handleChange}
-                  className="w-full rounded border border-gray-600 bg-[#121212] px-3 py-2 text-white outline-none focus:border-blue-500"
+                  className="w-full rounded border border-gray-600 bg-[#121212] px-3 py-2 text-white outline-none focus:border-stone-400"
                 />
               </div>
               <div>
@@ -302,7 +290,7 @@ export default function ManageTopics() {
                   rows="3"
                   value={formData.description}
                   onChange={handleChange}
-                  className="w-full rounded border border-gray-600 bg-[#121212] px-3 py-2 text-white outline-none focus:border-blue-500"
+                  className="w-full rounded border border-gray-600 bg-[#121212] px-3 py-2 text-white outline-none focus:border-stone-400"
                 />
               </div>
               <div className="mt-6 flex justify-end gap-2">
