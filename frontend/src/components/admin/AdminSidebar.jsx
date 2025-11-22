@@ -56,7 +56,7 @@ export default function AdminSidebar({ isOpen, setIsOpen, isCollapsed, setIsColl
     { icon: <Users size={20} />, text: 'Người dùng', to: '/admin/users' },
     { icon: <BookCopy size={20} />, text: 'Chủ đề', to: '/admin/topics' },
     { icon: <FileText size={20} />, text: 'Từ vựng', to: '/admin/words' },
-    { icon: <Star size={20} />, text: 'Đánh giá & Góp ý', to: '/admin/reviews' }, // Mới thêm
+    { icon: <Star size={20} />, text: 'Đánh giá & Góp ý', to: '/admin/reviews' },
   ];
 
   return (

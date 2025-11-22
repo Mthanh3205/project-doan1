@@ -26,18 +26,15 @@ const Footer = () => {
   const handleReviewClick = () => {
     const token = sessionStorage.getItem('accessToken');
 
-    // Debug xem token có thực sự rỗng không
     console.log('Token check:', token);
 
-    // Kiểm tra kỹ: nếu token không có, hoặc là chuỗi "undefined" (lỗi do lưu sai)
     if (!token || token === 'undefined') {
       const confirmLogin = window.confirm('Bạn cần đăng nhập để gửi đánh giá. Đăng nhập ngay?');
 
-      // SỬA LỖI Ở ĐÂY: Dùng biến confirmLogin, không phải window.confirmLogin
       if (confirmLogin) {
         navigate('/Auth');
       }
-      return; // Dừng hàm, không cho mở Modal
+      return;
     }
 
     setIsModalOpen(true);

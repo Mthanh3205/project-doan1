@@ -26,12 +26,33 @@ const StatCard = ({ icon, title, value, bgColor }) => (
     </div>
   </div>
 );
-
+const CustomTooltip = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    const data = payload[0];
+    return (
+      <div
+        style={{
+          backgroundColor: '#000',
+          border: '1px solid #333',
+          borderRadius: '8px',
+          padding: '10px',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)',
+        }}
+      >
+        {/* Tên chủ đề*/}
+        <p style={{ color: '#fff', fontWeight: 'bold', marginBottom: '4px' }}>{data.name}</p>
+        {/*Số lượng*/}
+        <p style={{ color: '#fbbf24', margin: 0 }}>Số lượng : {data.value} từ</p>
+      </div>
+    );
+  }
+  return null;
+};
 export default function DashboardOverview() {
   const [stats, setStats] = useState(null);
   const [chartData, setChartData] = useState({
-    userGrowth: [], // Dữ liệu biểu đồ đường
-    topicDist: [], // Dữ liệu biểu đồ tròn
+    userGrowth: [],
+    topicDist: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -76,7 +97,7 @@ export default function DashboardOverview() {
     <div className="space-y-8">
       <h1 className="text-3xl font-bold text-white">Tổng quan hệ thống</h1>
 
-      {/* 1. CÁC THẺ THỐNG KÊ (STAT CARDS) */}
+      {/*THẺ THỐNG KÊ */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={<Users size={28} className="text-amber-500" />}
@@ -104,9 +125,9 @@ export default function DashboardOverview() {
         />
       </div>
 
-      {/* 2. KHU VỰC BIỂU ĐỒ */}
+      {/* KHU VỰC BIỂU ĐỒ */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* BIỂU ĐỒ ĐƯỜNG (Tần suất học) */}
+        {/* BIỂU ĐỒ ĐƯỜNG */}
         <div className="bg-[#1a1a1a] p-6 shadow-lg">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-xl font-semibold text-white">Tần suất học tập (7 ngày)</h2>
@@ -116,11 +137,7 @@ export default function DashboardOverview() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData.userGrowth}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.5} />
-                <XAxis
-                  dataKey="name" // Sử dụng key 'name' (T2, T3...) từ backend
-                  stroke="#9ca3af"
-                  tick={{ fill: '#9ca3af' }}
-                />
+                <XAxis dataKey="name" stroke="#9ca3af" tick={{ fill: '#9ca3af' }} />
                 <YAxis stroke="#9ca3af" tick={{ fill: '#9ca3af' }} allowDecimals={false} />
                 <Tooltip
                   contentStyle={{
@@ -145,7 +162,7 @@ export default function DashboardOverview() {
           </div>
         </div>
 
-        {/* BIỂU ĐỒ TRÒN (Phân bố chủ đề) */}
+        {/* BIỂU ĐỒ TRÒN */}
         <div className="bg-[#1a1a1a] p-6 shadow-lg">
           <h2 className="mb-6 text-xl font-semibold text-white">Top Chủ đề (Theo số lượng từ)</h2>
           <div className="h-80 w-full">
@@ -159,7 +176,8 @@ export default function DashboardOverview() {
                     innerRadius={60}
                     outerRadius={100}
                     paddingAngle={5}
-                    dataKey="value" // Key 'value' từ backend
+                    dataKey="value"
+                    nameKey="name"
                   >
                     {chartData.topicDist.map((entry, index) => (
                       <Cell
@@ -169,21 +187,31 @@ export default function DashboardOverview() {
                       />
                     ))}
                   </Pie>
+
                   <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#000',
-                      border: '1px solid #333',
-                      borderRadius: '8px',
-                      color: '#fff',
+                    content={<CustomTooltip />}
+                    cursor={false}
+                    isAnimationActive={false}
+                    wrapperStyle={{
+                      transition: 'transform 0.5s ease-out',
+
+                      willChange: 'transform',
+
+                      pointerEvents: 'none',
+                      zIndex: 100,
                     }}
-                    formatter={(value) => [`${value} từ`, 'Số lượng']}
+                    offset={20}
                   />
-                  <Legend wrapperStyle={{ paddingTop: '20px' }} />
+
+                  <Legend
+                    wrapperStyle={{ paddingTop: '20px' }}
+                    formatter={(value) => <span className="text-gray-300">{value}</span>}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="flex h-full items-center justify-center text-gray-500">
-                Chưa có dữ liệu chủ đề
+              <div className="flex h-full flex-col items-center justify-center gap-2 text-gray-500">
+                <p>Chưa có dữ liệu chủ đề</p>
               </div>
             )}
           </div>
@@ -192,7 +220,7 @@ export default function DashboardOverview() {
 
       {/* 3. DANH SÁCH MỚI NHẤT */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Bảng Người dùng mới */}
+        {/* Bảng Người dùng */}
         <div className="bg-[#1a1a1a] p-6 shadow-lg">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-white">Người dùng mới nhất</h2>
@@ -236,7 +264,7 @@ export default function DashboardOverview() {
           </div>
         </div>
 
-        {/* Bảng Chủ đề mới */}
+        {/* Bảng Chủ đề */}
         <div className="bg-[#1a1a1a] p-6 shadow-lg">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-white">Chủ đề mới nhất</h2>

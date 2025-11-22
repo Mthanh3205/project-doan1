@@ -1,4 +1,3 @@
-//Auth
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -6,7 +5,7 @@ import User from '../models/User.js';
 
 const router = express.Router();
 
-//Register
+// Register
 router.post('/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -40,16 +39,23 @@ router.post('/register', async (req, res) => {
   }
 });
 
-//Login
+// Login (Email & Password)
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ where: { email } });
-    if (!user) return res.status(404).json({ message: 'Account no exist!' });
+    if (!user) return res.status(404).json({ message: 'Tài khoản không tồn tại!' });
+
+    // KIỂM TRA TÀI KHOẢN CÓ BỊ KHÓA KHÔNG
+    if (user.isBanned) {
+      return res.status(403).json({
+        message: 'Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ quản trị viên.',
+      });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: 'Password incorrect!' });
+    if (!isMatch) return res.status(400).json({ message: 'Mật khẩu không chính xác!' });
 
     const token = jwt.sign(
       { id: user.id, email: user.email },
@@ -58,21 +64,23 @@ router.post('/login', async (req, res) => {
     );
 
     res.json({
-      message: 'Login successfully!',
+      message: 'Đăng nhập thành công!',
       token,
       user: {
         id: user.id,
         name: user.name,
         email: user.email,
+        picture: user.picture,
+        role: user.email.endsWith('.admin') ? 'admin' : 'user',
       },
     });
   } catch (err) {
     console.error('Error login:', err);
-    res.status(500).json({ message: 'Error server' });
+    res.status(500).json({ message: 'Lỗi server' });
   }
 });
 
-//Login with gg
+// Login with Google
 router.post('/google', async (req, res) => {
   try {
     const { sub, googleId, email, name, picture } = req.body;
@@ -86,8 +94,15 @@ router.post('/google', async (req, res) => {
 
     let user = await User.findOne({ where: { email } });
 
+    // KIỂM TRA KHÓA (NẾU USER ĐÃ TỒN TẠI)
+    if (user && user.isBanned) {
+      return res.status(403).json({
+        message: 'Tài khoản Google này đã bị vô hiệu hóa trong hệ thống.',
+      });
+    }
+    // -------------------------------------------------
     if (user) {
-      // Cập nhật googleId và picture
+      // Cập nhật googleId và picture nếu chưa có hoặc thay đổi
       if (!user.googleId && gId) user.googleId = gId;
       if (!user.picture && picture) user.picture = picture;
       await user.save();
@@ -109,13 +124,18 @@ router.post('/google', async (req, res) => {
     );
 
     res.status(200).json({
-      message: 'Login successfully with gg',
+      message: 'Đăng nhập Google thành công',
       token,
-      user,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        picture: user.picture,
+      },
     });
   } catch (error) {
     console.error('Error Google login:', error);
-    res.status(500).json({ message: 'Authentication error Google' });
+    res.status(500).json({ message: 'Lỗi xác thực Google' });
   }
 });
 

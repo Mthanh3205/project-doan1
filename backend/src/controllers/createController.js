@@ -1,7 +1,7 @@
-// controllers/createController.js
+//Create
 import { Topics, Flashcard, User } from '../models/index.js';
 
-// Hàm kiểm tra quyền sở hữu (Fix lỗi ID admin)
+// Hàm kiểm tra quyền sở hữu
 const checkFlashcardOwnership = async (cardId, userId) => {
   try {
     const card = await Flashcard.findByPk(cardId);

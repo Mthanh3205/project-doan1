@@ -17,7 +17,11 @@ import {
   Menu,
   X,
   Activity,
+  MessageCircleMore,
+  Bell,
+  LogOut, // Thêm icon LogOut nếu cần
 } from 'lucide-react';
+import FeedbackModal from '../components/FeedbackModal';
 
 const InputField = ({
   label,
@@ -61,6 +65,7 @@ const InputField = ({
 
 const Account = () => {
   const defaultAvatar = '/avt.jpg';
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -72,10 +77,10 @@ const Account = () => {
     avatar: null,
   });
 
+  const [imageFile, setImageFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState({ type: '', message: '' });
   const [previewAvatar, setPreviewAvatar] = useState(null);
-
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -110,6 +115,7 @@ const Account = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setImageFile(file);
       const objectUrl = URL.createObjectURL(file);
       setPreviewAvatar(objectUrl);
     }
@@ -121,18 +127,32 @@ const Account = () => {
 
     try {
       const token = sessionStorage.getItem('token');
-      if (!token) console.warn('Chưa có token!');
+      if (!token) throw new Error('Phiên đăng nhập hết hạn.');
+
+      const dataToSend = new FormData();
+      dataToSend.append('firstName', formData.firstName);
+      dataToSend.append('lastName', formData.lastName);
+      dataToSend.append('schoolName', formData.schoolName);
+      dataToSend.append('companyName', formData.companyName);
+      dataToSend.append('bio', formData.bio);
+
+      if (imageFile) {
+        dataToSend.append('avatar', imageFile);
+      }
 
       const res = await fetch('https://project-doan1-backend.onrender.com/api/user/update', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: dataToSend,
       });
 
-      if (!res.ok) throw new Error('Không thể cập nhật. Vui lòng thử lại.');
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Không thể cập nhật.');
+      }
+
       const data = await res.json();
 
       const currentUser = JSON.parse(sessionStorage.getItem('user') || '{}');
@@ -156,8 +176,9 @@ const Account = () => {
         schoolName: data.schoolName,
         companyName: data.companyName,
         bio: data.bio,
-        avatar: data.avatar,
+        avatar: data.avatar || prev.avatar,
       }));
+      setImageFile(null);
 
       setStatus({ type: 'success', message: 'Đã lưu thay đổi thành công!' });
     } catch (err) {
@@ -172,12 +193,18 @@ const Account = () => {
     if (previewAvatar) return previewAvatar;
     const avt = formData.avatar;
     if (!avt) return defaultAvatar;
-    if (avt.startsWith('http')) return avt;
+    if (avt.startsWith('http') || avt.startsWith('blob')) return avt;
     return `https://project-doan1-backend.onrender.com${avt}`;
   };
 
   return (
     <div className="flex min-h-screen bg-[#121212] bg-gradient-to-br from-[#121212] via-black to-zinc-900 font-sans transition-colors duration-500 dark:from-stone-50 dark:via-white dark:to-amber-50">
+      <FeedbackModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        reviewType="website"
+      />
+
       {isSidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/80 backdrop-blur-sm transition-opacity md:hidden"
@@ -185,66 +212,80 @@ const Account = () => {
         />
       )}
 
-      {/*Offcanvas Mobile + Sticky Desktop*/}
+      {/*  SIDEBAR  */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex h-full w-72 flex-col border-r border-white/10 bg-[#121212]/95 px-6 py-8 backdrop-blur-xl transition-transform duration-300 ease-in-out dark:border-stone-200/60 dark:bg-white/95 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:sticky md:top-0 md:translate-x-0 md:bg-white/5 md:dark:bg-white/60`}
+        className={`fixed inset-y-0 left-0 z-50 flex min-h-screen w-72 flex-col border-r border-white/10 bg-[#121212]/95 transition-transform duration-300 ease-in-out dark:border-stone-200/60 dark:bg-white/95 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:sticky md:top-0 md:translate-x-0 md:bg-white/5 md:dark:bg-white/60`}
       >
-        {/* Sidebar Header */}
-        <div className="mb-10 flex items-center justify-between">
-          <div className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-white dark:text-gray-800">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white">
-              <Settings size={22} />
+        {/* HEADER & PROFILE*/}
+        <div className="px-6 py-8">
+          <div className="mb-8 flex h-10 shrink-0 items-center justify-between">
+            <div className="flex items-center gap-3 text-2xl font-extrabold tracking-tight text-white dark:text-gray-800">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white">
+                <Settings size={22} />
+              </div>
+              <span>Settings</span>
             </div>
-            <span>Settings</span>
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="rounded-full p-1 text-gray-400 hover:bg-white/10 hover:text-white md:hidden dark:text-gray-500 dark:hover:bg-black/5 dark:hover:text-black"
+            >
+              <X size={24} />
+            </button>
           </div>
-          {/* Close Button (Mobile Only) */}
-          <button
-            onClick={() => setIsSidebarOpen(false)}
-            className="rounded-full p-1 text-gray-400 hover:bg-white/10 hover:text-white md:hidden dark:text-gray-500 dark:hover:bg-black/5 dark:hover:text-black"
-          >
-            <X size={24} />
-          </button>
+
+          {/* Widget Profile */}
+          <div className="border border-white/5 bg-white/5 p-4 text-center dark:border-white/50 dark:bg-white/40 dark:shadow-lg dark:shadow-stone-200/50">
+            <div className="relative mx-auto h-16 w-16">
+              <img
+                src={getAvatarSrc()}
+                alt="User"
+                className="h-full w-full rounded-full object-cover ring-2 ring-white/10 dark:ring-white"
+              />
+              <span className="absolute right-0 bottom-0 h-4 w-4 rounded-full border-2 border-[#121212] bg-emerald-500 dark:border-white"></span>
+            </div>
+            <h3 className="mt-3 truncate text-sm font-bold text-gray-200 dark:text-gray-800">
+              {formData.firstName} {formData.lastName}
+            </h3>
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-500">Member</p>
+          </div>
         </div>
 
-        {/* Mini Profile Widget */}
-        <div className="mb-8 border border-white/5 bg-white/5 p-4 text-center dark:border-white/50 dark:bg-white/40 dark:shadow-lg dark:shadow-stone-200/50">
-          <div className="relative mx-auto h-16 w-16">
-            <img
-              src={getAvatarSrc()}
-              alt="User"
-              className="h-full w-full rounded-full object-cover ring-2 ring-white/10 dark:ring-white"
-            />
-            <span className="absolute right-0 bottom-0 h-4 w-4 rounded-full border-2 border-[#121212] bg-emerald-500 dark:border-white"></span>
-          </div>
-          <h3 className="mt-3 truncate text-sm font-bold text-gray-200 dark:text-gray-800">
-            {formData.firstName} {formData.lastName}
-          </h3>
-          <p className="text-xs font-medium text-gray-500 dark:text-gray-500">Member</p>
-        </div>
-
-        {/* Navigation */}
-        <nav className="space-y-2">
-          <div className="px-3 pb-2 text-xs font-bold text-gray-400 uppercase">Menu</div>
-          {/* Wrap NavItems để đóng menu khi click trên mobile */}
-          <div onClick={() => setIsSidebarOpen(false)}>
+        <nav className="scrollbar-hide flex-1 space-y-2 overflow-y-auto px-6">
+          <div className="pb-2 text-xs font-bold text-gray-400 uppercase">Menu</div>
+          <div onClick={() => setIsSidebarOpen(false)} className="space-y-1">
             <NavItem href="#" icon={User} label="Thông tin cá nhân" active />
             <NavItem href="/favorites" icon={Star} label="Yêu thích" />
-            <NavItem href="/study-favorites/:deckId" icon={Book} label="Học từ vựng yêu thích" />
             <NavItem href="/progress" icon={Activity} label="Tiến trình" />
-            <NavItem href="/" icon={Home} label="Trang chủ" />
+
+            <div
+              onClick={() => setIsModalOpen(true)}
+              className="group flex cursor-pointer items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold text-gray-400 transition-all duration-200 hover:bg-white/5 hover:text-white dark:text-gray-500 dark:hover:bg-gray-100/50 dark:hover:text-gray-900"
+            >
+              <MessageCircleMore
+                size={20}
+                className="text-gray-500 transition-colors group-hover:text-gray-300 dark:text-gray-400 dark:group-hover:text-gray-600"
+              />
+              Đánh giá & Góp ý
+            </div>
+
+            <NavItem href="#" icon={Bell} label="Thông báo" />
           </div>
         </nav>
+
+        <div className="sticky bottom-0 mt-auto border-t border-white/10 bg-[#121212]/50 p-4 backdrop-blur-md dark:border-gray-200/60 dark:bg-white/50">
+          <div onClick={() => setIsSidebarOpen(false)}>
+            <NavItem href="/" icon={Home} label="Về trang chủ" />
+          </div>
+        </div>
       </aside>
 
-      {/* --- Main Content --- */}
+      {/*  Main Content  */}
       <main className="flex-1 p-6 md:p-10">
-        {/* Background Decor */}
         <div className="fixed -top-20 right-0 -z-10 h-96 w-96 rounded-full bg-amber-400/10 blur-[100px]"></div>
         <div className="fixed bottom-0 left-0 -z-10 h-96 w-96 rounded-full bg-blue-400/10 blur-[100px]"></div>
 
         <div className="mx-auto max-w-5xl">
           <header className="mb-10 flex items-center gap-4">
-            {/* Mobile Menu Trigger Button */}
             <button
               onClick={() => setIsSidebarOpen(true)}
               className="rounded-lg bg-white/10 p-2 text-white hover:bg-white/20 md:hidden dark:bg-black/5 dark:text-gray-800 dark:hover:bg-black/10"
@@ -262,7 +303,6 @@ const Account = () => {
             </div>
           </header>
 
-          {/* Notification Toast */}
           {status.message && (
             <div
               className={`animate-fade-in-down mb-6 flex items-center gap-3 rounded-xl border p-4 font-medium shadow-lg backdrop-blur-md ${
@@ -285,7 +325,7 @@ const Account = () => {
           )}
 
           <div className="grid gap-8 lg:grid-cols-12">
-            {/* Left Column: Avatar Card */}
+            {/* Cột Avatar */}
             <div className="lg:col-span-4">
               <div className="sticky top-10 flex flex-col items-center border border-white/5 bg-white/5 p-8 text-center backdrop-blur-xl dark:border-white/60 dark:bg-white/40 dark:shadow-2xl dark:shadow-stone-200/50">
                 <div className="group relative mb-6 inline-block">
@@ -321,7 +361,7 @@ const Account = () => {
               </div>
             </div>
 
-            {/* Right Column: Form Details */}
+            {/* Cột Form */}
             <div className="lg:col-span-8">
               <div className="border border-white/5 bg-white/5 p-8 backdrop-blur-xl dark:border-white/60 dark:bg-white/40 dark:shadow-2xl dark:shadow-stone-200/50">
                 <div className="mb-8 flex items-center justify-between border-b border-white/10 pb-4 dark:border-gray-200/60">

@@ -312,3 +312,22 @@ export const deleteWordAdmin = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+export const toggleUserBan = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByPk(id);
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (user.id === 1) return res.status(403).json({ message: 'Không thể khóa Super Admin' });
+
+    user.isBanned = !user.isBanned;
+    await user.save();
+
+    res.json({
+      message: user.isBanned ? 'Đã khóa tài khoản' : 'Đã mở khóa tài khoản',
+      isBanned: user.isBanned,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};

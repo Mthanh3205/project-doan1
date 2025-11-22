@@ -2,6 +2,7 @@
 import express from 'express';
 const router = express.Router();
 import Notification from '../models/Notification.js';
+import { toggleUserBan } from '../controllers/adminController.js';
 import { authenticateToken, admin } from '../middleware/auth.js';
 import {
   getAllUsers,
@@ -147,5 +148,8 @@ router.patch('/notifications/read-all', authenticateToken, admin, async (req, re
     res.status(500).json({ message: 'Lỗi cập nhật' });
   }
 });
+
+//Ban user
+router.patch('/users/:id/toggle-ban', authenticateToken, admin, toggleUserBan);
 
 export default router;

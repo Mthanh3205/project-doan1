@@ -166,7 +166,7 @@ export default function ManageTopics() {
       </div>
 
       {/* Table  */}
-      <div className="w-full overflow-hidden rounded-lg border border-gray-700 shadow-md">
+      <div className="w-full overflow-hidden border-t border-gray-700">
         <div className="overflow-x-auto bg-[#1d1d1d]">
           <table className="min-w-full divide-y divide-gray-700">
             <thead className="bg-[#121212]">

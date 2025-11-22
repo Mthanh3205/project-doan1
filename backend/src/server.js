@@ -23,12 +23,7 @@ app.use(
   })
 );
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); // Thêm dòng này để đọc form data nếu cần
-
-// --- BỎ CÁC DÒNG IMPORT MODEL LẺ Ở ĐÂY (VÌ ĐÃ IMPORT Ở TRÊN) ---
-// import './models/User.js';  <-- Xóa
-// import './models/Topics.js'; <-- Xóa
-// ...
+app.use(express.urlencoded({ extended: true }));
 
 // Import Routes
 import routeUser from './routes/routeUser.js';
