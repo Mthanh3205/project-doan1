@@ -3,7 +3,8 @@ import User from '../models/User.js';
 import Topics from '../models/Topics.js';
 import Flashcard from '../models/Flashcard.js';
 import Feedback from '../models/Feedback.js';
-import { Sequelize } from 'sequelize';
+import UserProgress from '../models/UserProgress.js';
+import { Op, Sequelize } from 'sequelize';
 
 export const getAllUsers = async (req, res) => {
   try {
@@ -37,6 +38,40 @@ export const getDashboardStats = async (req, res) => {
     const wordCount = await Flashcard.count();
     const feedbackCount = await Feedback.count();
 
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
+
+    const progressLogs = await UserProgress.findAll({
+      where: {
+        updatedAt: {
+          [Op.gte]: sevenDaysAgo,
+        },
+      },
+      attributes: ['updatedAt'],
+    });
+
+    const chartData = [];
+    const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+
+      const dateString = d.toISOString().split('T')[0];
+
+      // Đếm xem có bao nhiêu lượt học trong ngày này
+      const count = progressLogs.filter(
+        (log) => log.updatedAt.toISOString().split('T')[0] === dateString
+      ).length;
+
+      chartData.push({
+        name: daysOfWeek[d.getDay()],
+        fullDate: dateString,
+        count: count,
+      });
+    }
+
     const recentUsers = await User.findAll({
       limit: 5,
       order: [['createdAt', 'DESC']],
@@ -52,6 +87,7 @@ export const getDashboardStats = async (req, res) => {
       topicCount,
       wordCount,
       feedbackCount,
+      chartData,
       recentUsers,
       recentTopics,
     });

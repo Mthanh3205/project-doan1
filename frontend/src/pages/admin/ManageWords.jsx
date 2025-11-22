@@ -246,7 +246,7 @@ export default function ManageWords() {
               ) : (
                 data.words.map((word) => (
                   <tr key={word.card_id} className="transition-colors hover:bg-[#2a2a2a]">
-                    <td className="px-6 py-4 font-bold whitespace-nowrap text-green-400">
+                    <td className="px-6 py-4 font-bold whitespace-nowrap text-amber-500">
                       {word.front_text}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">{word.back_text}</td>
