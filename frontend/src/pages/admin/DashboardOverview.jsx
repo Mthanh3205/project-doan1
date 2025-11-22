@@ -15,10 +15,8 @@ import {
   Legend,
 } from 'recharts';
 
-// Màu sắc cho biểu đồ tròn
 const COLORS = ['#f59e0b', '#f97316', '#eab308', '#ef4444', '#84cc16', '#22c55e'];
 
-// Component thẻ thống kê nhỏ
 const StatCard = ({ icon, title, value, bgColor }) => (
   <div className={`flex items-center space-x-4 bg-[#1a1a1a] p-6 shadow-lg`}>
     <div className={`p-3 ${bgColor} bg-opacity-20`}>{icon}</div>
@@ -53,10 +51,9 @@ export default function DashboardOverview() {
         const data = await res.json();
         setStats(data);
 
-        // Cập nhật dữ liệu biểu đồ từ API
         setChartData({
-          userGrowth: data.chartData || [], // API trả về 'chartData' cho Line
-          topicDist: data.pieData || [], // API trả về 'pieData' cho Pie
+          userGrowth: data.chartData || [],
+          topicDist: data.pieData || [],
         });
       } catch (err) {
         setError(err.message);

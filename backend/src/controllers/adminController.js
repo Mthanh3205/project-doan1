@@ -33,63 +33,89 @@ export const getAllUsers = async (req, res) => {
 
 export const getDashboardStats = async (req, res) => {
   try {
+    // 1. Số liệu tổng quan
     const userCount = await User.count();
     const topicCount = await Topics.count();
     const wordCount = await Flashcard.count();
     const feedbackCount = await Feedback.count();
 
+    // -------------------------------------------------------
+    // 2. DỮ LIỆU BIỂU ĐỒ ĐƯỜNG (LINE CHART)
+    // -------------------------------------------------------
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
     sevenDaysAgo.setHours(0, 0, 0, 0);
 
-    const progressLogs = await UserProgress.findAll({
-      where: { updatedAt: { [Op.gte]: sevenDaysAgo } },
-      attributes: ['updatedAt'],
-    });
-
-    const chartData = [];
-    const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const dateString = d.toISOString().split('T')[0];
-
-      const count = progressLogs.filter(
-        (log) => log.updatedAt.toISOString().split('T')[0] === dateString
-      ).length;
-
-      chartData.push({
-        name: daysOfWeek[d.getDay()],
-        date: dateString,
-        count: count,
+    // Kiểm tra xem bảng UserProgress có tồn tại không trước khi query để tránh crash
+    let chartData = [];
+    try {
+      const progressLogs = await UserProgress.findAll({
+        where: { updatedAt: { [Op.gte]: sevenDaysAgo } },
+        attributes: ['updatedAt'],
       });
+
+      const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateString = d.toISOString().split('T')[0];
+
+        const count = progressLogs.filter(
+          (log) => log.updatedAt.toISOString().split('T')[0] === dateString
+        ).length;
+
+        chartData.push({
+          name: daysOfWeek[d.getDay()],
+          date: dateString,
+          count: count,
+        });
+      }
+    } catch (err) {
+      console.warn('Lỗi lấy UserProgress (có thể bảng chưa tạo):', err.message);
+      // Nếu lỗi bảng chưa tạo, trả về mảng rỗng để không sập trang Admin
+      chartData = Array(7).fill({ name: '-', count: 0 });
     }
 
-    const topTopics = await Topics.findAll({
-      attributes: ['title', [Sequelize.fn('COUNT', Sequelize.col('flashcards.card_id')), 'value']],
-      include: [
-        {
-          model: Flashcard,
-          as: 'flashcards',
-          attributes: [],
-        },
-      ],
-      group: ['Topics.deck_id'],
-      order: [[Sequelize.literal('value'), 'DESC']],
-      limit: 5,
-    });
+    // -------------------------------------------------------
+    // 3. DỮ LIỆU BIỂU ĐỒ TRÒN (PIE CHART) - FIX LỖI POSTGRES
+    // -------------------------------------------------------
+    let pieData = [];
+    try {
+      const topTopics = await Topics.findAll({
+        attributes: [
+          'title',
+          [Sequelize.fn('COUNT', Sequelize.col('flashcards.card_id')), 'value'],
+        ],
+        include: [
+          {
+            model: Flashcard,
+            as: 'flashcards',
+            attributes: [],
+          },
+        ],
+        // --- QUAN TRỌNG: Postgres yêu cầu Group By cả Deck ID và Title ---
+        group: ['Topics.deck_id', 'Topics.title'],
+        order: [[Sequelize.literal('value'), 'DESC']],
+        limit: 5,
+      });
 
-    const pieData = topTopics.map((t) => ({
-      name: t.title,
-      value: parseInt(t.dataValues.value),
-    }));
+      pieData = topTopics.map((t) => ({
+        name: t.title,
+        value: parseInt(t.dataValues.value),
+      }));
+    } catch (err) {
+      console.warn('Lỗi lấy PieData:', err.message);
+    }
 
+    // -------------------------------------------------------
+    // 4. Danh sách mới nhất
+    // -------------------------------------------------------
     const recentUsers = await User.findAll({
       limit: 5,
       order: [['createdAt', 'DESC']],
       attributes: { exclude: ['password', 'googleId'] },
     });
+
     const recentTopics = await Topics.findAll({
       limit: 5,
       order: [['created_at', 'DESC']],
@@ -106,8 +132,8 @@ export const getDashboardStats = async (req, res) => {
       recentTopics,
     });
   } catch (error) {
-    console.error('Lỗi dashboard stats:', error);
-    res.status(500).json({ message: 'Lỗi server' });
+    console.error('Lỗi CRITICAL tại Dashboard Stats:', error);
+    res.status(500).json({ message: error.message || 'Lỗi server' });
   }
 };
 
