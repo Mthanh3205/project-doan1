@@ -1,46 +1,40 @@
-import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
 dotenv.config();
 
-// Cấu hình OpenAI (hoặc thay bằng Gemini SDK)
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY, // Nhớ thêm key vào file .env
-});
+// Khởi tạo Gemini
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 export const chatRoleplay = async (req, res) => {
   try {
     const { userMessage, history, targetWords, topicTitle } = req.body;
 
-    // 1. TẠO SYSTEM PROMPT (Cực kỳ quan trọng)
-    // Đây là lệnh để biến AI thành nhân vật bạn muốn
+    // Chọn model (gemini-1.5-flash cho nhanh và free)
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+    // Tạo prompt
     const systemPrompt = `
-      Bạn là một trợ lý học tiếng Anh AI. 
-      Chế độ hiện tại: ROLEPLAY (Nhập vai).
+      Bạn là một trợ lý học tiếng Anh AI. Chế độ: ROLEPLAY.
+      Bối cảnh: Chủ đề "${topicTitle}".
+      Từ vựng cần luyện: [${targetWords ? targetWords.join(', ') : ''}].
       
-      Bối cảnh: Người dùng đang học bộ từ vựng chủ đề: "${topicTitle}".
-      Danh sách từ cần luyện: [${targetWords.join(', ')}].
+      Nhiệm vụ:
+      1. Đóng vai nhân vật phù hợp chủ đề.
+      2. Trả lời ngắn gọn (dưới 50 từ).
+      3. Khuyến khích dùng từ vựng trên.
+      4. Sửa lỗi ngữ pháp nếu cần (trong ngoặc đơn).
       
-      Nhiệm vụ của bạn:
-      1. Đóng vai một nhân vật phù hợp với chủ đề (Ví dụ: Chủ đề "Nhà hàng" -> Bạn là Bồi bàn. "Du lịch" -> Bạn là Hướng dẫn viên).
-      2. Trò chuyện tự nhiên, ngắn gọn (dưới 50 từ) để người dùng dễ trả lời.
-      3. KHUYẾN KHÍCH người dùng sử dụng các từ trong danh sách.
-      4. Nếu người dùng sai ngữ pháp nghiêm trọng, hãy sửa lỗi khéo léo ở cuối câu (trong ngoặc đơn).
-      5. Đừng chỉ làm một giáo viên, hãy nhập vai thật sâu (Acting).
+      Lịch sử chat:
+      ${history.map((msg) => `${msg.role}: ${msg.content}`).join('\n')}
+      
+      User nói: "${userMessage}"
     `;
 
-    // 2. Gửi yêu cầu đến AI
-    const completion = await openai.chat.completions.create({
-      messages: [
-        { role: 'system', content: systemPrompt },
-        ...history, // Lịch sử chat cũ để AI nhớ ngữ cảnh
-        { role: 'user', content: userMessage },
-      ],
-      model: 'gpt-3.5-turbo', // Hoặc gpt-4o-mini cho rẻ
-    });
+    const result = await model.generateContent(systemPrompt);
+    const response = await result.response;
+    const text = response.text();
 
-    const aiReply = completion.choices[0].message.content;
-
-    res.json({ reply: aiReply });
+    res.json({ reply: text });
   } catch (error) {
     console.error('Lỗi AI:', error);
     res.status(500).json({ message: 'AI đang bận, thử lại sau nhé!' });

@@ -69,7 +69,7 @@ const startServer = async () => {
     await sequelize.authenticate();
     console.log(' Connect MySQL successfully');
 
-    // Đồng bộ Model (Lưu ý: alter: true sẽ cập nhật bảng nếu có thay đổi column)
+    // Đồng bộ Model
     await sequelize.sync({ alter: true });
     console.log('DB synced successfully');
 
