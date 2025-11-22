@@ -140,7 +140,7 @@ const AiRoleplayPage = () => {
         {/* Header Chat */}
         <div className="flex shrink-0 items-center gap-3 border-b border-white/10 bg-black/20 p-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-orange-600 shadow-lg">
-            <Bot text-white size={24} />
+            <Bot className="text-white" size={24} />
           </div>
           <div>
             <h2 className="text-lg font-bold text-white">{topic.title} Tutor</h2>
