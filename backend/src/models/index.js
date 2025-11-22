@@ -1,4 +1,4 @@
-// models/index.js
+// Create
 import sequelize from '../config/db.js';
 
 import Topics from './Topics.js';
@@ -7,7 +7,7 @@ import User from './User.js';
 import UserProgress from './UserProgress.js';
 import Favorite from './Favorite.js';
 
-// --- Quan hệ giữa Flashcard và Topics ---
+//  Quan hệ giữa Flashcard và Topics
 Flashcard.belongsTo(Topics, {
   foreignKey: 'deck_id',
 });
@@ -16,11 +16,11 @@ Topics.hasMany(Flashcard, {
   as: 'flashcards',
 });
 
-// --- Quan hệ giữa User và Topics (MỚI THÊM) ---
+//  Quan hệ giữa User và Topics
 User.hasMany(Topics, { foreignKey: 'user_id' });
-Topics.belongsTo(User, { foreignKey: 'user_id', as: 'author' }); // Alias 'author' để gọi trong controller
+Topics.belongsTo(User, { foreignKey: 'user_id', as: 'author' });
 
-// --- Các quan hệ khác (UserProgress, Favorite) ---
+//  Các quan hệ khác
 User.hasMany(UserProgress, { foreignKey: 'user_id' });
 UserProgress.belongsTo(User, { foreignKey: 'user_id' });
 

@@ -58,7 +58,7 @@ export default function ManageTopics() {
         </button>
       </div>
 
-      <div className="mb-4 text-lg dark:text-gray-300">
+      <div className="mb-4 text-lg text-gray-300">
         Tổng số chủ đề:
         <span className="ml-2 font-bold text-green-500 dark:text-green-400">
           {loading ? '--' : data.totalTopics}
@@ -66,9 +66,9 @@ export default function ManageTopics() {
       </div>
 
       <div className="w-full overflow-hidden shadow-md">
-        <div className="overflow-x-auto bg-white dark:bg-gray-800">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-700">
+        <div className="overflow-x-auto bg-gray-800">
+          <table className="min-w-full divide-y divide-gray-700">
+            <thead className="bg-[#121212]">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
                   ID

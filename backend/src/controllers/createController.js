@@ -1,6 +1,5 @@
 import { Topics, Flashcard, User } from '../models/index.js';
 
-// Helper: Kiểm tra quyền sở hữu Flashcard (Dành cho Sửa/Xóa từ vựng)
 const checkFlashcardOwnership = async (cardId, userId) => {
   try {
     const card = await Flashcard.findByPk(cardId);
@@ -25,28 +24,26 @@ const checkFlashcardOwnership = async (cardId, userId) => {
 };
 
 // GET ALL DECKS
+
 export const getAllDecks = async (req, res) => {
   try {
-    // Kiểm tra middleware
     if (!req.user || !req.user.id) {
       return res.status(401).json({ message: 'Unauthorized: User info missing' });
     }
 
-    const userId = req.user.id;
+    const userId = Number(req.user.id);
 
     let queryOptions = {
-      // Sắp xếp theo created_at
       order: [['created_at', 'DESC']],
       include: [
         {
           model: User,
-          as: 'author', // Alias khớp với models/index.js
+          as: 'author',
           attributes: ['id', 'name', 'email'],
         },
       ],
     };
 
-    // Nếu KHÔNG phải Admin (id=1), chỉ lấy bài của chính user đó
     if (userId !== 1) {
       queryOptions.where = { user_id: userId };
     }

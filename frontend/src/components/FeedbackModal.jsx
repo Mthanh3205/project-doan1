@@ -2,23 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { X, Star, History, PenLine, MessageCircle } from 'lucide-react';
 
 const FeedbackModal = ({ isOpen, onClose }) => {
-  // State quản lý Tabs
-  const [activeTab, setActiveTab] = useState('write'); // 'write' hoặc 'history'
-
-  // State cho Form gửi
+  const [activeTab, setActiveTab] = useState('write');
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [name, setName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // State cho Lịch sử
   const [myFeedbacks, setMyFeedbacks] = useState([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
-  // 1. Lấy tên user khi mở modal
+  // 1. KHÓA CUỘN BODY KHI MỞ MODAL
   useEffect(() => {
     if (isOpen) {
-      setActiveTab('write'); // Mặc định mở tab viết
+      document.body.style.overflow = 'hidden'; // Cấm body cuộn
+    } else {
+      document.body.style.overflow = 'unset'; // Cho phép cuộn lại
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
+  // 2. CẬP NHẬT DỮ LIỆU KHI MỞ
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab('write');
       try {
         const userStr = sessionStorage.getItem('user');
         if (userStr) {
@@ -33,7 +40,6 @@ const FeedbackModal = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  // 2. Hàm lấy lịch sử khi chuyển tab
   useEffect(() => {
     if (activeTab === 'history' && isOpen) {
       fetchHistory();
@@ -51,9 +57,7 @@ const FeedbackModal = ({ isOpen, onClose }) => {
         }
       );
       const data = await res.json();
-      if (data.success) {
-        setMyFeedbacks(data.data);
-      }
+      if (data.success) setMyFeedbacks(data.data);
     } catch (error) {
       console.error(error);
     } finally {
@@ -61,33 +65,25 @@ const FeedbackModal = ({ isOpen, onClose }) => {
     }
   };
 
-  // 3. Hàm Gửi đánh giá
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     const token = sessionStorage.getItem('accessToken');
-
     if (!token) {
       alert('Phiên đăng nhập hết hạn.');
       window.location.href = '/Auth';
       return;
     }
-
     try {
       const res = await fetch('https://project-doan1-backend.onrender.com/api/feedback/create', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ name, rating, comment, type: 'website' }),
       });
-
       const data = await res.json();
       if (data.success) {
         alert('Cảm ơn bạn đã đánh giá!');
         setComment('');
-        // Chuyển sang tab lịch sử để user thấy bài vừa đăng
         setActiveTab('history');
       } else {
         alert(data.message);
@@ -102,18 +98,24 @@ const FeedbackModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm transition-all">
-      <div className="relative flex max-h-[85vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-amber-500/30 bg-[#1d1d1d] p-0 shadow-2xl">
-        {/* Header & Close Button */}
-        <div className="flex items-center justify-between border-b border-white/10 p-4">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+      {/* CONTAINER CHÍNH */}
+      <div
+        className="relative flex w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-[#1d1d1d] shadow-2xl"
+        style={{ maxHeight: '85vh' }}
+        // NGĂN CHẶN SỰ KIỆN CUỘN LAN RA NGOÀI
+        onWheel={(e) => e.stopPropagation()}
+      >
+        {/* HEADER */}
+        <div className="z-10 flex shrink-0 items-center justify-between border-b border-white/10 bg-[#1d1d1d] p-4">
           <h2 className="text-lg font-bold text-white">Đánh giá & Góp ý</h2>
           <button onClick={onClose} className="text-gray-400 transition-colors hover:text-white">
             <X size={24} />
           </button>
         </div>
 
-        {/* Tabs Navigation */}
-        <div className="flex border-b border-white/10">
+        {/* TABS */}
+        <div className="z-10 flex shrink-0 border-b border-white/10 bg-[#1d1d1d]">
           <button
             onClick={() => setActiveTab('write')}
             className={`flex flex-1 items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors ${activeTab === 'write' ? 'border-b-2 border-amber-500 bg-white/5 text-amber-500' : 'text-gray-400 hover:text-white'}`}
@@ -128,11 +130,11 @@ const FeedbackModal = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Content Area */}
-        <div className="scrollbar-thin scrollbar-thumb-gray-700 overflow-y-auto p-6">
-          {/* --- TAB 1: VIẾT ĐÁNH GIÁ --- */}
+        {/* CONTENT AREA - ĐÂY LÀ PHẦN QUAN TRỌNG NHẤT */}
+        <div className="scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent flex-1 overflow-y-auto p-6">
+          {/* Tab 1: Form */}
           {activeTab === 'write' && (
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5 pb-4">
               <div className="text-center">
                 <p className="mb-3 text-sm text-gray-400">Bạn cảm thấy thế nào về Flashcard?</p>
                 <div className="flex justify-center gap-2">
@@ -164,7 +166,7 @@ const FeedbackModal = ({ isOpen, onClose }) => {
                   <input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="mt-1 w-full rounded-xl border border-gray-700 bg-black/30 p-3 text-white transition-colors focus:border-amber-500 focus:outline-none"
+                    className="mt-1 w-full rounded-xl border border-gray-700 bg-black/30 p-3 text-white focus:border-amber-500 focus:outline-none"
                     required
                   />
                 </div>
@@ -175,9 +177,9 @@ const FeedbackModal = ({ isOpen, onClose }) => {
                   <textarea
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    placeholder="Chia sẻ trải nghiệm của bạn..."
+                    placeholder="Chia sẻ trải nghiệm..."
                     rows="4"
-                    className="mt-1 w-full rounded-xl border border-gray-700 bg-black/30 p-3 text-white transition-colors focus:border-amber-500 focus:outline-none"
+                    className="mt-1 w-full rounded-xl border border-gray-700 bg-black/30 p-3 text-white focus:border-amber-500 focus:outline-none"
                     required
                   />
                 </div>
@@ -185,16 +187,16 @@ const FeedbackModal = ({ isOpen, onClose }) => {
 
               <button
                 disabled={isSubmitting}
-                className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 p-3 font-bold text-white shadow-lg shadow-amber-500/20 transition hover:scale-[1.02] disabled:opacity-50"
+                className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 p-3 font-bold text-white shadow-lg transition hover:scale-[1.02] disabled:opacity-50"
               >
                 {isSubmitting ? 'Đang gửi...' : 'Gửi ngay'}
               </button>
             </form>
           )}
 
-          {/* --- TAB 2: LỊCH SỬ & PHẢN HỒI --- */}
+          {/* Tab 2: Lịch sử */}
           {activeTab === 'history' && (
-            <div className="space-y-4">
+            <div className="space-y-4 pb-4">
               {isLoadingHistory ? (
                 <p className="py-10 text-center text-gray-500">Đang tải...</p>
               ) : myFeedbacks.length === 0 ? (
@@ -226,10 +228,7 @@ const FeedbackModal = ({ isOpen, onClose }) => {
                         {new Date(fb.createdAt).toLocaleDateString('vi-VN')}
                       </span>
                     </div>
-
                     <p className="mb-3 text-sm text-gray-300">"{fb.comment}"</p>
-
-                    {/* --- PHẦN HIỂN THỊ ADMIN TRẢ LỜI --- */}
                     {fb.admin_reply ? (
                       <div className="mt-3 rounded-r-lg border-l-2 border-amber-500 bg-amber-500/10 p-3">
                         <div className="mb-1 flex items-center gap-2">

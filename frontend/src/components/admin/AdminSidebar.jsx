@@ -3,7 +3,7 @@ import {
   Users,
   BookCopy,
   FileText,
-  Star, // Icon cho đánh giá
+  Star,
   Settings,
   LogOut,
   ChevronLeft,
@@ -14,14 +14,13 @@ import {
 import { NavLink, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-// --- Component Link con ---
 function SidebarLink({ icon, text, to, isCollapsed }) {
   return (
     <NavLink
       to={to}
       end={to === '/admin'}
       className={({ isActive }) =>
-        `group relative flex items-center rounded-xl p-3 transition-all duration-300 ${
+        `group relative flex items-center p-3 transition-all duration-300 ${
           isActive
             ? 'bg-amber-500 text-white'
             : 'text-gray-400 hover:bg-white/5 hover:text-amber-500'
@@ -38,9 +37,8 @@ function SidebarLink({ icon, text, to, isCollapsed }) {
         {text}
       </span>
 
-      {/* Tooltip khi thu nhỏ */}
       {isCollapsed && (
-        <div className="absolute top-1/2 left-full z-50 ml-2 -translate-y-1/2 rounded-md bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
+        <div className="absolute top-1/2 left-full z-50 ml-2 -translate-y-1/2 bg-gray-800 px-2 py-1 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
           {text}
         </div>
       )}
@@ -48,7 +46,7 @@ function SidebarLink({ icon, text, to, isCollapsed }) {
   );
 }
 
-// --- Component Sidebar chính ---
+// Component Sidebar chính
 export default function AdminSidebar({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) {
   const { user, logout } = useAuth();
   const adminName = user?.name ? user.name.split(' ')[0] : 'Admin';
@@ -73,7 +71,7 @@ export default function AdminSidebar({ isOpen, setIsOpen, isCollapsed, setIsColl
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex h-full flex-col border-r border-white/10 bg-[#121212] text-white transition-all duration-300 ease-in-out ${
+        className={`fixed inset-y-0 left-0 z-50 flex h-full flex-col bg-[#121212] text-white transition-all duration-300 ease-in-out ${
           isCollapsed ? 'w-20' : 'w-72'
         } ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
       >
@@ -115,7 +113,7 @@ export default function AdminSidebar({ isOpen, setIsOpen, isCollapsed, setIsColl
         <div className="border-t border-white/10 p-4">
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="mb-4 flex hidden w-full items-center justify-center rounded-lg bg-white/5 p-2 text-gray-400 hover:bg-white/10 hover:text-white md:flex"
+            className="mb-4 hidden w-full items-center justify-center rounded-lg bg-white/5 p-2 text-gray-400 hover:bg-white/10 hover:text-white md:flex"
           >
             {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
           </button>
@@ -124,7 +122,7 @@ export default function AdminSidebar({ isOpen, setIsOpen, isCollapsed, setIsColl
             <img
               src={user?.picture || '/avt.jpg'}
               alt="Admin"
-              className="h-10 w-10 rounded-full border-2 border-amber-500/50 object-cover"
+              className="h-10 w-10 rounded-full object-cover"
             />
             <div
               className={`flex-1 overflow-hidden transition-all duration-300 ${

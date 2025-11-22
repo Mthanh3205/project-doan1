@@ -1,342 +1,147 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import FlashcardItem from '../../components/FlashcardItem';
-import { toast } from 'sonner';
-import { useDecks } from '../../context/DeckContext';
+// File: src/pages/admin/ManageTopics.jsx
 
-const API_URL = 'https://project-doan1-backend.onrender.com/api/gettopiccard';
+import { useState, useEffect } from 'react';
+import { Plus, ChevronLeft, ChevronRight } from 'lucide-react';
 
-export default function ManageTopicsWords() {
-  const {
-    decks,
-    selectedDeck,
-    cards,
-    isLoadingDecks,
-    isLoadingDetails,
-    error,
-    setCards,
-    setSelectedDeck,
-    selectDeck,
-    createDeck,
-    updateDeck,
-    deleteDeck,
-    getAuthHeaders,
-  } = useDecks();
-
-  const [editingCardId, setEditingCardId] = useState(null);
-  const [isAddingDeck, setIsAddingDeck] = useState(false);
-  const [newDeckTitle, setNewDeckTitle] = useState('');
-  const [newDeckDescription, setNewDeckDescription] = useState('');
-  const [isAddingCard, setIsAddingCard] = useState(false);
-  const [newCardData, setNewCardData] = useState({
-    front_text: '',
-    back_text: '',
-    pronunciation: '',
-    example: '',
+export default function ManageTopics() {
+  const [data, setData] = useState({
+    topics: [],
+    totalTopics: 0,
+    totalPages: 1,
+    currentPage: 1,
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
 
-  const handleSelectDeck = (deckId) => {
-    setEditingCardId(null);
-    setIsAddingCard(false);
-    selectDeck(deckId);
-  };
-
-  const handleUpdateDeck = async (e) => {
-    e.preventDefault();
-    if (!selectedDeck) return;
-    try {
-      await updateDeck(selectedDeck.deck_id, {
-        title: selectedDeck.title,
-        description: selectedDeck.description,
-      });
-    } catch (err) {}
-  };
-
-  const handleDeleteDeck = async () => {
-    if (!selectedDeck) return;
-    if (window.confirm(`Bạn có chắc muốn xóa chủ đề "${selectedDeck.title}"?`)) {
+  useEffect(() => {
+    const fetchTopics = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        await deleteDeck(selectedDeck.deck_id);
-      } catch (err) {}
-    }
-  };
+        const token = sessionStorage.getItem('accessToken');
+        if (!token) throw new Error('Không tìm thấy token');
 
-  const handleCreateDeck = async (e) => {
-    e.preventDefault();
-    if (newDeckTitle.trim() === '') return toast.warning('Vui lòng nhập tiêu đề');
-    try {
-      await createDeck({ title: newDeckTitle, description: newDeckDescription });
-      setNewDeckTitle('');
-      setNewDeckDescription('');
-      setIsAddingDeck(false);
-    } catch (err) {}
-  };
+        const res = await fetch(
+          `https://project-doan1-backend.onrender.com/api/admin/topics?page=${page}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
-  const handleUpdateCard = async (cardId, updatedData) => {
-    const authHeaders = getAuthHeaders();
-    if (!authHeaders) return;
-    try {
-      const response = await axios.put(`${API_URL}/flashcards/${cardId}`, updatedData, authHeaders);
-      setCards(cards.map((card) => (card.card_id === cardId ? response.data : card)));
-      setEditingCardId(null);
-      toast.success('Cập nhật từ vựng thành công!');
-    } catch (err) {
-      toast.error('Lỗi cập nhật từ vựng');
-    }
-  };
+        if (!res.ok) throw new Error('Không thể tải danh sách chủ đề');
 
-  const handleDeleteCard = async (cardId) => {
-    const authHeaders = getAuthHeaders();
-    if (!authHeaders) return;
-    try {
-      await axios.delete(`${API_URL}/flashcards/${cardId}`, authHeaders);
-      setCards(cards.filter((card) => card.card_id !== cardId));
-      toast.success('Xóa từ vựng thành công!');
-    } catch (err) {
-      toast.error('Lỗi khi xóa từ vựng');
-    }
-  };
+        const jsonData = await res.json();
+        setData(jsonData);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleCreateCard = async (e) => {
-    e.preventDefault();
-    if (newCardData.front_text.trim() === '' || newCardData.back_text.trim() === '') {
-      return toast.warning('Mặt trước và mặt sau là bắt buộc.');
-    }
-    const authHeaders = getAuthHeaders();
-    if (!authHeaders) return;
-    try {
-      const dataToSend = { ...newCardData, deck_id: selectedDeck.deck_id };
-      const response = await axios.post(`${API_URL}/flashcards`, dataToSend, authHeaders);
-      setCards([...cards, response.data]);
-      setNewCardData({ front_text: '', back_text: '', pronunciation: '', example: '' });
-      setIsAddingCard(false);
-      toast.success('Thêm từ vựng mới thành công!');
-    } catch (err) {
-      toast.error('Lỗi khi tạo từ vựng mới');
-    }
-  };
+    fetchTopics();
+  }, [page]);
 
-  const handleNewCardChange = (e) => {
-    const { name, value } = e.target;
-    setNewCardData((prev) => ({ ...prev, [name]: value }));
-  };
+  const handlePrevPage = () => setPage((prev) => Math.max(prev - 1, 1));
+  const handleNextPage = () => setPage((prev) => Math.min(prev + 1, data.totalPages));
 
-  if (error) {
-    return <div className="p-4 text-red-500">{error}</div>;
-  }
+  if (error) return <div className="text-red-500">Lỗi: {error}</div>;
 
   return (
-    <div className="grid h-full grid-cols-1 gap-6 lg:grid-cols-3">
-      {/* CỘT BÊN TRÁI (DANH SÁCH CHỦ ĐỀ) */}
-      <div className="flex flex-col bg-white shadow-md dark:bg-gray-800">
-        <h2 className="border-b p-4 text-xl font-bold dark:border-gray-700">Các chủ đề</h2>
-
-        {/* Form Tạo Chủ đề */}
-        <div className="border-b p-4 dark:border-gray-700">
-          {isAddingDeck ? (
-            <form onSubmit={handleCreateDeck} className="space-y-3">
-              <input
-                type="text"
-                value={newDeckTitle}
-                onChange={(e) => setNewDeckTitle(e.target.value)}
-                placeholder="Nhập tiêu đề chủ đề mới..."
-                className="w-full border p-2 dark:border-gray-700 dark:bg-gray-900"
-              />
-              <textarea
-                value={newDeckDescription}
-                onChange={(e) => setNewDeckDescription(e.target.value)}
-                placeholder="Thêm mô tả (không bắt buộc)..."
-                rows="3"
-                className="w-full border p-2 dark:border-gray-700 dark:bg-gray-900"
-              />
-              <div className="flex space-x-2">
-                <button
-                  type="submit"
-                  className="bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700"
-                >
-                  Lưu
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsAddingDeck(false)}
-                  className="bg-gray-500 px-3 py-1 text-sm text-white hover:bg-gray-600"
-                >
-                  Hủy
-                </button>
-              </div>
-            </form>
-          ) : (
-            <button
-              onClick={() => setIsAddingDeck(true)}
-              className="w-full bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
-            >
-              + Tạo chủ đề mới
-            </button>
-          )}
-        </div>
-
-        {/* Danh sách chủ đề (Đọc từ state toàn cục) */}
-        <div className="flex-1 overflow-auto">
-          {isLoadingDecks ? ( // Dùng isLoadingDecks
-            <p className="p-4">Đang tải...</p>
-          ) : (
-            <ul>
-              {decks.map(
-                (
-                  deck // Dùng decks toàn cục
-                ) => (
-                  <li
-                    key={deck.deck_id}
-                    className={`cursor-pointer p-4 hover:bg-gray-50 dark:hover:bg-gray-700 ${
-                      selectedDeck?.deck_id === deck.deck_id
-                        ? 'bg-blue-100 font-bold text-blue-700 dark:bg-blue-900 dark:text-blue-200'
-                        : ''
-                    }`}
-                    onClick={() => handleSelectDeck(deck.deck_id)}
-                  >
-                    {deck.title}
-                  </li>
-                )
-              )}
-            </ul>
-          )}
-        </div>
+    <div>
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Quản lý Chủ đề</h1>
+        <button className="flex items-center space-x-2 bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700">
+          <Plus size={20} />
+          <span>Thêm chủ đề</span>
+        </button>
       </div>
 
-      {/* CỘT BÊN PHẢI (CHI TIẾT VÀ TỪ VỰNG) */}
-      <div className="flex-1 overflow-auto bg-white p-6 shadow-md lg:col-span-2 dark:bg-gray-800">
-        {isLoadingDetails ? ( // Dùng isLoadingDetails
-          <div className="flex h-full items-center justify-center">
-            <p className="text-gray-500">Đang tải chi tiết chủ đề...</p>
-          </div>
-        ) : selectedDeck ? (
-          <div>
-            {/* Form Chỉnh sửa chủ đề */}
-            <form onSubmit={handleUpdateDeck}>
-              <h2 className="mb-4 text-2xl font-bold">Chỉnh sửa chủ đề</h2>
-              <div className="mb-4">
-                <label className="block text-sm font-medium">Tiêu đề</label>
-                <input
-                  type="text"
-                  value={selectedDeck.title}
-                  onChange={(e) => setSelectedDeck({ ...selectedDeck, title: e.target.value })}
-                  className="mt-1 block w-full border p-2 dark:border-gray-700 dark:bg-gray-900"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium">Mô tả</label>
-                <textarea
-                  rows="3"
-                  value={selectedDeck.description}
-                  onChange={(e) =>
-                    setSelectedDeck({ ...selectedDeck, description: e.target.value })
-                  }
-                  className="mt-1 block w-full border p-2 dark:border-gray-700 dark:bg-gray-900"
-                ></textarea>
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  type="submit"
-                  className="bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-                >
-                  Lưu thay đổi
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDeleteDeck}
-                  className="bg-red-600 px-4 py-2 text-white hover:bg-red-700"
-                >
-                  Xóa chủ đề
-                </button>
-              </div>
-            </form>
+      <div className="mb-4 text-lg text-gray-300">
+        Tổng số chủ đề:
+        <span className="ml-2 font-bold text-green-500 dark:text-green-400">
+          {loading ? '--' : data.totalTopics}
+        </span>
+      </div>
 
-            {/* Form Tạo từ vựng*/}
-            <h3 className="my-6 mb-4 text-xl font-bold">Từ vựng trong chủ đề</h3>
-            <div className="mb-4 border p-4 dark:border-gray-700">
-              {isAddingCard ? (
-                <form onSubmit={handleCreateCard}>
-                  <h4 className="mb-2 font-semibold">Thêm từ vựng mới</h4>
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <input
-                      name="front_text"
-                      value={newCardData.front_text}
-                      onChange={handleNewCardChange}
-                      placeholder="Từ vựng (VD: Hello)"
-                      className="border p-2 dark:border-gray-700 dark:bg-gray-900"
-                    />
-                    <input
-                      name="back_text"
-                      value={newCardData.back_text}
-                      onChange={handleNewCardChange}
-                      placeholder="Nghĩa (VD: Xin chào)"
-                      className="border p-2 dark:border-gray-700 dark:bg-gray-900"
-                    />
-                    <input
-                      name="pronunciation"
-                      value={newCardData.pronunciation}
-                      onChange={handleNewCardChange}
-                      placeholder="Phiên âm (VD: /həˈloʊ/)"
-                      className="border p-2 dark:border-gray-700 dark:bg-gray-900"
-                    />
-                    <input
-                      name="example"
-                      value={newCardData.example}
-                      onChange={handleNewCardChange}
-                      placeholder="Ví dụ (VD: Hello world)"
-                      className="border p-2 dark:border-gray-700 dark:bg-gray-900"
-                    />
-                  </div>
-                  <div className="mt-4 flex space-x-2">
-                    <button
-                      type="submit"
-                      className="bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700"
-                    >
-                      Lưu
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsAddingCard(false)}
-                      className="bg-gray-500 px-3 py-1 text-sm text-white hover:bg-gray-600"
-                    >
-                      Hủy
-                    </button>
-                  </div>
-                </form>
+      <div className="w-full overflow-hidden shadow-md">
+        <div className="overflow-x-auto bg-[#1d1d1d]">
+          <table className="min-w-full divide-y divide-gray-700">
+            <thead className="bg-[#121212]">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-200 uppercase dark:text-gray-300">
+                  ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-200 uppercase dark:text-gray-300">
+                  Tiêu đề
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-200 uppercase dark:text-gray-300">
+                  Mô tả
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-200 uppercase dark:text-gray-300">
+                  Ngày tạo
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-200 uppercase dark:text-gray-300">
+                  Hành động
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              {loading ? (
+                <tr>
+                  <td colSpan="5" className="p-4 text-center">
+                    Đang tải...
+                  </td>
+                </tr>
               ) : (
-                <button
-                  onClick={() => setIsAddingCard(true)}
-                  className="bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-                >
-                  + Thêm từ vựng mới
-                </button>
-              )}
-            </div>
-
-            {/* Danh sách từ vựng*/}
-            <div className="space-y-4">
-              {cards.length > 0 ? (
-                cards.map((card) => (
-                  <FlashcardItem
-                    key={card.card_id}
-                    card={card}
-                    isEditing={editingCardId === card.card_id}
-                    onEditClick={() => setEditingCardId(card.card_id)}
-                    onCancel={() => setEditingCardId(null)}
-                    onSave={handleUpdateCard}
-                    onDelete={handleDeleteCard}
-                  />
+                data.topics.map((topic) => (
+                  <tr key={topic.deck_id} className="hover:bg-[#121212] dark:hover:bg-gray-700">
+                    <td className="px-6 py-4 whitespace-nowrap">{topic.deck_id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{topic.title}</td>
+                    <td
+                      className="max-w-xs truncate px-6 py-4 whitespace-nowrap"
+                      title={topic.description}
+                    >
+                      {topic.description || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {new Date(topic.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+                      <button className="text-white hover:text-white/50 dark:text-indigo-400 dark:hover:text-indigo-300">
+                        Sửa
+                      </button>
+                      <button className="ml-4 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
+                        Xóa
+                      </button>
+                    </td>
+                  </tr>
                 ))
-              ) : (
-                <p className="text-gray-500">Chưa có từ vựng nào trong chủ đề này.</p>
               )}
-            </div>
-          </div>
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <p className="text-gray-500">Hãy chọn một chủ đề để xem chi tiết</p>
-          </div>
-        )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="flex items-center justify-between border-t bg-[#121212] px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+          <button
+            onClick={handlePrevPage}
+            disabled={page === 1 || loading}
+            className="bg-gray-200 px-4 py-2 text-sm text-gray-700 disabled:opacity-50 dark:bg-gray-700 dark:text-gray-300"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <span className="text-sm text-gray-300 dark:text-gray-300">
+            Trang {data.currentPage} / {data.totalPages}
+          </span>
+          <button
+            onClick={handleNextPage}
+            disabled={page === data.totalPages || loading}
+            className="bg-gray-200 px-4 py-2 text-sm text-gray-700 disabled:opacity-50 dark:bg-gray-700 dark:text-gray-300"
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
       </div>
     </div>
   );

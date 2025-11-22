@@ -7,7 +7,6 @@ const AdminPage = () => {
   const [stats, setStats] = useState({ totalUsers: 0, totalDecks: 0, totalReviews: 0 });
 
   useEffect(() => {
-    // Fetch User Logic cũ của bạn
     const fetchUsers = async () => {
       try {
         const token = sessionStorage.getItem('accessToken');
@@ -19,10 +18,10 @@ const AdminPage = () => {
         const data = await res.json();
         if (res.ok) {
           setUsers(data);
-          // Giả lập stats từ data
+
           setStats({
             totalUsers: data.length,
-            totalDecks: 45, // Lấy từ API khác nếu có
+            totalDecks: 45,
             totalReviews: 128,
           });
         }
@@ -35,7 +34,6 @@ const AdminPage = () => {
     fetchUsers();
   }, []);
 
-  // Component Card nhỏ thống kê
   const StatCard = ({ title, value, icon: Icon, color }) => (
     <div className="relative overflow-hidden rounded-2xl border border-white/5 bg-[#1a1a1a] p-6 shadow-xl transition-transform hover:-translate-y-1">
       <div

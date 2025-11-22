@@ -66,23 +66,23 @@ export default function ManageWords() {
       </div>
 
       <div className="w-full overflow-hidden shadow-md">
-        <div className="overflow-x-auto bg-white dark:bg-gray-800">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-700">
+        <div className="overflow-x-auto bg-[#1d1d1d]">
+          <table className="min-w-full divide-y divide-gray-700">
+            <thead className="bg-[#121212]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-200 uppercase dark:text-gray-300">
                   Từ (Front)
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-200 uppercase dark:text-gray-300">
                   Nghĩa (Back)
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-200 uppercase dark:text-gray-300">
                   Phát âm
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-200 uppercase dark:text-gray-300">
                   Deck ID
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-500 uppercase dark:text-gray-300">
+                <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-200 uppercase dark:text-gray-300">
                   Hành động
                 </th>
               </tr>
@@ -96,13 +96,13 @@ export default function ManageWords() {
                 </tr>
               ) : (
                 data.words.map((word) => (
-                  <tr key={word.card_id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                  <tr key={word.card_id} className="hover:bg-[#121212] dark:hover:bg-gray-700">
                     <td className="px-6 py-4 whitespace-nowrap">{word.front_text}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{word.back_text}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{word.pronunciation || 'N/A'}</td>
                     <td className="px-6 py-4 whitespace-nowrap">{word.deck_id}</td>
                     <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
-                      <button className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
+                      <button className="text-white hover:text-white/50 dark:text-indigo-400 dark:hover:text-indigo-300">
                         Sửa
                       </button>
                       <button className="ml-4 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
@@ -116,7 +116,7 @@ export default function ManageWords() {
           </table>
         </div>
 
-        <div className="flex items-center justify-between border-t bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+        <div className="flex items-center justify-between border-t bg-[#121212] px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
           <button
             onClick={handlePrevPage}
             disabled={page === 1 || loading}
@@ -124,7 +124,7 @@ export default function ManageWords() {
           >
             <ChevronLeft size={16} />
           </button>
-          <span className="text-sm text-gray-700 dark:text-gray-300">
+          <span className="text-sm text-gray-300 dark:text-gray-300">
             Trang {data.currentPage} / {data.totalPages}
           </span>
           <button

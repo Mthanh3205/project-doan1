@@ -25,6 +25,7 @@ import DashboardOverview from './pages/admin/DashboardOverview';
 import ManageUsers from './pages/admin/ManageUsers';
 import ManageTopicsWords from './pages/admin/ManageTopicsWords';
 import AdminSettings from './pages/admin/AdminSettings';
+import ManageWords from './pages/admin/ManageWords';
 
 //Login thì mới cho sử dụng chức năng trong web
 import ProtectedRoute from './components/ProtectedRoute';
@@ -102,6 +103,7 @@ function AppContent() {
                 <Route index element={<DashboardOverview />} />
                 <Route path="users" element={<ManageUsers />} />
                 <Route path="topics" element={<ManageTopicsWords />} />
+                <Route path="words" element={<ManageWords />} />
                 <Route path="settings" element={<AdminSettings />} />
                 <Route path="reviews" element={<ReviewsManager />} />
               </Route>
