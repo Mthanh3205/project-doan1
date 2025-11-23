@@ -28,7 +28,7 @@ const AiRoleplayPage = () => {
   const [suggestions, setSuggestions] = useState([]); // Lưu gợi ý từ JSON
   const messagesEndRef = useRef(null);
 
-  // 1. LẤY DỮ LIỆU
+  // LẤY DỮ LIỆU
   useEffect(() => {
     const fetchTopicData = async () => {
       try {
@@ -67,12 +67,12 @@ const AiRoleplayPage = () => {
     fetchTopicData();
   }, [deckId, navigate]);
 
-  // 2. AUTO SCROLL
+  // AUTO SCROLL
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
 
-  // 3. CHECK HOÀN THÀNH
+  // CHECK HOÀN THÀNH
   useEffect(() => {
     if (!topic || messages.length === 0) return;
     const usedCount = topic.words.filter((word) =>
@@ -96,7 +96,7 @@ const AiRoleplayPage = () => {
     }
   }, [messages, topic, isCompleted]);
 
-  // 4. TOGGLE DỊCH
+  //  TOGGLE DỊCH
   const toggleTranslation = (index) => {
     setMessages((prev) =>
       prev.map((msg, i) => {
@@ -106,7 +106,7 @@ const AiRoleplayPage = () => {
     );
   };
 
-  // 5. GỬI TIN NHẮN
+  // GỬI TIN NHẮN
   const handleSend = async () => {
     if (!input.trim() || !topic) return;
 
@@ -157,11 +157,11 @@ const AiRoleplayPage = () => {
           // Cập nhật các nút gợi ý mới
           setSuggestions(parsed.suggestions || []);
         } catch (e) {
-          // Fallback: Nếu AI lỗi format JSON thì hiện text gốc
+          //Nếu AI lỗi format JSON thì hiện text gốc
           setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
         }
       } else {
-        setMessages((prev) => [...prev, { role: 'assistant', content: '⚠️ Lỗi AI.' }]);
+        setMessages((prev) => [...prev, { role: 'assistant', content: 'Lỗi AI.' }]);
       }
     } catch (error) {
       setMessages((prev) => [...prev, { role: 'assistant', content: 'Lỗi mạng!' }]);
@@ -179,8 +179,8 @@ const AiRoleplayPage = () => {
 
   return (
     <div className="flex min-h-screen items-start justify-center gap-6 bg-[#121212] p-4 pt-20 md:p-6">
-      {/* CỘT TRÁI: NHIỆM VỤ */}
-      <div className="sticky top-24 hidden w-1/4 md:block">
+      {/* NHIỆM VỤ */}
+      <div className="sticky top-0 hidden w-1/4 md:block">
         <button
           onClick={() => navigate(-1)}
           className="mb-4 flex items-center gap-2 text-gray-400 transition hover:text-white"
@@ -188,53 +188,70 @@ const AiRoleplayPage = () => {
           <ArrowLeft size={20} /> Quay lại
         </button>
 
-        <div className="flex h-[calc(100vh-140px)] flex-col rounded-2xl border border-white/10 bg-[#1d1d1d]">
+        <div className="flex h-[calc(100vh-140px)] flex-col bg-[#1d1d1d]">
           <div className="z-10 shrink-0 bg-[#1d1d1d] p-6 pb-2">
             <h3 className="mb-2 flex items-center gap-2 text-xl font-bold text-amber-500">
               <Sparkles size={20} /> Nhiệm vụ
             </h3>
 
-            {/* CUSTOM DROPDOWN */}
+            {/*SELECT LEVEL*/}
             <div className="relative mb-4">
+              {/* Nút bấm hiển thị lựa chọn hiện tại */}
               <div
                 onClick={() => setShowLevelMenu(!showLevelMenu)}
-                className="flex cursor-pointer items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 transition-all hover:border-amber-500/60 hover:bg-amber-500/20"
+                className="flex cursor-pointer items-center gap-2 rounded-xl border border-stone-400 bg-black/10 p-3 transition-all hover:border-amber-500/60 hover:bg-amber-500/20"
               >
                 <Settings2 size={18} className="text-amber-500" />
-                <div className="flex-1 text-sm font-medium text-amber-100">
+
+                <div className="flex-1 text-sm font-medium text-white">
                   {level === 'beginner' ? 'Cơ bản (Beginner)' : 'Nâng cao (Advanced)'}
                 </div>
+
                 <ChevronDown
                   size={16}
                   className={`text-amber-500 transition-transform duration-300 ${showLevelMenu ? 'rotate-180' : ''}`}
                 />
               </div>
+
+              {/* Danh sách xổ xuống  */}
               {showLevelMenu && (
-                <>
-                  <div className="fixed inset-0 z-10" onClick={() => setShowLevelMenu(false)}></div>
-                  <div className="animate-in fade-in zoom-in-95 absolute top-full right-0 left-0 z-20 mt-2 overflow-hidden rounded-xl border border-white/10 bg-[#1d1d1d] shadow-xl duration-200">
-                    <div
-                      onClick={() => {
-                        setLevel('beginner');
-                        setShowLevelMenu(false);
-                      }}
-                      className={`flex cursor-pointer items-center justify-between px-4 py-3 text-sm transition-colors ${level === 'beginner' ? 'bg-amber-500/20 font-bold text-amber-500' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}
-                    >
-                      <span>Cơ bản (Beginner)</span>
-                      {level === 'beginner' && <Check size={16} />}
-                    </div>
-                    <div
-                      onClick={() => {
-                        setLevel('advanced');
-                        setShowLevelMenu(false);
-                      }}
-                      className={`flex cursor-pointer items-center justify-between px-4 py-3 text-sm transition-colors ${level === 'advanced' ? 'bg-amber-500/20 font-bold text-amber-500' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}
-                    >
-                      <span>Nâng cao (Advanced)</span>
-                      {level === 'advanced' && <Check size={16} />}
-                    </div>
+                <div className="animate-in fade-in zoom-in-95 absolute top-full right-0 left-0 z-20 mt-2 overflow-hidden rounded-xl border border-white/10 bg-[#1d1d1d] shadow-xl duration-200">
+                  {/* Lựa chọn 1 */}
+                  <div
+                    onClick={() => {
+                      setLevel('beginner');
+                      setShowLevelMenu(false);
+                    }}
+                    className={`flex cursor-pointer items-center justify-between px-4 py-3 text-sm transition-colors ${level === 'beginner' ? 'bg-amber-500/20 font-bold text-amber-500' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}
+                  >
+                    <span>Cơ bản (Beginner)</span>
+                    {level === 'beginner' && (
+                      <span>
+                        <Check />
+                      </span>
+                    )}
                   </div>
-                </>
+
+                  {/* Lựa chọn 2 */}
+                  <div
+                    onClick={() => {
+                      setLevel('advanced');
+                      setShowLevelMenu(false);
+                    }}
+                    className={`flex cursor-pointer items-center justify-between px-4 py-3 text-sm transition-colors ${level === 'advanced' ? 'bg-amber-500/20 font-bold text-amber-500' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}
+                  >
+                    <span>Nâng cao (Advanced)</span>
+                    {level === 'advanced' && (
+                      <span>
+                        <Check />
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {showLevelMenu && (
+                <div className="fixed inset-0 z-10" onClick={() => setShowLevelMenu(false)}></div>
               )}
             </div>
 
@@ -271,8 +288,8 @@ const AiRoleplayPage = () => {
         </div>
       </div>
 
-      {/* CỘT PHẢI: CHAT */}
-      <div className="relative flex h-[85vh] w-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#1d1d1d] shadow-2xl md:w-2/3">
+      {/*CHAT */}
+      <div className="relative flex h-[85vh] w-full flex-col overflow-hidden bg-[#1d1d1d] md:w-2/3">
         {/* Header */}
         <div className="z-10 flex shrink-0 items-center gap-3 border-b border-white/10 bg-black/20 p-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-gradient-to-r from-amber-500 to-orange-600 shadow-lg">
@@ -291,7 +308,18 @@ const AiRoleplayPage = () => {
         </div>
 
         {/* Messages */}
-        <div className="scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent flex-1 space-y-4 overflow-y-auto p-4">
+        <div
+          className="s flex-1 space-y-4 overflow-y-auto p-4 style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }}"
+          onWheel={(e) => e.stopPropagation()}
+        >
+          <style>{`
+                .hide-scroll::-webkit-scrollbar { 
+                    display: none; 
+                } 
+            `}</style>
           {messages.map((msg, index) => (
             <div
               key={index}
