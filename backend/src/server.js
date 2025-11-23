@@ -79,7 +79,7 @@ app.use('/api/feedback', routeFeedback);
 // Thay thế Test route (app.get('/', ...)) bằng route này.
 // Route này phải nằm cuối cùng, sau tất cả các route API và middleware static.
 // Nó sẽ trả về index.html cho mọi request không phải API hoặc file tĩnh (dành cho React Router).
-app.get('*', (req, res) => {
+app.get('/*', (req, res) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
