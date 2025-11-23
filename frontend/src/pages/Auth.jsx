@@ -15,7 +15,7 @@ const Auth = () => {
   });
 
   const { login } = useAuth();
-  const navigate = useNavigate(); // Khởi tạo điều hướng
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     setFormData({
@@ -28,7 +28,7 @@ const Auth = () => {
     e.preventDefault();
 
     if (isLogin) {
-      // --- ĐĂNG NHẬP EMAIL ---
+      //  ĐĂNG NHẬP EMAIL
       try {
         const res = await fetch('https://project-doan1-backend.onrender.com/api/auth/login', {
           method: 'POST',
@@ -49,7 +49,6 @@ const Auth = () => {
           login(data.user);
 
           console.log('Đăng nhập thành công:', data);
-          alert('Đăng nhập thành công!');
           if (data.user.email && data.user.email.endsWith('.admin')) {
             navigate('/admin');
           } else {
@@ -63,7 +62,7 @@ const Auth = () => {
         alert('Lỗi kết nối server');
       }
     } else {
-      // --- ĐĂNG KÝ ---
+      //  ĐĂNG KÝ
       if (formData.password !== formData.confirmPassword) {
         alert('Mật khẩu xác nhận không khớp!');
         return;
@@ -81,7 +80,7 @@ const Auth = () => {
         const data = await res.json();
         if (res.ok) {
           alert('Đăng ký thành công! Vui lòng đăng nhập.');
-          setIsLogin(true); // Chuyển sang tab login
+          setIsLogin(true);
         } else {
           alert(data.message || 'Đăng ký thất bại!');
         }
@@ -92,7 +91,7 @@ const Auth = () => {
     }
   };
 
-  // --- GOOGLE LOGIN ---
+  //  GOOGLE LOGIN
   const handleLoginGoogle = async (googleUser) => {
     console.log('Google userInfo:', googleUser);
 
@@ -118,7 +117,6 @@ const Auth = () => {
 
         login(data.user);
         console.log('Đăng nhập Google thành công.');
-        alert('Đăng nhập thành công!');
         if (data.user.email && data.user.email.endsWith('.admin')) {
           navigate('/admin');
         } else {

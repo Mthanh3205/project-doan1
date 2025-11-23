@@ -27,4 +27,30 @@ router.post('/flashcards', authenticateToken, createFlashcard);
 router.put('/flashcards/:id', authenticateToken, updateFlashcard);
 router.delete('/flashcards/:id', authenticateToken, deleteFlashcard);
 
+router.get('/deck/:id/roleplay-data', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deck = await Topics.findByPk(id);
+    if (!deck) {
+      return res.status(404).json({ message: 'Không tìm thấy bộ từ vựng' });
+    }
+
+    const cards = await Cards.findAll({
+      where: { deck_id: id },
+      limit: 10,
+      attributes: ['front_text'],
+    });
+
+    const words = cards.map((c) => c.front_text);
+
+    res.json({
+      title: deck.title,
+      words: words,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Lỗi server' });
+  }
+});
 export default router;
