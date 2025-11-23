@@ -1,7 +1,6 @@
 //Chat
 import dotenv from 'dotenv';
 dotenv.config();
-import Check from 'lucide-react/icons/check.js';
 
 export const chatRoleplay = async (req, res) => {
   try {
