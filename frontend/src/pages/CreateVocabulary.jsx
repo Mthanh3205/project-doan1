@@ -274,7 +274,18 @@ export default function CreateVocabulary() {
           )}
         </div>
 
-        <div className="scrollbar-thin flex-1 overflow-y-auto">
+        <div
+          className="flex-1 overflow-y-auto"
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }}
+        >
+          <style>{`
+                .hide-scroll::-webkit-scrollbar { 
+                    display: none; 
+                } 
+            `}</style>
           {isLoadingDecks ? (
             <div className="p-4 text-center text-stone-500">Đang tải...</div>
           ) : decks.length === 0 ? (
@@ -283,7 +294,7 @@ export default function CreateVocabulary() {
               <p>Chưa có chủ đề nào.</p>
             </div>
           ) : (
-            <ul>
+            <ul className="hide-scroll">
               {decks.map((deck) => (
                 <li
                   key={deck.deck_id}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Send, Bot, User, Sparkles, ArrowLeft } from 'lucide-react';
+import { Send, Bot, User, Sparkles, ArrowLeft, Settings2, ChevronDown, Check } from 'lucide-react';
 
 const AiRoleplayPage = () => {
   const { deckId } = useParams();
@@ -11,6 +11,7 @@ const AiRoleplayPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [topic, setTopic] = useState(null);
   const [level, setLevel] = useState('beginner');
+  const [showLevelMenu, setShowLevelMenu] = useState(false);
   const messagesEndRef = useRef(null);
 
   // LẤY DỮ LIỆU TỪ VỰNG & CHỦ ĐỀ TỪ BACKEND
@@ -135,31 +136,88 @@ const AiRoleplayPage = () => {
           <ArrowLeft size={20} /> Quay lại
         </button>
 
-        <div className="flex h-[calc(100vh-140px)] flex-col overflow-hidden bg-[#1d1d1d] shadow-xl">
+        <div className="flex h-[calc(100vh-140px)] flex-col overflow-hidden bg-[#1d1d1d]">
           <div className="z-10 shrink-0 bg-[#1d1d1d] p-6 pb-2">
             <h3 className="mb-2 flex items-center gap-2 text-xl font-bold text-amber-500">
               <Sparkles size={20} /> Nhiệm vụ
             </h3>
             {/*SELECT LEVEL*/}
-            <div className="mb-4 flex items-center gap-2 rounded-lg border border-white/5 bg-black/30 p-2">
-              <Settings2 size={16} className="text-gray-400" />
-              <select
-                value={level}
-                onChange={(e) => setLevel(e.target.value)}
-                className="w-full cursor-pointer bg-transparent text-sm text-white outline-none"
+            <div className="relative mb-4">
+              {/* Nút bấm hiển thị lựa chọn hiện tại */}
+              <div
+                onClick={() => setShowLevelMenu(!showLevelMenu)}
+                className="flex cursor-pointer items-center gap-2 rounded-xl border border-stone-400 bg-black/10 p-3 transition-all hover:border-amber-500/60 hover:bg-amber-500/20"
               >
-                <option value="beginner">Cơ bản (Beginner)</option>
-                <option value="advanced">Nâng cao (Advanced)</option>
-              </select>
+                <Settings2 size={18} className="text-amber-500" />
+
+                <div className="flex-1 text-sm font-medium text-white">
+                  {level === 'beginner' ? 'Cơ bản (Beginner)' : 'Nâng cao (Advanced)'}
+                </div>
+
+                <ChevronDown
+                  size={16}
+                  className={`text-amber-500 transition-transform duration-300 ${showLevelMenu ? 'rotate-180' : ''}`}
+                />
+              </div>
+
+              {/* Danh sách xổ xuống  */}
+              {showLevelMenu && (
+                <div className="animate-in fade-in zoom-in-95 absolute top-full right-0 left-0 z-20 mt-2 overflow-hidden rounded-xl border border-white/10 bg-[#1d1d1d] shadow-xl duration-200">
+                  {/* Lựa chọn 1 */}
+                  <div
+                    onClick={() => {
+                      setLevel('beginner');
+                      setShowLevelMenu(false);
+                    }}
+                    className={`flex cursor-pointer items-center justify-between px-4 py-3 text-sm transition-colors ${level === 'beginner' ? 'bg-amber-500/20 font-bold text-amber-500' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}
+                  >
+                    <span>Cơ bản (Beginner)</span>
+                    {level === 'beginner' && (
+                      <span>
+                        <Check />
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Lựa chọn 2 */}
+                  <div
+                    onClick={() => {
+                      setLevel('advanced');
+                      setShowLevelMenu(false);
+                    }}
+                    className={`flex cursor-pointer items-center justify-between px-4 py-3 text-sm transition-colors ${level === 'advanced' ? 'bg-amber-500/20 font-bold text-amber-500' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}
+                  >
+                    <span>Nâng cao (Advanced)</span>
+                    {level === 'advanced' && (
+                      <span>
+                        <Check />
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {showLevelMenu && (
+                <div className="fixed inset-0 z-10" onClick={() => setShowLevelMenu(false)}></div>
+              )}
             </div>
             <p className="text-xs text-gray-400">Sử dụng các từ sau trong hội thoại:</p>
           </div>
 
           <div
-            className="scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent flex-1 overflow-y-auto p-6 pt-2"
+            className="flex-1 overflow-y-auto p-6 pt-2"
+            style={{
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+            }}
             onWheel={(e) => e.stopPropagation()}
           >
-            <ul className="space-y-2 pb-4">
+            <style>{`
+                .hide-scroll::-webkit-scrollbar { 
+                    display: none; 
+                } 
+            `}</style>
+            <ul className="hide-scroll space-y-2 pb-4">
               {topic.words.length > 0 ? (
                 topic.words.map((word, idx) => {
                   const isUsed = messages.some(
@@ -176,7 +234,11 @@ const AiRoleplayPage = () => {
                       }`}
                     >
                       <span>{word}</span>
-                      {isUsed && <span className="font-bold text-green-500">✔</span>}
+                      {isUsed && (
+                        <span className="font-bold text-green-500">
+                          <Check />
+                        </span>
+                      )}
                     </li>
                   );
                 })
@@ -189,7 +251,7 @@ const AiRoleplayPage = () => {
       </div>
 
       {/*KHUNG CHAT */}
-      <div className="relative flex h-[85vh] w-full flex-col overflow-hidden bg-[#1d1d1d] shadow-2xl md:w-2/3">
+      <div className="relative flex h-[85vh] w-full flex-col overflow-hidden bg-[#1d1d1d] md:w-2/3">
         {/* Header Chat */}
         <div className="z-10 flex shrink-0 items-center gap-3 border-b border-white/10 bg-black/20 p-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-gradient-to-r from-amber-500 to-orange-600 shadow-lg">
