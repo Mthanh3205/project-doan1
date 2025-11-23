@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { Send, Bot, User, Sparkles, ArrowLeft } from 'lucide-react';
+import { Send, Bot, Sparkles, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const AiRoleplayPage = () => {
@@ -10,10 +10,9 @@ const AiRoleplayPage = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [topic, setTopic] = useState(null); // State lưu dữ liệu thật
+  const [topic, setTopic] = useState(null);
   const messagesEndRef = useRef(null);
 
-  // 1. LẤY DỮ LIỆU TỪ BACKEND KHI TRANG LOAD
   useEffect(() => {
     const fetchTopicData = async () => {
       try {
@@ -27,9 +26,8 @@ const AiRoleplayPage = () => {
         const data = await res.json();
 
         if (data.title) {
-          setTopic(data); // Lưu dữ liệu thật vào state
+          setTopic(data);
 
-          // KHỞI TẠO TIN NHẮN CHÀO MỪNG DỰA TRÊN CHỦ ĐỀ THẬT
           setMessages([
             {
               role: 'assistant',
