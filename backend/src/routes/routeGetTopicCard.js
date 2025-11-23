@@ -38,7 +38,7 @@ router.get('/deck/:id/roleplay-data', async (req, res) => {
 
     const cards = await Cards.findAll({
       where: { deck_id: id },
-      limit: 10,
+      // limit: 10, lấy số lượng từ nếu cần
       attributes: ['front_text'],
     });
 
