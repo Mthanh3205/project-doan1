@@ -38,7 +38,6 @@ import userRoutes from './routes/userRoutes.js';
 import siteRoutes from './routes/site.js';
 import progressRoutes from './routes/progressRoutes.js';
 import routeFeedback from './routes/routeFeedback.js';
-import routeChat from './routes/routeChat.js';
 
 // Khai báo các route
 app.use('/api/auth', routeAuth);
@@ -56,7 +55,7 @@ app.use('/api/favorites', routeFavorites);
 app.use('/api/user', userRoutes);
 app.use('/api', siteRoutes);
 app.use('/api/feedback', routeFeedback);
-app.use('/api/chat', routeChat);
+
 // Test route
 app.get('/', (req, res) => {
   res.send('Server Flashcard is running...');
