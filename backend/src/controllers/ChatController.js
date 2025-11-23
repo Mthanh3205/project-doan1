@@ -1,37 +1,62 @@
+//Chat
 import dotenv from 'dotenv';
 dotenv.config();
 
 export const chatRoleplay = async (req, res) => {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ message: 'Server thiếu GEMINI_API_KEY' });
+    if (!apiKey) return res.status(500).json({ message: 'Server thiếu GEMINI_API_KEY' });
+
+    // Nhận thêm tham số 'level' từ frontend
+    const { userMessage, history, targetWords, topicTitle, level = 'beginner' } = req.body;
+
+    // CẤU HÌNH CẤP ĐỘ
+    let levelInstruction = '';
+    if (level === 'beginner') {
+      levelInstruction =
+        'Dùng câu đơn giản, ngắn gọn, từ vựng thông dụng (A1-A2). Tốc độ chậm rãi.';
+    } else {
+      levelInstruction =
+        'Dùng câu phức, đa dạng, idioms tự nhiên (B1-B2). Tốc độ như người bản xứ.';
     }
 
-    const { userMessage, history, targetWords, topicTitle } = req.body;
-
+    // SYSTEM PROMPT (KỊCH BẢN CHO AI)
     const systemPrompt = `
-      Bạn là một trợ lý AI đóng vai (Roleplay) để giúp người dùng học tiếng Anh.
-      - Chủ đề: "${topicTitle || 'Giao tiếp tự do'}".
-      - Từ vựng mục tiêu cần luyện: [${targetWords ? targetWords.join(', ') : ''}].
+      [VAI TRÒ]
+      Bạn là một nhân vật trong tình huống thực tế liên quan đến chủ đề: "${topicTitle}".
+      TUYỆT ĐỐI KHÔNG nhận mình là AI. Hãy nhập vai hoàn toàn.
       
-      YÊU CẦU QUAN TRỌNG:
-      1. Đóng vai một nhân vật phù hợp với chủ đề này.
-      2. Trả lời ngắn gọn, tự nhiên (dưới 60 từ).
-      3. Khéo léo khuyến khích người dùng sử dụng các từ vựng mục tiêu.
-      4. Nếu người dùng mắc lỗi ngữ pháp, hãy phản hồi bình thường, sau đó thêm dòng sửa lỗi ở cuối cùng trong ngoặc đơn. Ví dụ: (Sửa lỗi: ...)
+      [MỤC TIÊU]
+      Giúp người dùng luyện tập danh sách từ vựng: [${targetWords.join(', ')}].
+      
+      [QUY TẮC TRÒ CHUYỆN]
+      1. ${levelInstruction}
+      2. Cố gắng lồng ghép 1-2 từ trong danh sách từ vựng vào câu trả lời của bạn một cách tự nhiên.
+      3. Luôn kết thúc bằng một câu hỏi mở để duy trì hội thoại.
+      4. Giới hạn độ dài: Dưới 50 từ.
+
+      [CƠ CHẾ PHẢN HỒI & SỬA LỖI]
+      Bước 1: Trả lời hội thoại bình thường (nhập vai).
+      Bước 2: Xuống dòng. Nếu người dùng dùng từ đúng, hãy khen (VD: ✔ Good job using 'apple'!).
+      Bước 3: Nếu người dùng sai ngữ pháp hoặc dùng từ chưa hay, hãy sửa lỗi nhẹ nhàng trong ngoặc đơn.
+      
+      Ví dụ định dạng trả lời:
+      "Here is your steak. Do you want some **sauce** with it?"
+      (✔ Good job! Sửa lỗi nhỏ: "I want eat" -> "I want to eat")
     `;
 
-    const contents = history
+    const processedHistory = history
       .filter((msg) => msg && msg.content && msg.content.trim() !== '')
+      .slice(-6)
       .map((msg) => ({
         role: msg.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: msg.content }],
       }));
 
-    contents.push({
+    // Thêm tin nhắn mới nhất kèm System Prompt để AI luôn nhớ nhiệm vụ
+    processedHistory.push({
       role: 'user',
-      parts: [{ text: `${systemPrompt}\n\nNgười dùng nói: ${userMessage}` }],
+      parts: [{ text: `${systemPrompt}\n\nUser: ${userMessage}` }],
     });
 
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
@@ -39,26 +64,22 @@ export const chatRoleplay = async (req, res) => {
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: contents }),
+      body: JSON.stringify({ contents: processedHistory }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('Lỗi Google API:', JSON.stringify(data, null, 2));
-
-      throw new Error(data.error?.message || 'Lỗi không xác định từ Google AI');
+      console.error('Gemini Error:', JSON.stringify(data));
+      throw new Error(data.error?.message || 'Lỗi API AI');
     }
 
     const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!replyText) {
-      throw new Error('AI không trả lời (Phản hồi rỗng).');
-    }
+    if (!replyText) throw new Error('AI không phản hồi.');
 
     res.json({ reply: replyText });
   } catch (error) {
     console.error('Chat Controller Error:', error);
-    res.status(500).json({ message: 'Lỗi Server: ' + error.message });
+    res.status(500).json({ message: 'Lỗi: ' + error.message });
   }
 };
