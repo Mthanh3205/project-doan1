@@ -108,6 +108,11 @@ export default function Header() {
           href: '#',
           onClick: () => navigate(`/study/${currentDeckId}/matching`),
         },
+        {
+          label: 'AI Roleplay (VIP) ✨',
+          href: '#',
+          onClick: () => navigate(`/study/${currentDeckId}/roleplay`),
+        },
       ],
     },
     { label: 'Tạo mới +', href: '/CreateVocabulary' },
