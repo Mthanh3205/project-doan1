@@ -37,8 +37,8 @@ export const chatRoleplay = async (req, res) => {
       4. Giới hạn độ dài: Dưới 50 từ.
 
       [CƠ CHẾ PHẢN HỒI & SỬA LỖI]
-      Bước 1: Trả lời hội thoại bình thường (nhập vai).
-      Bước 2: Xuống dòng. Nếu người dùng dùng từ đúng, hãy khen (VD: ✔ Good job using 'apple'!).
+      Bước 1: Đóng vai nhân vật liên quan đến chủ đề và CHỦ ĐỘNG hỏi người dùng trước.
+      Bước 2: Xuống dòng. Sau khi người dùng trả lời, bạn phản hồi theo vai trò. Nếu người dùng dùng từ đúng, hãy khen (VD: ✔ Good job using 'apple'!).
       Bước 3: Nếu người dùng sai ngữ pháp hoặc dùng từ chưa hay, hãy sửa lỗi nhẹ nhàng trong ngoặc đơn.
       
       Ví dụ định dạng trả lời:
