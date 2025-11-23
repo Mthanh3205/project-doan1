@@ -1,6 +1,7 @@
 //Chat
 import dotenv from 'dotenv';
 dotenv.config();
+import Check from 'lucide-react/icons/check.js';
 
 export const chatRoleplay = async (req, res) => {
   try {
@@ -37,12 +38,12 @@ export const chatRoleplay = async (req, res) => {
 
       [CƠ CHẾ PHẢN HỒI & SỬA LỖI]
       Bước 1: Trả lời hội thoại bình thường (nhập vai).
-      Bước 2: Xuống dòng. Nếu người dùng dùng từ đúng, hãy khen (VD: <Check/> Good job using 'apple'!).
+      Bước 2: Xuống dòng. Nếu người dùng dùng từ đúng, hãy khen (VD: ✔ Good job using 'apple'!).
       Bước 3: Nếu người dùng sai ngữ pháp hoặc dùng từ chưa hay, hãy sửa lỗi nhẹ nhàng trong ngoặc đơn.
       
       Ví dụ định dạng trả lời:
       "Here is your steak. Do you want some **sauce** with it?"
-      (<Check/> Good job! Sửa lỗi nhỏ: "I want eat" -> "I want to eat")
+      (✔ Good job! Sửa lỗi nhỏ: "I want eat" -> "I want to eat")
 
       [YÊU CẦU TRẢ LỜI]
       1. Trả lời hội thoại tự nhiên.
