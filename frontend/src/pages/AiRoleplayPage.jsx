@@ -1,12 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Send, Bot, User, Sparkles, ArrowLeft, Settings2, ChevronDown, Check } from 'lucide-react';
+import {
+  Send,
+  Bot,
+  User,
+  Sparkles,
+  ArrowLeft,
+  Settings2,
+  ChevronDown,
+  Check,
+  Languages,
+} from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 const AiRoleplayPage = () => {
   const { deckId } = useParams();
   const navigate = useNavigate();
 
+  // State
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -14,115 +25,110 @@ const AiRoleplayPage = () => {
   const [level, setLevel] = useState('beginner');
   const [showLevelMenu, setShowLevelMenu] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [suggestions, setSuggestions] = useState([]);
+  const [suggestions, setSuggestions] = useState([]); // Lưu gợi ý từ JSON
   const messagesEndRef = useRef(null);
 
-  // LẤY DỮ LIỆU TỪ VỰNG & CHỦ ĐỀ TỪ BACKEND
+  // 1. LẤY DỮ LIỆU
   useEffect(() => {
     const fetchTopicData = async () => {
       try {
         const token = sessionStorage.getItem('accessToken');
         if (!token) {
-          alert('Vui lòng đăng nhập để sử dụng tính năng này.');
           navigate('/Auth');
           return;
         }
 
-        // Gọi API lấy dữ liệu bộ thẻ
         const res = await fetch(
           `https://project-doan1-backend.onrender.com/api/gettopiccard/deck/${deckId}/roleplay-data`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
-
-        if (!res.ok) throw new Error('Không tìm thấy bộ từ vựng');
-
         const data = await res.json();
 
         if (data.title) {
           setTopic(data);
-          // Tin nhắn mở đầu của AI
-          setMessages([
-            {
-              role: 'assistant',
-              content: `Hello! I'm your AI Tutor for the topic "${data.title}". I will play a role related to this topic. Let's start the conversation! (Try using the word '${data.words[0] || 'Hello'}')`,
-            },
-          ]);
+          // Tin nhắn mở đầu giả lập JSON
+          const welcomeMsg = {
+            role: 'assistant',
+            content: `Hello! I'm your AI Tutor for "${data.title}". Let's start!`,
+            translation: `Xin chào! Tôi là gia sư AI chủ đề "${data.title}". Bắt đầu nhé!`,
+            correction: null,
+            isTranslated: false,
+          };
+          setMessages([welcomeMsg]);
+          // Gợi ý mở đầu
+          setSuggestions(['Hello!', 'Hi there', "I'm ready"]);
         }
       } catch (error) {
-        console.error('Lỗi:', error);
-        alert('Lỗi tải dữ liệu: ' + error.message);
         navigate('/topics');
       }
     };
-
     fetchTopicData();
   }, [deckId, navigate]);
 
-  //  TỰ ĐỘNG CUỘN XUỐNG CUỐI KHUNG CHAT
+  // 2. AUTO SCROLL
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
-  //CHECK COMPLETE
+
+  // 3. CHECK HOÀN THÀNH
   useEffect(() => {
     if (!topic || messages.length === 0) return;
-
-    // Đếm số từ đã dùng
     const usedCount = topic.words.filter((word) =>
       messages.some(
         (m) => m.role === 'user' && m.content.toLowerCase().includes(word.toLowerCase())
       )
     ).length;
 
-    // Nếu dùng hết từ và chưa từng thông báo hoàn thành
     if (usedCount === topic.words.length && !isCompleted) {
       setIsCompleted(true);
-
-      // BẮN PHÁO HOA
       confetti({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 },
-        colors: ['#f59e0b', '#10b981', '#3b82f6'], // Màu Cam, Xanh, Lam
+        colors: ['#f59e0b', '#10b981', '#3b82f6'],
       });
-
-      // THÊM TIN NHẮN CHÚC MỪNG CỦA HỆ THỐNG
       setMessages((prev) => [
         ...prev,
-        {
-          role: 'system',
-          content: '🎉 CHÚC MỪNG! Bạn đã sử dụng hết tất cả từ vựng trong bài học!',
-        },
+        { role: 'system', content: '🎉 CHÚC MỪNG! Bạn đã hoàn thành tất cả từ vựng!' },
       ]);
     }
   }, [messages, topic, isCompleted]);
 
-  //  XỬ LÝ GỬI TIN NHẮN
+  // 4. TOGGLE DỊCH
+  const toggleTranslation = (index) => {
+    setMessages((prev) =>
+      prev.map((msg, i) => {
+        if (i === index) return { ...msg, isTranslated: !msg.isTranslated };
+        return msg;
+      })
+    );
+  };
+
+  // 5. GỬI TIN NHẮN
   const handleSend = async () => {
     if (!input.trim() || !topic) return;
 
-    // Hiển thị tin nhắn User ngay lập tức (Optimistic UI)
     const userMsg = { role: 'user', content: input };
-    const newHistory = [...messages, userMsg];
+    // Chỉ gửi content tiếng Anh lên server để tiết kiệm token và tránh lỗi format
+    const historyToSend = messages
+      .filter((m) => m.role !== 'system')
+      .map((m) => ({ role: m.role, content: m.content }));
 
-    setMessages(newHistory);
+    setMessages((prev) => [...prev, userMsg]);
     setInput('');
+    setSuggestions([]);
     setIsLoading(true);
 
     try {
       const token = sessionStorage.getItem('accessToken');
-
-      // Gọi API Chat
       const res = await fetch('https://project-doan1-backend.onrender.com/api/chat/roleplay', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({
           userMessage: userMsg.content,
-          history: newHistory.slice(-12), //gửi tối đa 12 tn
+          history: historyToSend,
           targetWords: topic.words,
           topicTitle: topic.title,
           level: level,
@@ -132,26 +138,33 @@ const AiRoleplayPage = () => {
       const data = await res.json();
 
       if (res.ok && data.reply) {
-        // 1. TÁCH GỢI Ý RA KHỎI NỘI DUNG
-        // Regex tìm chuỗi nằm trong [...] ở cuối câu
-        const suggestionMatch = data.reply.match(/\[(.*?)\]$/);
+        try {
+          // Xử lý JSON từ AI trả về
+          const cleanJson = data.reply.replace(/```json|```/g, '').trim();
+          const parsed = JSON.parse(cleanJson);
 
-        let cleanContent = data.reply;
-        let newSuggestions = [];
+          setMessages((prev) => [
+            ...prev,
+            {
+              role: 'assistant',
+              content: parsed.english,
+              translation: parsed.vietnamese,
+              correction: parsed.correction,
+              isTranslated: false,
+            },
+          ]);
 
-        if (suggestionMatch) {
-          // Nếu tìm thấy, cắt bỏ phần [...] khỏi tin nhắn hiển thị
-          cleanContent = data.reply.replace(suggestionMatch[0], '').trim();
-          // Tách các gợi ý bằng dấu |
-          newSuggestions = suggestionMatch[1].split('|').map((s) => s.trim());
+          // Cập nhật các nút gợi ý mới
+          setSuggestions(parsed.suggestions || []);
+        } catch (e) {
+          // Fallback: Nếu AI lỗi format JSON thì hiện text gốc
+          setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
         }
-
-        setMessages((prev) => [...prev, { role: 'assistant', content: cleanContent }]);
-        setSuggestions(newSuggestions); // Lưu gợi ý để hiển thị
+      } else {
+        setMessages((prev) => [...prev, { role: 'assistant', content: '⚠️ Lỗi AI.' }]);
       }
     } catch (error) {
-      console.error(error);
-      setMessages((prev) => [...prev, { role: 'assistant', content: 'Lỗi kết nối mạng!' }]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: 'Lỗi mạng!' }]);
     } finally {
       setIsLoading(false);
     }
@@ -160,17 +173,14 @@ const AiRoleplayPage = () => {
   if (!topic)
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#121212] text-white">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-10 w-10 animate-spin rounded-full border-t-2 border-b-2 border-amber-500"></div>
-          <p className="text-sm text-gray-400">Đang tải dữ liệu bài học...</p>
-        </div>
+        Loading...
       </div>
     );
 
   return (
-    <div className="flex min-h-screen items-start justify-center gap-6 bg-[#121212] p-4 md:p-6">
-      {/* DANH SÁCH TỪ CẦN LUYỆN */}
-      <div className="sticky top-0 hidden w-1/4 md:block">
+    <div className="flex min-h-screen items-start justify-center gap-6 bg-[#121212] p-4 pt-20 md:p-6">
+      {/* CỘT TRÁI: NHIỆM VỤ */}
+      <div className="sticky top-24 hidden w-1/4 md:block">
         <button
           onClick={() => navigate(-1)}
           className="mb-4 flex items-center gap-2 text-gray-400 transition hover:text-white"
@@ -178,123 +188,92 @@ const AiRoleplayPage = () => {
           <ArrowLeft size={20} /> Quay lại
         </button>
 
-        <div className="flex h-[calc(100vh-140px)] flex-col overflow-hidden bg-[#1d1d1d]">
+        <div className="flex h-[calc(100vh-140px)] flex-col rounded-2xl border border-white/10 bg-[#1d1d1d]">
           <div className="z-10 shrink-0 bg-[#1d1d1d] p-6 pb-2">
             <h3 className="mb-2 flex items-center gap-2 text-xl font-bold text-amber-500">
               <Sparkles size={20} /> Nhiệm vụ
             </h3>
-            {/*SELECT LEVEL*/}
+
+            {/* CUSTOM DROPDOWN */}
             <div className="relative mb-4">
-              {/* Nút bấm hiển thị lựa chọn hiện tại */}
               <div
                 onClick={() => setShowLevelMenu(!showLevelMenu)}
-                className="flex cursor-pointer items-center gap-2 rounded-xl border border-stone-400 bg-black/10 p-3 transition-all hover:border-amber-500/60 hover:bg-amber-500/20"
+                className="flex cursor-pointer items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 transition-all hover:border-amber-500/60 hover:bg-amber-500/20"
               >
                 <Settings2 size={18} className="text-amber-500" />
-
-                <div className="flex-1 text-sm font-medium text-white">
+                <div className="flex-1 text-sm font-medium text-amber-100">
                   {level === 'beginner' ? 'Cơ bản (Beginner)' : 'Nâng cao (Advanced)'}
                 </div>
-
                 <ChevronDown
                   size={16}
                   className={`text-amber-500 transition-transform duration-300 ${showLevelMenu ? 'rotate-180' : ''}`}
                 />
               </div>
-
-              {/* Danh sách xổ xuống  */}
               {showLevelMenu && (
-                <div className="animate-in fade-in zoom-in-95 absolute top-full right-0 left-0 z-20 mt-2 overflow-hidden rounded-xl border border-white/10 bg-[#1d1d1d] shadow-xl duration-200">
-                  {/* Lựa chọn 1 */}
-                  <div
-                    onClick={() => {
-                      setLevel('beginner');
-                      setShowLevelMenu(false);
-                    }}
-                    className={`flex cursor-pointer items-center justify-between px-4 py-3 text-sm transition-colors ${level === 'beginner' ? 'bg-amber-500/20 font-bold text-amber-500' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}
-                  >
-                    <span>Cơ bản (Beginner)</span>
-                    {level === 'beginner' && (
-                      <span>
-                        <Check />
-                      </span>
-                    )}
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setShowLevelMenu(false)}></div>
+                  <div className="animate-in fade-in zoom-in-95 absolute top-full right-0 left-0 z-20 mt-2 overflow-hidden rounded-xl border border-white/10 bg-[#1d1d1d] shadow-xl duration-200">
+                    <div
+                      onClick={() => {
+                        setLevel('beginner');
+                        setShowLevelMenu(false);
+                      }}
+                      className={`flex cursor-pointer items-center justify-between px-4 py-3 text-sm transition-colors ${level === 'beginner' ? 'bg-amber-500/20 font-bold text-amber-500' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}
+                    >
+                      <span>Cơ bản (Beginner)</span>
+                      {level === 'beginner' && <Check size={16} />}
+                    </div>
+                    <div
+                      onClick={() => {
+                        setLevel('advanced');
+                        setShowLevelMenu(false);
+                      }}
+                      className={`flex cursor-pointer items-center justify-between px-4 py-3 text-sm transition-colors ${level === 'advanced' ? 'bg-amber-500/20 font-bold text-amber-500' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}
+                    >
+                      <span>Nâng cao (Advanced)</span>
+                      {level === 'advanced' && <Check size={16} />}
+                    </div>
                   </div>
-
-                  {/* Lựa chọn 2 */}
-                  <div
-                    onClick={() => {
-                      setLevel('advanced');
-                      setShowLevelMenu(false);
-                    }}
-                    className={`flex cursor-pointer items-center justify-between px-4 py-3 text-sm transition-colors ${level === 'advanced' ? 'bg-amber-500/20 font-bold text-amber-500' : 'text-gray-300 hover:bg-white/5 hover:text-white'}`}
-                  >
-                    <span>Nâng cao (Advanced)</span>
-                    {level === 'advanced' && (
-                      <span>
-                        <Check />
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {showLevelMenu && (
-                <div className="fixed inset-0 z-10" onClick={() => setShowLevelMenu(false)}></div>
+                </>
               )}
             </div>
-            <p className="text-xs text-gray-400">Sử dụng các từ sau trong hội thoại:</p>
+
+            <p className="text-xs text-gray-400">Sử dụng các từ sau:</p>
           </div>
 
           <div
             className="flex-1 overflow-y-auto p-6 pt-2"
-            style={{
-              scrollbarWidth: 'none',
-              msOverflowStyle: 'none',
-            }}
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             onWheel={(e) => e.stopPropagation()}
           >
-            <style>{`
-                .hide-scroll::-webkit-scrollbar { 
-                    display: none; 
-                } 
-            `}</style>
+            <style>{` .hide-scroll::-webkit-scrollbar { display: none; } `}</style>
             <ul className="hide-scroll space-y-2 pb-4">
-              {topic.words.length > 0 ? (
-                topic.words.map((word, idx) => {
-                  const isUsed = messages.some(
-                    (m) => m.role === 'user' && m.content.toLowerCase().includes(word.toLowerCase())
-                  );
-
-                  return (
-                    <li
-                      key={idx}
-                      className={`flex items-center justify-between rounded-lg border p-3 text-sm font-medium transition-all ${
-                        isUsed
-                          ? 'border-green-500/50 bg-green-900/20 text-green-400'
-                          : 'border-white/5 bg-black/30 text-white'
-                      }`}
-                    >
-                      <span>{word}</span>
-                      {isUsed && (
-                        <span className="font-bold text-green-500">
-                          <Check />
-                        </span>
-                      )}
-                    </li>
-                  );
-                })
-              ) : (
-                <p className="text-sm text-gray-500 italic">Chủ đề này chưa có từ vựng.</p>
-              )}
+              {topic.words.map((word, idx) => {
+                const isUsed = messages.some(
+                  (m) => m.role === 'user' && m.content.toLowerCase().includes(word.toLowerCase())
+                );
+                return (
+                  <li
+                    key={idx}
+                    className={`flex items-center justify-between rounded-lg border p-3 text-sm font-medium transition-all ${isUsed ? 'border-green-500/50 bg-green-900/20 text-green-400' : 'border-white/5 bg-black/30 text-white'}`}
+                  >
+                    <span>{word}</span>
+                    {isUsed && (
+                      <span className="font-bold text-green-500">
+                        <Check size={16} />
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </div>
       </div>
 
-      {/*KHUNG CHAT */}
-      <div className="relative flex h-[85vh] w-full flex-col overflow-hidden bg-[#1d1d1d] md:w-2/3">
-        {/* Header Chat */}
+      {/* CỘT PHẢI: CHAT */}
+      <div className="relative flex h-[85vh] w-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#1d1d1d] shadow-2xl md:w-2/3">
+        {/* Header */}
         <div className="z-10 flex shrink-0 items-center gap-3 border-b border-white/10 bg-black/20 p-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-gradient-to-r from-amber-500 to-orange-600 shadow-lg">
             <Bot className="text-white" size={24} />
@@ -311,7 +290,7 @@ const AiRoleplayPage = () => {
           </div>
         </div>
 
-        {/* Nội dung Chat */}
+        {/* Messages */}
         <div className="scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent flex-1 space-y-4 overflow-y-auto p-4">
           {messages.map((msg, index) => (
             <div
@@ -323,36 +302,50 @@ const AiRoleplayPage = () => {
                   <Bot size={16} className="text-gray-300" />
                 </div>
               )}
-              <div
-                className={`max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed shadow-sm md:text-base ${
-                  msg.role === 'user'
-                    ? 'rounded-br-none bg-gradient-to-r from-amber-600 to-orange-600 text-white'
-                    : 'rounded-bl-none border border-white/5 bg-white/5 text-gray-200'
-                }`}
-              >
-                {msg.content}
+
+              <div className={`flex max-w-[85%] flex-col items-start`}>
+                <div
+                  className={`rounded-2xl p-4 text-sm leading-relaxed shadow-sm md:text-base ${msg.role === 'user' ? 'rounded-br-none bg-gradient-to-r from-amber-600 to-orange-600 text-white' : 'rounded-bl-none border border-white/5 bg-white/5 text-gray-200'}`}
+                >
+                  {/* NỘI DUNG: HIỆN GỐC HOẶC DỊCH */}
+                  {msg.isTranslated ? (
+                    <span className="mb-1 block font-medium text-green-400">{msg.translation}</span>
+                  ) : (
+                    <span>{msg.content}</span>
+                  )}
+
+                  {/* SỬA LỖI */}
+                  {msg.correction && (
+                    <div className="mt-2 flex items-start gap-1 border-t border-white/10 pt-2 text-xs text-red-400 italic">
+                      <span className="shrink-0">💡</span>
+                      <span>{msg.correction}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* NÚT DỊCH (CHỈ AI) */}
+                {msg.role === 'assistant' && msg.translation && (
+                  <button
+                    onClick={() => toggleTranslation(index)}
+                    className="mt-1 ml-2 flex items-center gap-1 text-[10px] font-bold tracking-wide text-gray-500 uppercase transition-colors hover:text-amber-500"
+                  >
+                    <Languages size={12} /> {msg.isTranslated ? 'Xem bản gốc' : 'Dịch tiếng Việt'}
+                  </button>
+                )}
               </div>
             </div>
           ))}
-
-          {/* Loading Indicator */}
           {isLoading && (
-            <div className="flex items-center justify-start">
-              <div className="mr-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10">
-                <Bot size={16} className="text-gray-300" />
-              </div>
-              <div className="flex items-center gap-1 rounded-2xl rounded-bl-none border border-white/5 bg-white/5 p-4">
-                <span className="h-2 w-2 animate-bounce rounded-full bg-gray-500"></span>
-                <span className="h-2 w-2 animate-bounce rounded-full bg-gray-500 delay-100"></span>
-                <span className="h-2 w-2 animate-bounce rounded-full bg-gray-500 delay-200"></span>
-              </div>
+            <div className="ml-12 flex items-center">
+              <span className="text-sm text-gray-500">AI đang soạn tin...</span>
             </div>
           )}
           <div ref={messagesEndRef} />
         </div>
-        {/* KHUNG GỢI Ý (HIỆN KHI CÓ SUGGESTIONS) */}
+
+        {/* GỢI Ý TRẢ LỜI (HIỆN KHI CÓ DỮ LIỆU) */}
         {suggestions.length > 0 && !isLoading && (
-          <div className="animate-in slide-in-from-bottom-2 flex flex-wrap gap-2 bg-black/20 px-4 pt-2 pb-2">
+          <div className="animate-in slide-in-from-bottom-2 flex flex-wrap gap-2 border-t border-white/5 bg-black/20 px-4 pt-2 pb-2">
             <span className="mb-1 flex w-full items-center gap-1 text-xs text-gray-500">
               <Sparkles size={12} /> Gợi ý trả lời:
             </span>
@@ -360,9 +353,8 @@ const AiRoleplayPage = () => {
               <button
                 key={idx}
                 onClick={() => {
-                  setInput(sugg); // 1. Điền vào ô input
-                  setSuggestions([]); // 2. Ẩn gợi ý đi cho đỡ vướng
-                  // handleSend(); // 3. Nếu muốn gửi luôn thì bỏ comment dòng này
+                  setInput(sugg);
+                  setSuggestions([]);
                 }}
                 className="cursor-pointer rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs whitespace-nowrap text-amber-200 transition-all hover:bg-amber-500 hover:text-white"
               >
@@ -371,6 +363,7 @@ const AiRoleplayPage = () => {
             ))}
           </div>
         )}
+
         {/* Input Area */}
         <div className="flex shrink-0 gap-2 border-t border-white/10 bg-black/20 p-4">
           <input

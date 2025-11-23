@@ -1,4 +1,3 @@
-//Chat
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -7,68 +6,52 @@ export const chatRoleplay = async (req, res) => {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return res.status(500).json({ message: 'Server thiếu GEMINI_API_KEY' });
 
-    // Nhận thêm tham số 'level' từ frontend
     const { userMessage, history, targetWords, topicTitle, level = 'beginner' } = req.body;
 
-    // CẤU HÌNH CẤP ĐỘ
-    let levelInstruction = '';
-    if (level === 'beginner') {
-      levelInstruction =
-        'Dùng câu đơn giản, ngắn gọn, từ vựng thông dụng (A1-A2). Tốc độ chậm rãi.';
-    } else {
-      levelInstruction =
-        'Dùng câu phức, đa dạng, idioms tự nhiên (B1-B2). Tốc độ như người bản xứ.';
-    }
+    // Cấu hình cấp độ
+    let levelInstruction =
+      level === 'beginner'
+        ? 'Dùng câu đơn giản, ngắn gọn (A1-A2). Tốc độ chậm.'
+        : 'Dùng câu phức, idioms tự nhiên (B1-B2).';
 
-    // SYSTEM PROMPT (KỊCH BẢN CHO AI)
+    // --- SYSTEM PROMPT (KẾT HỢP GỢI Ý + DỊCH) ---
     const systemPrompt = `
       [VAI TRÒ]
-      Bạn là một nhân vật trong tình huống thực tế liên quan đến chủ đề: "${topicTitle}".
-      TUYỆT ĐỐI KHÔNG nhận mình là AI. Hãy nhập vai hoàn toàn.
-      
-      [MỤC TIÊU]
-      Giúp người dùng luyện tập danh sách từ vựng: [${targetWords.join(', ')}].
+      Bạn là một nhân vật trong tình huống: "${topicTitle}". TUYỆT ĐỐI KHÔNG nhận mình là AI.
+      Mục tiêu: Giúp người dùng luyện tập từ vựng: [${targetWords.join(', ')}].
       
       [QUY TẮC TRÒ CHUYỆN]
       1. ${levelInstruction}
-      2. Cố gắng lồng ghép 1-2 từ trong danh sách từ vựng vào câu trả lời của bạn một cách tự nhiên.
-      3. Luôn kết thúc bằng một câu hỏi mở để duy trì hội thoại.
-      4. Giới hạn độ dài: Dưới 50 từ.
+      2. Cố gắng lồng ghép 1-2 từ trong danh sách từ vựng vào câu trả lời.
+      3. Luôn kết thúc bằng một câu hỏi mở.
+      4. Giới hạn độ dài: Dưới 60 từ.
 
-      [CƠ CHẾ PHẢN HỒI & SỬA LỖI]
-      Bước 1: Đóng vai nhân vật liên quan đến chủ đề và CHỦ ĐỘNG hỏi người dùng trước.
-      Bước 2: Xuống dòng. Sau khi người dùng trả lời, bạn phản hồi theo vai trò. Nếu người dùng dùng từ đúng, hãy khen (VD: ✔ Good job using 'apple'!).
-      Bước 3: Nếu người dùng sai ngữ pháp hoặc dùng từ chưa hay, hãy sửa lỗi nhẹ nhàng trong ngoặc đơn.
-      
-      Ví dụ định dạng trả lời:
-      "Here is your steak. Do you want some **sauce** with it?"
-      (✔ Good job! Sửa lỗi nhỏ: "I want eat" -> "I want to eat")
-
-      [YÊU CẦU TRẢ LỜI]
-      1. Trả lời hội thoại tự nhiên.
-      2. Sửa lỗi ngữ pháp nếu có (trong ngoặc đơn).
-      
-      [QUAN TRỌNG - GỢI Ý TRẢ LỜI]
-      Ở cuối cùng của phản hồi, hãy đưa ra 3 gợi ý ngắn gọn (dưới 10 từ) bằng tiếng Anh để người dùng có thể dùng để trả lời lại bạn.
-      Hãy đặt chúng trong dấu ngoặc vuông, ngăn cách bởi dấu gạch đứng.
-      Ví dụ định dạng: 
-      "Hello there! [Hi, nice to meet you | Hello, how are you? | Good morning]"
+      [YÊU CẦU VỀ ĐỊNH DẠNG TRẢ LỜI (JSON)]
+      Bạn BẮT BUỘC phải trả về duy nhất một chuỗi JSON hợp lệ (không markdown, không code block) theo mẫu sau:
+      {
+        "english": "Câu trả lời nhập vai của bạn bằng tiếng Anh.",
+        "vietnamese": "Dịch câu trả lời trên sang tiếng Việt tự nhiên.",
+        "correction": "Nếu người dùng sai ngữ pháp, hãy sửa lại ở đây (ví dụ: 'I wants -> I want'). Nếu đúng thì để null.",
+        "suggestions": ["Gợi ý trả lời ngắn 1 (Tiếng Anh)", "Gợi ý trả lời ngắn 2 (Tiếng Anh)", "Gợi ý trả lời ngắn 3 (Tiếng Anh)"]
+      }
     `;
 
+    // Xử lý lịch sử chat (Lọc tin nhắn rỗng)
     const processedHistory = history
-      .filter((msg) => msg && msg.content && msg.content.trim() !== '')
-      .slice(-6)
+      .filter((msg) => msg && msg.content)
+      .slice(-10) // Lấy 10 tin gần nhất
       .map((msg) => ({
         role: msg.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: msg.content }],
+        parts: [{ text: msg.content }], // Chỉ gửi phần tiếng Anh lên cho AI hiểu
       }));
 
-    // Thêm tin nhắn mới nhất kèm System Prompt để AI luôn nhớ nhiệm vụ
+    // Thêm tin nhắn mới
     processedHistory.push({
       role: 'user',
-      parts: [{ text: `${systemPrompt}\n\nUser: ${userMessage}` }],
+      parts: [{ text: `${systemPrompt}\n\nUser nói: ${userMessage}` }],
     });
 
+    // Gọi API Gemini 2.5 (Bản mới nhất bạn đang dùng ổn)
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
     const response = await fetch(url, {
@@ -79,14 +62,12 @@ export const chatRoleplay = async (req, res) => {
 
     const data = await response.json();
 
-    if (!response.ok) {
-      console.error('Gemini Error:', JSON.stringify(data));
-      throw new Error(data.error?.message || 'Lỗi API AI');
-    }
+    if (!response.ok) throw new Error(data.error?.message || 'Lỗi Google API');
 
     const replyText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!replyText) throw new Error('AI không phản hồi.');
+    if (!replyText) throw new Error('AI phản hồi rỗng');
 
+    // Trả về chuỗi JSON gốc để Frontend tự xử lý
     res.json({ reply: replyText });
   } catch (error) {
     console.error('Chat Controller Error:', error);
