@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Send, Bot, User, Sparkles, ArrowLeft, Settings2, ChevronDown, Check } from 'lucide-react';
+import confetti from 'canvas-confetti';
 
 const AiRoleplayPage = () => {
   const { deckId } = useParams();
@@ -12,6 +13,8 @@ const AiRoleplayPage = () => {
   const [topic, setTopic] = useState(null);
   const [level, setLevel] = useState('beginner');
   const [showLevelMenu, setShowLevelMenu] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
   const messagesEndRef = useRef(null);
 
   // LẤY DỮ LIỆU TỪ VỰNG & CHỦ ĐỀ TỪ BACKEND
@@ -61,6 +64,39 @@ const AiRoleplayPage = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
+  //CHECK COMPLETE
+  useEffect(() => {
+    if (!topic || messages.length === 0) return;
+
+    // Đếm số từ đã dùng
+    const usedCount = topic.words.filter((word) =>
+      messages.some(
+        (m) => m.role === 'user' && m.content.toLowerCase().includes(word.toLowerCase())
+      )
+    ).length;
+
+    // Nếu dùng hết từ và chưa từng thông báo hoàn thành
+    if (usedCount === topic.words.length && !isCompleted) {
+      setIsCompleted(true);
+
+      // BẮN PHÁO HOA
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#f59e0b', '#10b981', '#3b82f6'], // Màu Cam, Xanh, Lam
+      });
+
+      // THÊM TIN NHẮN CHÚC MỪNG CỦA HỆ THỐNG
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'system',
+          content: '🎉 CHÚC MỪNG! Bạn đã sử dụng hết tất cả từ vựng trong bài học!',
+        },
+      ]);
+    }
+  }, [messages, topic, isCompleted]);
 
   //  XỬ LÝ GỬI TIN NHẮN
   const handleSend = async () => {
@@ -96,16 +132,22 @@ const AiRoleplayPage = () => {
       const data = await res.json();
 
       if (res.ok && data.reply) {
-        setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
-      } else {
-        // Hiển thị lỗi trong khung chat cho user biết
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: 'assistant',
-            content: `Lỗi AI: ${data.message || 'Server không phản hồi. Hãy thử lại.'}`,
-          },
-        ]);
+        // 1. TÁCH GỢI Ý RA KHỎI NỘI DUNG
+        // Regex tìm chuỗi nằm trong [...] ở cuối câu
+        const suggestionMatch = data.reply.match(/\[(.*?)\]$/);
+
+        let cleanContent = data.reply;
+        let newSuggestions = [];
+
+        if (suggestionMatch) {
+          // Nếu tìm thấy, cắt bỏ phần [...] khỏi tin nhắn hiển thị
+          cleanContent = data.reply.replace(suggestionMatch[0], '').trim();
+          // Tách các gợi ý bằng dấu |
+          newSuggestions = suggestionMatch[1].split('|').map((s) => s.trim());
+        }
+
+        setMessages((prev) => [...prev, { role: 'assistant', content: cleanContent }]);
+        setSuggestions(newSuggestions); // Lưu gợi ý để hiển thị
       }
     } catch (error) {
       console.error(error);
@@ -308,7 +350,27 @@ const AiRoleplayPage = () => {
           )}
           <div ref={messagesEndRef} />
         </div>
-
+        {/* KHUNG GỢI Ý (HIỆN KHI CÓ SUGGESTIONS) */}
+        {suggestions.length > 0 && !isLoading && (
+          <div className="animate-in slide-in-from-bottom-2 flex flex-wrap gap-2 bg-black/20 px-4 pt-2 pb-2">
+            <span className="mb-1 flex w-full items-center gap-1 text-xs text-gray-500">
+              <Sparkles size={12} /> Gợi ý trả lời:
+            </span>
+            {suggestions.map((sugg, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  setInput(sugg); // 1. Điền vào ô input
+                  setSuggestions([]); // 2. Ẩn gợi ý đi cho đỡ vướng
+                  // handleSend(); // 3. Nếu muốn gửi luôn thì bỏ comment dòng này
+                }}
+                className="cursor-pointer rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs whitespace-nowrap text-amber-200 transition-all hover:bg-amber-500 hover:text-white"
+              >
+                {sugg}
+              </button>
+            ))}
+          </div>
+        )}
         {/* Input Area */}
         <div className="flex shrink-0 gap-2 border-t border-white/10 bg-black/20 p-4">
           <input

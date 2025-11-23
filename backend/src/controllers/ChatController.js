@@ -43,6 +43,16 @@ export const chatRoleplay = async (req, res) => {
       Ví dụ định dạng trả lời:
       "Here is your steak. Do you want some **sauce** with it?"
       (<Check/> Good job! Sửa lỗi nhỏ: "I want eat" -> "I want to eat")
+
+      [YÊU CẦU TRẢ LỜI]
+      1. Trả lời hội thoại tự nhiên.
+      2. Sửa lỗi ngữ pháp nếu có (trong ngoặc đơn).
+      
+      [QUAN TRỌNG - GỢI Ý TRẢ LỜI]
+      Ở cuối cùng của phản hồi, hãy đưa ra 3 gợi ý ngắn gọn (dưới 10 từ) bằng tiếng Anh để người dùng có thể dùng để trả lời lại bạn.
+      Hãy đặt chúng trong dấu ngoặc vuông, ngăn cách bởi dấu gạch đứng.
+      Ví dụ định dạng: 
+      "Hello there! [Hi, nice to meet you | Hello, how are you? | Good morning]"
     `;
 
     const processedHistory = history
