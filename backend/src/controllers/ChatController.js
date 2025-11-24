@@ -133,18 +133,37 @@ export const endSession = async (req, res) => {
     const cleanJson = aiText.replace(/```json|```/g, '').trim();
     const report = JSON.parse(cleanJson);
 
-    //  Lưu vào Database (Lưu lịch sử VIP)
+    //  Lưu vào Database
     await AiSession.create({
       user_id: userId,
       topic_title: topicTitle,
       messages: history,
       score: report.score,
       feedback: report.feedback,
+      report_card: report,
     });
 
     res.json({ success: true, report });
   } catch (error) {
     console.error('End Session Error:', error);
     res.status(500).json({ message: 'Lỗi chấm điểm: ' + error.message });
+  }
+};
+
+// LẤY LỊCH SỬ NGƯỜI DÙNG
+export const getUserHistory = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const history = await AiSession.findAll({
+      where: { user_id: userId },
+      order: [['created_at', 'DESC']],
+      attributes: ['id', 'topic_title', 'score', 'created_at', 'report_card'],
+    });
+
+    res.json({ success: true, data: history });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Lỗi lấy lịch sử' });
   }
 };

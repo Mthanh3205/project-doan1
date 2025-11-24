@@ -27,6 +27,11 @@ const AiSession = sequelize.define(
       allowNull: false,
     },
 
+    report_card: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+
     score: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
