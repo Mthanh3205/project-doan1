@@ -32,7 +32,7 @@ export default function Header() {
 
     logout();
 
-    navigate('/Auth');
+    navigate('/');
   };
 
   useEffect(() => {
@@ -90,15 +90,14 @@ export default function Header() {
       label: 'Chủ đề',
       href: '/topics',
       subItems: [
-        { label: 'Từ vựng cơ bản', href: '#' },
-        { label: 'Từ vựng nâng cao', href: '#' },
-        { label: 'Từ vựng B1 - B2', href: '#' },
-        { label: 'Xem tất cả từ vựng', href: '/topics' },
+        { label: 'Chủ đề cơ bản', href: '/topics' },
+        { label: 'Chủ đề nâng cao', href: '/topics' },
+        { label: 'Xem tất cả chủ đề', href: '/topics' },
       ],
     },
     {
       label: 'Chế độ học',
-      href: '/',
+      href: '#',
       subItems: [
         { label: 'Flashcards', href: '#', onClick: () => navigate(`/study/${currentDeckId}/flip`) },
         { label: 'Typing', href: '#', onClick: () => navigate(`/study/${currentDeckId}/typing`) },

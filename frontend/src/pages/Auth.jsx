@@ -199,7 +199,7 @@ const Auth = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    className="w-full border border-white/20 bg-white/10 py-3 pr-4 pl-12 text-white placeholder-slate-400 transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-stone-200 focus:outline-none dark:text-stone-600"
+                    className="w-full rounded-2xl border border-white/20 bg-white/10 py-3 pr-4 pl-12 text-white placeholder-slate-400 transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-stone-200 focus:outline-none dark:text-stone-600"
                     placeholder="Nhập họ và tên"
                     required={!isLogin}
                   />
@@ -216,7 +216,7 @@ const Auth = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
-                  className="w-full border border-white/20 bg-white/10 py-3 pr-4 pl-12 text-white placeholder-slate-400 shadow-lg transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-stone-200 focus:outline-none dark:bg-green-100 dark:text-stone-600"
+                  className="w-full rounded-2xl border border-white/20 bg-white/10 py-3 pr-4 pl-12 text-white placeholder-slate-400 shadow-lg transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-stone-200 focus:outline-none dark:bg-green-100 dark:text-stone-600"
                   placeholder="Nhập mail của bạn"
                   required
                 />
@@ -232,7 +232,7 @@ const Auth = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="w-full border border-white/20 bg-white/10 py-3 pr-12 pl-12 text-white placeholder-slate-400 shadow-lg transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-stone-200 focus:outline-none dark:bg-green-100 dark:text-stone-600"
+                  className="w-full rounded-2xl border border-white/20 bg-white/10 py-3 pr-12 pl-12 text-white placeholder-slate-400 shadow-lg transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-stone-200 focus:outline-none dark:bg-green-100 dark:text-stone-600"
                   placeholder="Nhập mật khẩu"
                   required
                 />
@@ -256,7 +256,7 @@ const Auth = () => {
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    className="w-full border border-white/20 bg-white/10 py-3 pr-4 pl-12 text-white placeholder-slate-400 transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-stone-200 focus:outline-none dark:text-stone-600"
+                    className="w-full rounded-2xl border border-white/20 bg-white/10 py-3 pr-4 pl-12 text-white placeholder-slate-400 transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-stone-200 focus:outline-none dark:text-stone-600"
                     placeholder="Nhập lại mật khẩu"
                     required={!isLogin}
                   />

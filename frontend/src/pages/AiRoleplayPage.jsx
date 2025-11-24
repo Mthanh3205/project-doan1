@@ -25,8 +25,11 @@ const AiRoleplayPage = () => {
   const [level, setLevel] = useState('beginner');
   const [showLevelMenu, setShowLevelMenu] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [suggestions, setSuggestions] = useState([]); // Lưu gợi ý từ JSON
+  const [suggestions, setSuggestions] = useState([]);
   const messagesEndRef = useRef(null);
+  const [showReport, setShowReport] = useState(false);
+  const [reportData, setReportData] = useState(null);
+  const [isGrading, setIsGrading] = useState(false);
 
   // LẤY DỮ LIỆU
   useEffect(() => {
@@ -169,6 +172,50 @@ const AiRoleplayPage = () => {
       setIsLoading(false);
     }
   };
+  // KẾT THÚC PHIÊN HỌC VÀ CHẤM ĐIỂM
+  const handleEndSession = async () => {
+    if (messages.length < 3) {
+      alert('Hội thoại quá ngắn để chấm điểm. Hãy nói chuyện thêm nhé!');
+      return;
+    }
+
+    if (!window.confirm('Bạn muốn kết thúc phiên học và xem điểm số?')) return;
+
+    setIsGrading(true);
+    try {
+      const token = sessionStorage.getItem('accessToken');
+
+      // Chỉ gửi content tiếng Anh lên để chấm
+      const historyToSend = messages
+        .filter((m) => m.role !== 'system')
+        .map((m) => ({ role: m.role, content: m.content }));
+
+      const res = await fetch('https://project-doan1-backend.onrender.com/api/chat/end-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          history: historyToSend,
+          topicTitle: topic.title,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setReportData(data.report);
+        setShowReport(true); // Hiện bảng điểm
+      } else {
+        alert('Lỗi chấm điểm: ' + data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Lỗi kết nối!');
+    } finally {
+      setIsGrading(false);
+    }
+  };
 
   if (!topic)
     return (
@@ -295,6 +342,7 @@ const AiRoleplayPage = () => {
           <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-gradient-to-r from-amber-500 to-orange-600 shadow-lg">
             <Bot className="text-white" size={24} />
           </div>
+
           <div>
             <h2 className="text-lg font-bold text-white">{topic.title} Tutor</h2>
             <div className="flex items-center gap-2">
@@ -371,24 +419,29 @@ const AiRoleplayPage = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* GỢI Ý TRẢ LỜI (HIỆN KHI CÓ DỮ LIỆU) */}
+        {/* GỢI Ý TRẢ LỜI*/}
         {suggestions.length > 0 && !isLoading && (
           <div className="animate-in slide-in-from-bottom-2 flex flex-wrap gap-2 border-t border-white/5 bg-black/20 px-4 pt-2 pb-2">
             <span className="mb-1 flex w-full items-center gap-1 text-xs text-gray-500">
               <Sparkles size={12} /> Gợi ý trả lời:
             </span>
-            {suggestions.map((sugg, idx) => (
-              <button
-                key={idx}
-                onClick={() => {
-                  setInput(sugg);
-                  setSuggestions([]);
-                }}
-                className="cursor-pointer rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs whitespace-nowrap text-amber-200 transition-all hover:bg-amber-500 hover:text-white"
-              >
-                {sugg}
-              </button>
-            ))}
+            {suggestions.map((sugg, idx) => {
+              // HÀM LỌC BỎ DẤU SAO (*)
+              const cleanSugg = sugg.replace(/\*\*/g, '').replace(/\*/g, '');
+
+              return (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setInput(cleanSugg); // Điền text sạch vào ô nhập
+                    setSuggestions([]);
+                  }}
+                  className="cursor-pointer rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs whitespace-nowrap text-amber-200 transition-all hover:bg-amber-500 hover:text-white"
+                >
+                  {cleanSugg}
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -403,6 +456,7 @@ const AiRoleplayPage = () => {
             disabled={isLoading}
             className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition-all focus:border-amber-500 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
           />
+
           <button
             onClick={handleSend}
             disabled={isLoading || !input.trim()}
@@ -410,8 +464,74 @@ const AiRoleplayPage = () => {
           >
             <Send size={20} />
           </button>
+          {/* NÚT KẾT THÚC */}
+          <button
+            onClick={handleEndSession}
+            disabled={isGrading}
+            className="flex items-center gap-2 rounded-lg border border-red-500/50 bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-500 transition-all hover:bg-red-500/20"
+          >
+            {isGrading ? 'Đang chấm...' : 'Kết thúc'}
+          </button>
         </div>
       </div>
+      {/* MODAL BẢNG ĐIỂM (REPORT CARD)*/}
+      {showReport && reportData && (
+        <div className="animate-in fade-in fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 backdrop-blur-md duration-300">
+          <div className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-amber-500/30 bg-[#1a1a1a] p-6 shadow-2xl">
+            {/* Hiệu ứng nền */}
+            <div className="absolute top-0 left-0 h-2 w-full bg-gradient-to-r from-red-500 via-amber-500 to-green-500"></div>
+
+            <h2 className="mb-6 text-center text-2xl font-bold text-white">📊 Kết quả Phiên học</h2>
+
+            {/* Điểm số to đùng */}
+            <div className="mb-6 flex justify-center">
+              <div className="flex h-32 w-32 flex-col items-center justify-center rounded-full border-4 border-amber-500 bg-amber-500/10 shadow-[0_0_30px_rgba(245,158,11,0.3)]">
+                <span className="text-4xl font-extrabold text-white">{reportData.score}</span>
+                <span className="text-xs tracking-widest text-amber-300 uppercase">Điểm</span>
+              </div>
+            </div>
+
+            {/* Nhận xét */}
+            <div className="mb-6 rounded-xl border border-white/10 bg-white/5 p-4">
+              <h4 className="mb-2 flex items-center gap-2 text-sm font-bold text-amber-500">
+                <Bot size={16} /> Nhận xét của AI:
+              </h4>
+              <p className="text-sm text-gray-300 italic">"{reportData.feedback}"</p>
+            </div>
+
+            {/* Lỗi sai & Từ hay */}
+            <div className="mb-6 grid grid-cols-2 gap-4">
+              <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-3">
+                <h4 className="mb-2 text-xs font-bold text-red-400 uppercase">Cần khắc phục</h4>
+                <ul className="list-inside list-disc space-y-1 text-xs text-gray-400">
+                  {reportData.mistakes?.map((m, i) => (
+                    <li key={i}>{m}</li>
+                  ))}
+                </ul>
+              </div>
+              <div className="rounded-xl border border-green-500/20 bg-green-500/5 p-3">
+                <h4 className="mb-2 text-xs font-bold text-green-400 uppercase">Từ vựng tốt</h4>
+                <ul className="list-inside list-disc space-y-1 text-xs text-gray-400">
+                  {reportData.best_words?.map((w, i) => (
+                    <li key={i}>{w}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Nút đóng */}
+            <button
+              onClick={() => {
+                setShowReport(false);
+                navigate('/topics');
+              }}
+              className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 py-3 font-bold text-white shadow-lg transition-transform hover:scale-[1.02]"
+            >
+              Hoàn thành & Quay về
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

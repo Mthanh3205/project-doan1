@@ -174,7 +174,7 @@ export default function MatchingMode({ flashcards, userId }) {
   return (
     <div className="relative flex w-full flex-col items-center justify-center bg-white/5 p-8 backdrop-blur-xl lg:col-span-2 dark:bg-white/40">
       {/* Decor */}
-      <div className="absolute top-1/2 -left-10 h-24 w-24 -translate-y-1/2 bg-purple-500/20 blur-3xl"></div>
+      <div className="absolute top-1/2 -left-10 h-24 w-24 -translate-y-1/2"></div>
 
       {/* Header */}
       <div className="mb-8 flex w-full items-center justify-between">
