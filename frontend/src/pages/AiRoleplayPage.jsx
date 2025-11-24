@@ -10,6 +10,7 @@ import {
   ChevronDown,
   Check,
   Languages,
+  ChartColumnIcon,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -477,11 +478,13 @@ const AiRoleplayPage = () => {
       {/* MODAL BẢNG ĐIỂM (REPORT CARD)*/}
       {showReport && reportData && (
         <div className="animate-in fade-in fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 backdrop-blur-md duration-300">
-          <div className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-amber-500/30 bg-[#1a1a1a] p-6 shadow-2xl">
+          <div className="relative w-full max-w-lg overflow-hidden bg-[#1a1a1a] p-6 shadow-2xl">
             {/* Hiệu ứng nền */}
-            <div className="absolute top-0 left-0 h-2 w-full bg-gradient-to-r from-red-500 via-amber-500 to-green-500"></div>
+            <div className="absolute top-0 left-0 h-2 w-full bg-amber-500"></div>
 
-            <h2 className="mb-6 text-center text-2xl font-bold text-white">📊 Kết quả Phiên học</h2>
+            <h2 className="mb-6 inline-flex w-full items-center justify-center gap-2 text-center text-2xl font-bold text-white">
+              <ChartColumnIcon /> Kết quả Phiên học
+            </h2>
 
             {/* Điểm số to đùng */}
             <div className="mb-6 flex justify-center">
@@ -525,7 +528,7 @@ const AiRoleplayPage = () => {
                 setShowReport(false);
                 navigate('/topics');
               }}
-              className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 py-3 font-bold text-white shadow-lg transition-transform hover:scale-[1.02]"
+              className="w-full rounded-xl bg-amber-500 py-3 font-bold text-white shadow-lg transition-transform hover:scale-[1.02]"
             >
               Hoàn thành & Quay về
             </button>

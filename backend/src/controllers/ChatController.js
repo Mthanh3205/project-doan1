@@ -88,22 +88,32 @@ export const endSession = async (req, res) => {
     // Lấy thông tin từ Frontend
     // history: Toàn bộ đoạn chat từ đầu đến cuối
     const { history, topicTitle } = req.body;
-    const userId = req.user.id; // Lấy từ Token (qua middleware)
+    const userId = req.user.id;
 
     // Tạo Prompt nhờ AI chấm điểm
     const reviewPrompt = `
-      Dưới đây là đoạn hội thoại luyện tiếng Anh giữa người dùng và AI về chủ đề "${topicTitle}".
-      
-      [HỘI THOẠI]
+      Dưới đây là đoạn hội thoại luyện tiếng Anh chủ đề "${topicTitle}".
+      User đang đóng vai một nhân vật để luyện tập.
+
+      [NỘI DUNG HỘI THOẠI]
       ${history.map((m) => `${m.role}: ${m.content}`).join('\n')}
 
       [YÊU CẦU CHẤM ĐIỂM]
-      Hãy đóng vai một giáo viên IELTS khó tính. Phân tích đoạn hội thoại trên và trả về kết quả JSON theo mẫu sau:
+      Hãy đóng vai một giám khảo IELTS. Chấm điểm trên thang 100 dựa theo 3 tiêu chí cụ thể sau:
+      
+      1. **Từ vựng (40đ):** Người dùng có sử dụng được các từ vựng khó hoặc từ vựng liên quan đến chủ đề không?
+      2. **Ngữ pháp (30đ):** Cấu trúc câu có đúng không? Có lỗi sai cơ bản không?
+      3. **Phản xạ & Ngữ cảnh (30đ):** Trả lời có hợp lý với vai diễn không? Có tự nhiên không?
+
+      Hãy cộng tổng điểm lại và trả về JSON duy nhất:
       {
-        "score": (Số nguyên 0-100 dựa trên độ chính xác và sự tự nhiên),
-        "feedback": "Nhận xét tổng quan ngắn gọn (tiếng Việt) về điểm mạnh và điểm yếu.",
-        "mistakes": ["Lỗi sai 1 (kèm sửa lỗi)", "Lỗi sai 2", "Lỗi sai 3"],
-        "best_words": ["Từ vựng hay 1", "Từ vựng hay 2", "Từ vựng hay 3"]
+        "score": (Tổng điểm),
+        "feedback": "Nhận xét chi tiết bằng tiếng Việt. Khen ngợi điểm mạnh và chỉ rõ điểm cần cải thiện.",
+        "mistakes": [
+           "Lỗi 1: [Câu sai] -> [Sửa lại] (Giải thích ngắn)",
+           "Lỗi 2: [Câu sai] -> [Sửa lại] (Giải thích ngắn)"
+        ],
+        "best_words": ["3 từ vựng hoặc cụm từ hay nhất mà user đã dùng"]
       }
     `;
 
