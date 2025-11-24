@@ -167,3 +167,27 @@ export const getUserHistory = async (req, res) => {
     res.status(500).json({ message: 'Lỗi lấy lịch sử' });
   }
 };
+//DELETE
+export const deleteSession = async (req, res) => {
+  try {
+    const { id } = req.params; // Lấy ID phiên học từ URL
+    const userId = req.user.id; // Lấy ID người dùng đang đăng nhập
+
+    // Xóa phiên học
+    const deleted = await AiSession.destroy({
+      where: {
+        id: id,
+        user_id: userId,
+      },
+    });
+
+    if (deleted) {
+      res.json({ success: true, message: 'Đã xóa thành công' });
+    } else {
+      res.status(404).json({ success: false, message: 'Không tìm thấy hoặc không có quyền xóa' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Lỗi server' });
+  }
+};

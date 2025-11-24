@@ -20,6 +20,7 @@ import {
   MessageCircleMore,
   Bell,
   LogOut,
+  Clock,
 } from 'lucide-react';
 import FeedbackModal from '../components/FeedbackModal';
 
@@ -267,7 +268,7 @@ const Account = () => {
               />
               Đánh giá & Góp ý
             </div>
-            <NavItem href="/ai-history" icon={Activity} label="Lịch sử trò truyện" />
+            <NavItem href="/ai-history" icon={Clock} label="Lịch sử trò truyện" />
             <NavItem href="#" icon={Bell} label="Thông báo" />
           </div>
         </nav>
