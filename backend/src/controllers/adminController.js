@@ -61,11 +61,17 @@ export const getDashboardStats = async (req, res) => {
       const dayLabel = daysOfWeek[d.getDay()];
 
       // Lọc dữ liệu ngày đó
-      const dailyStudy = progressLogs.filter((p) => p.updatedAt.toISOString().startsWith(dateStr));
-      const dailyAi = aiSessions.filter(
-        (s) => s.created_at && s.created_at.toISOString().startsWith(dateStr)
-      );
-
+      const isSameDay = (d1, d2) => {
+        const date1 = new Date(d1);
+        const date2 = new Date(d2);
+        return (
+          date1.getFullYear() === date2.getFullYear() &&
+          date1.getMonth() === date2.getMonth() &&
+          date1.getDate() === date2.getDate()
+        );
+      };
+      const dailyStudy = progressLogs.filter((p) => isSameDay(p.updatedAt, d));
+      const dailyAi = aiSessions.filter((s) => isSameDay(s.created_at, d));
       // A. Tần suất học
       userGrowthData.push({
         name: dayLabel,
