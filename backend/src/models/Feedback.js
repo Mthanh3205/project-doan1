@@ -1,7 +1,7 @@
 // Đánh giá
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/db.js';
-import User from './User.js';
+// import User from './User.js';
 
 const Feedback = sequelize.define(
   'Feedback',
@@ -42,6 +42,6 @@ const Feedback = sequelize.define(
   }
 );
 
-Feedback.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+// Feedback.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
 export default Feedback;

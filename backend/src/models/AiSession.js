@@ -1,7 +1,7 @@
 //Lịch sử chat
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/db.js';
-import User from './User.js';
+// import User from './User.js';
 
 const AiSession = sequelize.define(
   'AiSession',
@@ -52,6 +52,6 @@ const AiSession = sequelize.define(
   }
 );
 
-AiSession.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+// AiSession.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
 export default AiSession;
