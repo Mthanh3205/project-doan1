@@ -1,25 +1,28 @@
-// Admin CRUD
-import User from '../models/User.js';
-import Topics from '../models/Topics.js';
-import Flashcard from '../models/Flashcard.js'; // Kiểm tra kỹ tên file (Flashcard.js hay flashcards.js)
-import Feedback from '../models/Feedback.js';
-import Notification from '../models/Notification.js';
-import AiSession from '../models/AiSession.js';
-import { Op } from 'sequelize';
+// Admin CRUD Controller
+import { Op, Sequelize } from 'sequelize';
+// Import tất cả models từ index.js để đảm bảo quan hệ (associations) được nạp
+import {
+  User,
+  Topics,
+  Flashcard,
+  Feedback,
+  Notification,
+  AiSession,
+  UserProgress,
+} from '../models/index.js';
 
-// --- API DASHBOARD (ĐÃ SỬA ĐỂ CHẠY ỔN ĐỊNH) ---
+// ==========================================
+// 1. DASHBOARD STATS (Thống kê)
+// ==========================================
 export const getDashboardStats = async (req, res) => {
   try {
-    console.log('Starting Dashboard Stats...');
-
-    // 1. Đếm tổng số lượng (Cơ bản)
+    // A. Đếm tổng
     const userCount = await User.count();
     const topicCount = await Topics.count();
     const wordCount = await Flashcard.count();
     const feedbackCount = await Feedback.count();
 
-    // 2. BIỂU ĐỒ 1: Tăng trưởng người dùng (Thay vì UserProgress dễ lỗi)
-    // Lấy tất cả user tạo trong 7 ngày qua
+    // B. Biểu đồ 1: Tăng trưởng User (7 ngày qua)
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
 
@@ -31,13 +34,10 @@ export const getDashboardStats = async (req, res) => {
     const chartData = [];
     const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
-    // Vòng lặp tạo dữ liệu 7 ngày
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0]; // YYYY-MM-DD
-
-      // Đếm số user đăng ký trong ngày này
+      const dateStr = d.toISOString().split('T')[0];
       const count = users.filter((u) => u.createdAt.toISOString().startsWith(dateStr)).length;
 
       chartData.push({
@@ -47,67 +47,51 @@ export const getDashboardStats = async (req, res) => {
       });
     }
 
-    // 3. BIỂU ĐỒ 2: Top Chủ đề (Đếm thủ công cho an toàn)
+    // C. Biểu đồ 2: Phân bố Từ vựng (Pie Chart)
     const allCards = await Flashcard.findAll({ attributes: ['deck_id'] });
     const allTopics = await Topics.findAll({ attributes: ['deck_id', 'title'] });
 
-    // Map đếm số lượng: { 'deck_id_1': 10, 'deck_id_2': 5 ... }
     const topicMap = {};
     allCards.forEach((card) => {
-      const id = card.deck_id;
-      topicMap[id] = (topicMap[id] || 0) + 1;
+      topicMap[card.deck_id] = (topicMap[card.deck_id] || 0) + 1;
     });
 
-    // Ghép tên chủ đề vào số lượng
     let pieData = allTopics.map((t) => ({
       name: t.title,
       value: topicMap[t.deck_id] || 0,
     }));
 
-    // Sắp xếp giảm dần và lấy top 5
     pieData.sort((a, b) => b.value - a.value);
     pieData = pieData.slice(0, 5);
+    if (pieData.length === 0) pieData = [{ name: 'Chưa có dữ liệu', value: 1 }];
 
-    // Nếu không có dữ liệu thì hiển thị mẫu
-    if (pieData.length === 0 || pieData.every((i) => i.value === 0)) {
-      pieData = [{ name: 'Chưa có dữ liệu', value: 1 }];
-    }
-
-    // 4. Biểu đồ 3 & 4: Dữ liệu hiệu quả & AI (Tính toán tương tự)
+    // D. Dữ liệu giả lập cho biểu đồ phụ (Hiệu quả & AI)
     const performanceData = chartData.map((d) => ({
       name: d.name,
-      nho: Math.floor(Math.random() * 10), // Demo: Random số liệu học tập
+      nho: Math.floor(Math.random() * 10),
       quen: Math.floor(Math.random() * 5),
     }));
-
     const aiUsageData = chartData.map((d) => ({
       name: d.name,
-      sessions: Math.floor(Math.random() * 20), // Demo: Random số liệu AI
+      sessions: Math.floor(Math.random() * 20),
     }));
 
-    // 5. Danh sách mới nhất
+    // E. Danh sách mới nhất
     const recentUsers = await User.findAll({
       limit: 5,
       order: [['createdAt', 'DESC']],
       attributes: { exclude: ['password'] },
     });
+    const recentTopics = await Topics.findAll({ limit: 5, order: [['created_at', 'DESC']] });
 
-    const recentTopics = await Topics.findAll({
-      limit: 5,
-      order: [['created_at', 'DESC']],
-    });
-
-    console.log('Dashboard Data Ready!');
-
-    // TRẢ VỀ JSON CHUẨN
     res.json({
       userCount,
       topicCount,
       wordCount,
       feedbackCount,
       chartData: {
-        userGrowth: chartData, // Biểu đồ User
-        topicDist: pieData, // Biểu đồ Tròn
+        userGrowth: chartData,
+        topicDist: pieData,
         performance: performanceData,
         aiUsage: aiUsageData,
       },
@@ -120,52 +104,206 @@ export const getDashboardStats = async (req, res) => {
   }
 };
 
-// --- GIỮ NGUYÊN CÁC HÀM CRUD KHÁC ---
+// ==========================================
+// 2. QUẢN LÝ USER
+// ==========================================
 export const getAllUsers = async (req, res) => {
-  const { count, rows } = await User.findAndCountAll({ order: [['createdAt', 'DESC']] });
-  res.json({ totalUsers: count, users: rows });
-};
-// ... (Copy lại các hàm getAllTopics, createTopicAdmin, getAllWords... từ file cũ của bạn vào đây nếu bị mất)
-export const getAllTopics = async (req, res) => {
-  const { count, rows } = await Topics.findAndCountAll({ order: [['created_at', 'DESC']] });
-  res.json({ topics: rows, totalTopics: count });
-};
-export const createTopicAdmin = async (req, res) => {
-  const t = await Topics.create({ ...req.body, user_id: req.user.id });
-  res.json(t);
-};
-export const updateTopicAdmin = async (req, res) => {
-  await Topics.update(req.body, { where: { deck_id: req.params.id } });
-  res.json({ message: 'Updated' });
-};
-export const deleteTopicAdmin = async (req, res) => {
-  await Flashcard.destroy({ where: { deck_id: req.params.id } });
-  await Topics.destroy({ where: { deck_id: req.params.id } });
-  res.json({ message: 'Deleted' });
-};
-
-export const getAllWords = async (req, res) => {
-  const { count, rows } = await Flashcard.findAndCountAll({ order: [['card_id', 'DESC']] });
-  res.json({ words: rows, totalWords: count });
-};
-export const createWordAdmin = async (req, res) => {
-  const w = await Flashcard.create(req.body);
-  res.json(w);
-};
-export const updateWordAdmin = async (req, res) => {
-  await Flashcard.update(req.body, { where: { card_id: req.params.id } });
-  res.json({ message: 'Updated' });
-};
-export const deleteWordAdmin = async (req, res) => {
-  await Flashcard.destroy({ where: { card_id: req.params.id } });
-  res.json({ message: 'Deleted' });
+  try {
+    const { count, rows } = await User.findAndCountAll({ order: [['createdAt', 'DESC']] });
+    res.json({ totalUsers: count, users: rows, totalPages: 1, currentPage: 1 });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
 };
 
 export const toggleUserBan = async (req, res) => {
-  const user = await User.findByPk(req.params.id);
-  if (user) {
-    user.isBanned = !user.isBanned;
-    await user.save();
+  try {
+    const user = await User.findByPk(req.params.id);
+    if (user) {
+      user.isBanned = !user.isBanned;
+      await user.save();
+    }
+    res.json({ message: 'Thành công' });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
   }
-  res.json({ message: 'Thành công' });
+};
+
+// ==========================================
+// 3. QUẢN LÝ TOPICS (CHỦ ĐỀ)
+// ==========================================
+export const getAllTopics = async (req, res) => {
+  try {
+    const { count, rows } = await Topics.findAndCountAll({ order: [['created_at', 'DESC']] });
+    res.json({ topics: rows, totalTopics: count, totalPages: 1, currentPage: 1 });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+};
+export const createTopicAdmin = async (req, res) => {
+  try {
+    const t = await Topics.create({ ...req.body, user_id: req.user.id });
+    res.json(t);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+};
+export const updateTopicAdmin = async (req, res) => {
+  try {
+    await Topics.update(req.body, { where: { deck_id: req.params.id } });
+    res.json({ message: 'Updated' });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+};
+export const deleteTopicAdmin = async (req, res) => {
+  try {
+    await Flashcard.destroy({ where: { deck_id: req.params.id } });
+    await Topics.destroy({ where: { deck_id: req.params.id } });
+    res.json({ message: 'Deleted' });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+};
+
+// ==========================================
+// 4. QUẢN LÝ WORDS (TỪ VỰNG)
+// ==========================================
+export const getAllWords = async (req, res) => {
+  try {
+    const { count, rows } = await Flashcard.findAndCountAll({ order: [['card_id', 'DESC']] });
+    res.json({ words: rows, totalWords: count, totalPages: 1, currentPage: 1 });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+};
+export const createWordAdmin = async (req, res) => {
+  try {
+    const w = await Flashcard.create(req.body);
+    res.json(w);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+};
+export const updateWordAdmin = async (req, res) => {
+  try {
+    await Flashcard.update(req.body, { where: { card_id: req.params.id } });
+    res.json({ message: 'Updated' });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+};
+export const deleteWordAdmin = async (req, res) => {
+  try {
+    await Flashcard.destroy({ where: { card_id: req.params.id } });
+    res.json({ message: 'Deleted' });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+};
+
+// ==========================================
+// 5. QUẢN LÝ REVIEWS (ĐÁNH GIÁ)
+// ==========================================
+export const getAllReviews = async (req, res) => {
+  try {
+    const data = await Feedback.findAll({
+      include: [{ model: User, as: 'user', attributes: ['name', 'email', 'picture'] }],
+      order: [['createdAt', 'DESC']],
+    });
+    res.json(data);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+};
+
+export const getReviewDetail = async (req, res) => {
+  try {
+    const data = await Feedback.findByPk(req.params.id, {
+      include: [{ model: User, as: 'user', attributes: ['name', 'email', 'picture'] }],
+    });
+    if (!data) return res.status(404).json({ message: 'Not found' });
+    res.json(data);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+};
+
+export const deleteReview = async (req, res) => {
+  try {
+    await Feedback.destroy({ where: { id: req.params.id } });
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+};
+
+export const toggleReviewVisibility = async (req, res) => {
+  try {
+    const r = await Feedback.findByPk(req.params.id);
+    r.isVisible = !r.isVisible;
+    await r.save();
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+};
+
+export const replyReview = async (req, res) => {
+  try {
+    const r = await Feedback.findByPk(req.params.id);
+    r.admin_reply = req.body.replyText;
+    r.replied_at = new Date();
+    await r.save();
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+};
+
+// ==========================================
+// 6. QUẢN LÝ NOTIFICATIONS (THÔNG BÁO)
+// ==========================================
+export const getNotifications = async (req, res) => {
+  try {
+    const data = await Notification.findAll({ limit: 5, order: [['createdAt', 'DESC']] });
+    const unread = await Notification.count({ where: { isRead: false } });
+    res.json({ data, unread });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+};
+
+export const markAllRead = async (req, res) => {
+  try {
+    await Notification.update({ isRead: true }, { where: { isRead: false } });
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+};
+
+// ==========================================
+// 7. QUẢN LÝ AI SESSIONS (PHIÊN HỌC AI) - ĐÂY LÀ PHẦN BẠN THIẾU
+// ==========================================
+export const getAllAiSessions = async (req, res) => {
+  try {
+    const list = await AiSession.findAll({
+      limit: 100,
+      order: [['created_at', 'DESC']],
+      include: [{ model: User, as: 'user', attributes: ['name', 'email', 'picture'] }],
+    });
+    res.json(list);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+};
+
+export const deleteAiSession = async (req, res) => {
+  try {
+    await AiSession.destroy({ where: { id: req.params.id } });
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
 };
