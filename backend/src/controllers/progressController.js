@@ -1,3 +1,4 @@
+//Tiến trình
 import { Topics, Flashcard, UserProgress, sequelize } from '../models/index.js';
 
 const markAsLearned = async (req, res) => {

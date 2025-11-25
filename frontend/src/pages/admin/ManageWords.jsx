@@ -15,12 +15,10 @@ export default function ManageWords() {
 
   // State Tìm kiếm và Lọc
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterDeckId, setFilterDeckId] = useState(''); // Lọc theo ID chủ đề
+  const [filterDeckId, setFilterDeckId] = useState('');
 
-  // State query thực tế gửi đi (để tránh reload khi đang gõ)
   const [query, setQuery] = useState({ search: '', deckId: '' });
 
-  // ... (State Modal giữ nguyên) ...
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingWord, setEditingWord] = useState(null);
   const [formData, setFormData] = useState({
@@ -51,7 +49,6 @@ export default function ManageWords() {
       const token = sessionStorage.getItem('accessToken');
       if (!token) throw new Error('Không tìm thấy token');
 
-      // THÊM search & deck_id VÀO URL
       let url = `https://project-doan1-backend.onrender.com/api/admin/words?page=${page}`;
       if (query.search) url += `&search=${encodeURIComponent(query.search)}`;
       if (query.deckId) url += `&deck_id=${encodeURIComponent(query.deckId)}`;
@@ -74,7 +71,6 @@ export default function ManageWords() {
     fetchWords();
   }, [page, query]);
 
-  // ... (Giữ nguyên CRUD handlers openModal, handleSave, handleDelete...) ...
   const openModal = (word = null) => {
     if (word) {
       setEditingWord(word);
@@ -146,7 +142,7 @@ export default function ManageWords() {
           {/* Form Tìm kiếm & Lọc */}
           <form
             onSubmit={handleSearch}
-            className="flex items-center gap-2 rounded border border-gray-600 bg-[#121212] p-1"
+            className="flex items-center gap-2 rounded-xl border border-gray-600 bg-[#121212] p-1"
           >
             {/* Input Tìm kiếm */}
             <div className="relative">
@@ -194,7 +190,7 @@ export default function ManageWords() {
 
           <button
             onClick={() => openModal(null)}
-            className="flex items-center space-x-2 rounded bg-amber-500 px-4 py-2 text-white transition-colors hover:bg-[#1d1d1d]"
+            className="flex items-center space-x-2 rounded-xl bg-amber-500 px-4 py-2 text-white shadow-lg shadow-amber-500/20 transition-colors hover:bg-[#1d1d1d]"
           >
             <Plus size={20} />
             <span className="hidden sm:inline">Thêm</span>
@@ -208,24 +204,24 @@ export default function ManageWords() {
       </div>
 
       {/* Table */}
-      <div className="w-full overflow-hidden border-t border-gray-700">
-        <div className="overflow-x-auto bg-[#1d1d1d]">
+      <div className="w-full overflow-hidden">
+        <div className="overflow-x-auto bg-[#1a1a1a]">
           <table className="min-w-full divide-y divide-gray-700">
-            <thead className="bg-[#121212]">
+            <thead className="bg-white/5">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-400 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-200 uppercase">
                   Từ (Front)
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-400 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-200 uppercase">
                   Nghĩa (Back)
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-400 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-200 uppercase">
                   Phát âm
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-400 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-200 uppercase">
                   Deck ID
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-400 uppercase">
+                <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-200 uppercase">
                   Hành động
                 </th>
               </tr>

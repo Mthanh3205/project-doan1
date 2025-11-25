@@ -13,11 +13,11 @@ const FavoritesPage = () => {
   const navigate = useNavigate();
   const userId = 1;
 
-  // Hàm fetch danh sách yêu thích (Đã sửa để lấy word_count)
+  // Hàm fetch danh sách yêu thích
   const fetchFavorites = async () => {
     setLoading(true);
     try {
-      // 1. Gọi song song 2 API: Lấy danh sách yêu thích VÀ Lấy tất cả chủ đề (để lấy word_count)
+      //Lấy danh sách yêu thích VÀ Lấy tất cả chủ đề (để lấy word_count)
       const [favResponse, topicsResponse] = await Promise.all([
         axios.get(`https://project-doan1-backend.onrender.com/api/favorites/user/${userId}`),
         axios.get(`https://project-doan1-backend.onrender.com/api/topics/user/${userId}`),
@@ -26,21 +26,20 @@ const FavoritesPage = () => {
       const favorites = favResponse.data;
       const allTopics = Array.isArray(topicsResponse.data) ? topicsResponse.data : [];
 
-      // 2. Xử lý Topics: Ghép thông tin word_count từ allTopics vào favorites
+      //Ghép thông tin word_count từ allTopics vào favorites
       const topics = favorites
         .filter((fav) => fav.favorite_type === 'deck' && fav.topic)
         .map((fav) => {
           // Tìm chủ đề tương ứng trong danh sách đầy đủ để lấy word_count
           const fullTopicInfo = allTopics.find((t) => t.deck_id === fav.topic.deck_id);
 
-          // Trả về object đã gộp (ưu tiên thông tin từ fullTopicInfo nếu có)
+          // Trả về object đã gộp
           return {
             ...fav.topic,
             word_count: fullTopicInfo ? fullTopicInfo.word_count : fav.topic.word_count,
           };
         });
 
-      // 3. Xử lý Cards (Giữ nguyên)
       const cards = favorites
         .filter((fav) => fav.favorite_type === 'card' && fav.flashcard)
         .map((fav) => fav.flashcard);
@@ -75,7 +74,7 @@ const FavoritesPage = () => {
 
         {!loading && !error && (
           <>
-            {/* PHẦN CHỦ ĐỀ YÊU THÍCH */}
+            {/*CHỦ ĐỀ YÊU THÍCH */}
             <section className="mb-16 px-4">
               <h2 className="mb-8 text-3xl font-semibold text-zinc-200 dark:text-stone-600">
                 Chủ Đề Yêu Thích ({favoriteTopics.length})
@@ -113,7 +112,7 @@ const FavoritesPage = () => {
               )}
             </section>
 
-            {/* PHẦN TỪ VỰNG YÊU THÍCH */}
+            {/*TỪ VỰNG YÊU THÍCH */}
             <section className="px-4">
               <h2 className="mb-8 text-3xl font-semibold text-zinc-200 dark:text-stone-600">
                 Từ Vựng Yêu Thích ({favoriteCards.length})

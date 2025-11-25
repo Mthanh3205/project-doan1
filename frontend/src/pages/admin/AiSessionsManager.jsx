@@ -93,7 +93,7 @@ export default function AiSessionsManager() {
           <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
           <input
             type="text"
-            placeholder="Tìm user, chủ đề..."
+            placeholder="Tìm người dùng, chủ đề..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="h-10 w-full rounded-xl border border-white/10 bg-[#1a1a1a] pr-4 pl-10 text-sm text-gray-300 focus:border-amber-500/50 focus:outline-none"
@@ -102,7 +102,7 @@ export default function AiSessionsManager() {
       </div>
 
       {/* BẢNG DANH SÁCH */}
-      <div className="overflow-hidden rounded-xl border border-white/10 bg-[#1a1a1a] shadow-xl">
+      <div className="overflow-hidden border border-white/10 bg-[#1a1a1a] shadow-xl">
         <table className="w-full text-left text-sm text-gray-400">
           <thead className="bg-white/5 text-xs text-gray-300 uppercase">
             <tr>

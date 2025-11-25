@@ -384,7 +384,7 @@ const AiRoleplayPage = () => {
                 <div
                   className={`rounded-2xl p-4 text-sm leading-relaxed shadow-sm md:text-base ${msg.role === 'user' ? 'rounded-br-none bg-gradient-to-r from-amber-600 to-orange-600 text-white' : 'rounded-bl-none border border-white/5 bg-white/5 text-gray-200'}`}
                 >
-                  {/* NỘI DUNG: HIỆN GỐC HOẶC DỊCH */}
+                  {/* NỘI DUNG - HIỆN GỐC HOẶC DỊCH */}
                   {msg.isTranslated ? (
                     <span className="mb-1 block font-medium text-green-400">{msg.translation}</span>
                   ) : (
@@ -400,7 +400,7 @@ const AiRoleplayPage = () => {
                   )}
                 </div>
 
-                {/* NÚT DỊCH (CHỈ AI) */}
+                {/* NÚT DỊCH */}
                 {msg.role === 'assistant' && msg.translation && (
                   <button
                     onClick={() => toggleTranslation(index)}
@@ -475,7 +475,7 @@ const AiRoleplayPage = () => {
           </button>
         </div>
       </div>
-      {/* MODAL BẢNG ĐIỂM (REPORT CARD)*/}
+      {/* MODAL BẢNG ĐIỂM */}
       {showReport && reportData && (
         <div className="animate-in fade-in fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 backdrop-blur-md duration-300">
           <div

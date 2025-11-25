@@ -131,7 +131,7 @@ export default function ManageTopics() {
               placeholder="Tìm chủ đề..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-64 rounded-l-md border border-gray-700 bg-[#121212] px-4 py-2 text-white outline-none focus:border-stone-400"
+              className="w-64 rounded-l-xl border border-gray-700 bg-[#121212] px-4 py-2 text-white outline-none focus:border-stone-400"
             />
             {searchTerm && (
               <button
@@ -144,7 +144,7 @@ export default function ManageTopics() {
             )}
             <button
               type="submit"
-              className="rounded-r-md border border-l-0 border-gray-600 bg-[#121212] px-3 py-2 text-white hover:bg-gray-600"
+              className="rounded-r-xl border border-l-0 border-gray-600 bg-[#121212] px-3 py-2 text-white hover:bg-gray-600"
             >
               <Search size={20} />
             </button>
@@ -152,7 +152,7 @@ export default function ManageTopics() {
 
           <button
             onClick={() => openModal(null)}
-            className="flex items-center space-x-2 rounded bg-amber-500 px-4 py-2 text-white transition-colors hover:bg-[#1d1d1d]"
+            className="flex items-center space-x-2 rounded-xl bg-amber-500 px-4 py-2 text-white shadow-lg shadow-amber-500/20 transition-colors hover:bg-[#1d1d1d]"
           >
             <Plus size={20} />
             <span className="hidden sm:inline">Thêm</span>
@@ -166,24 +166,24 @@ export default function ManageTopics() {
       </div>
 
       {/* Table  */}
-      <div className="w-full overflow-hidden border-t border-gray-700">
-        <div className="overflow-x-auto bg-[#1d1d1d]">
+      <div className="w-full overflow-hidden">
+        <div className="overflow-x-auto bg-[#1a1a1a]">
           <table className="min-w-full divide-y divide-gray-700">
-            <thead className="bg-[#121212]">
+            <thead className="bg-white/5">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-400 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-200 uppercase">
                   ID
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-400 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-200 uppercase">
                   Tiêu đề
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-400 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-200 uppercase">
                   Mô tả
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-400 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-200 uppercase">
                   Ngày tạo
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-400 uppercase">
+                <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-200 uppercase">
                   Hành động
                 </th>
               </tr>

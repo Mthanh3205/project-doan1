@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, X, Lock, Unlock, Eye } from 'lucide-react';
-import { toast } from 'sonner'; // Giả sử bạn có dùng sonner, nếu không thì dùng alert
+import { ChevronLeft, ChevronRight, X, Lock, Unlock, Eye, Search } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function ManageUsers() {
   const [data, setData] = useState({
@@ -12,11 +12,11 @@ export default function ManageUsers() {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
 
-  // --- STATE CHO MODAL CHI TIẾT ---
+  //  STATE CHO MODAL CHI TIẾT
   const [selectedUser, setSelectedUser] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // --- LẤY DỮ LIỆU ---
+  //  LẤY DỮ LIỆU
   const fetchUsers = async () => {
     setLoading(true);
     try {
@@ -38,8 +38,22 @@ export default function ManageUsers() {
   useEffect(() => {
     fetchUsers();
   }, [page]);
+  //Tìm kiếm
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredSessions, setFilteredSessions] = useState([]);
+  const [sessions, setSessions] = useState([]);
+  useEffect(() => {
+    const lowerTerm = searchTerm.toLowerCase();
+    const filtered = sessions.filter(
+      (s) =>
+        s.user?.name?.toLowerCase().includes(lowerTerm) ||
+        s.user?.email?.toLowerCase().includes(lowerTerm) ||
+        s.topic_title?.toLowerCase().includes(lowerTerm)
+    );
+    setFilteredSessions(filtered);
+  }, [searchTerm, sessions]);
 
-  // --- XỬ LÝ KHÓA / MỞ KHÓA TÀI KHOẢN ---
+  //  XỬ LÝ KHÓA / MỞ KHÓA TÀI KHOẢN
   const handleToggleBan = async (userId, currentStatus) => {
     // currentStatus: true là đang bị ban -> cần mở (false)
     // currentStatus: false là đang hoạt động -> cần ban (true)
@@ -76,13 +90,13 @@ export default function ManageUsers() {
     }
   };
 
-  // --- MỞ MODAL ---
+  //  MỞ MODAL
   const handleViewDetails = (user) => {
     setSelectedUser(user);
     setIsModalOpen(true);
   };
 
-  // --- COMPONENT MODAL ---
+  //  COMPONENT MODAL
   const UserDetailModal = () => {
     if (!isModalOpen || !selectedUser) return null;
 
@@ -167,31 +181,44 @@ export default function ManageUsers() {
     );
   };
 
-  // --- RENDER CHÍNH ---
+  //  RENDER CHÍNH
   if (error) return <div className="text-red-500">Lỗi: {error}</div>;
 
   return (
-    <div>
-      <div className="mb-4 text-lg dark:text-gray-300">
-        Tổng số tài khoản:{' '}
-        <span className="ml-2 font-bold text-amber-500">{loading ? '--' : data.totalUsers}</span>
+    <div className="space-y-6">
+      <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
+        <div className="mb-4 text-lg dark:text-gray-300">
+          Tổng số tài khoản:{' '}
+          <span className="ml-2 font-bold text-amber-500">{loading ? '--' : data.totalUsers}</span>
+        </div>
+
+        <div className="relative w-full md:w-64">
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
+          <input
+            type="text"
+            placeholder="Tìm người dùng..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="h-10 w-full rounded-xl border border-white/10 bg-[#1a1a1a] pr-4 pl-10 text-sm text-gray-300 focus:border-amber-500/50 focus:outline-none"
+          />
+        </div>
       </div>
 
-      <div className="w-full overflow-hidden border-t border-gray-700 shadow-md">
-        <div className="overflow-x-auto bg-[#1d1d1d] dark:bg-white">
+      <div className="w-full overflow-hidden shadow-md">
+        <div className="overflow-x-auto bg-[#1a1a1a] dark:bg-white">
           <table className="min-w-full divide-y divide-gray-700">
-            <thead className="bg-[#121212]">
+            <thead className="bg-white/5">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-amber-600 uppercase">
                   Tên
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-amber-600 uppercase">
                   Email
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-200 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-amber-600 uppercase">
                   Trạng thái
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-200 uppercase">
+                <th className="px-6 py-3 text-right text-xs font-medium text-amber-600 uppercase">
                   Hành động
                 </th>
               </tr>

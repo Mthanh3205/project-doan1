@@ -32,13 +32,12 @@ export default function FlashcardItem({
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Xử lý khi nhấn nút "Lưu"
+  // Xử lý khi nhấn nút Lưu
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(card.card_id, formData); // Gọi hàm onSave được truyền từ cha
+    onSave(card.card_id, formData);
   };
 
-  // GIAO DIỆN KHI CHỈNH SỬA
   if (isEditing) {
     return (
       <form
@@ -94,7 +93,7 @@ export default function FlashcardItem({
           </button>
           <button
             type="button"
-            onClick={onCancel} // Gọi hàm onCancel được truyền từ cha
+            onClick={onCancel}
             className="bg-gray-600 px-3 py-1 text-sm text-white transition-all hover:scale-105 hover:bg-black"
           >
             Hủy
@@ -104,7 +103,7 @@ export default function FlashcardItem({
     );
   }
 
-  // GIAO DIỆN KHI CHỈ HIỂN THỊ (Mặc định)
+  // GIAO DIỆN KHI CHỈ HIỂN THỊ
   return (
     <div className="mx-5 border border-stone-600 bg-[#121212] p-4 text-zinc-300 shadow-sm dark:border-none dark:bg-green-100 dark:text-stone-600">
       <p>
@@ -122,11 +121,10 @@ export default function FlashcardItem({
         <strong>Example:</strong> {card.example}
       </p>
       <div className="mt-2 space-x-3">
-        {/* Nút "Chỉnh sửa" sẽ kích hoạt onEditClick */}
         <button onClick={onEditClick} className="text-sm text-amber-400 hover:underline">
           Chỉnh sửa
         </button>
-        {/* Nút "Xóa" sẽ kích hoạt onDelete */}
+
         <button
           onClick={() => {
             if (window.confirm(`Bạn có chắc muốn xóa từ "${card.front_text}"?`)) {

@@ -5,7 +5,7 @@ import topicController from '../controllers/topicController.js';
 const router = express.Router();
 
 //Get /api/topics, call getAlltopics
-router.get('/', topicController.getAllTopics); //lấy all
-router.get('/user/:userId', topicController.getTopicsByUserId); //lấy topic theo id user
-router.get('/:deckId', topicController.getTopicById); //lấy id
+router.get('/', topicController.getAllTopics);
+router.get('/user/:userId', topicController.getTopicsByUserId);
+router.get('/:deckId', topicController.getTopicById);
 export default router;

@@ -23,11 +23,10 @@ export default function AdminHeader({ setIsSidebarOpen }) {
   // State Modal & Reply
   const [selectedReview, setSelectedReview] = useState(null);
   const [isLoadingDetail, setIsLoadingDetail] = useState(false);
-  const [replyContent, setReplyContent] = useState(''); // State lưu nội dung đang nhập
-  const [isSendingReply, setIsSendingReply] = useState(false); // State loading khi gửi
+  const [replyContent, setReplyContent] = useState('');
+  const [isSendingReply, setIsSendingReply] = useState(false);
 
   const timeAgo = (dateString) => {
-    /* ... giữ nguyên hàm cũ ... */
     const seconds = Math.floor((new Date() - new Date(dateString)) / 1000);
     let interval = seconds / 31536000;
     if (interval > 1) return Math.floor(interval) + ' năm trước';
@@ -43,7 +42,6 @@ export default function AdminHeader({ setIsSidebarOpen }) {
   };
 
   const fetchNotifications = async () => {
-    /* ... giữ nguyên hàm cũ ... */
     try {
       const token = sessionStorage.getItem('accessToken');
       const res = await fetch(
@@ -62,7 +60,7 @@ export default function AdminHeader({ setIsSidebarOpen }) {
     }
   };
 
-  // --- HÀM GỬI PHẢN HỒI (MỚI) ---
+  // HÀM GỬI PHẢN HỒI
   const handleSendReply = async () => {
     if (!replyContent.trim()) return toast.warning('Vui lòng nhập nội dung phản hồi');
 
@@ -83,7 +81,7 @@ export default function AdminHeader({ setIsSidebarOpen }) {
 
       if (res.ok) {
         toast.success('Đã gửi phản hồi!');
-        // Cập nhật giao diện ngay lập tức
+
         setSelectedReview({
           ...selectedReview,
           admin_reply: replyContent,
@@ -99,7 +97,6 @@ export default function AdminHeader({ setIsSidebarOpen }) {
     }
   };
 
-  // Khi mở modal, nếu đã có reply cũ thì không cần set lại state replyContent (để trống cho nhập mới hoặc hiển thị text tĩnh)
   const handleNotificationClick = async (noti) => {
     if (noti.type === 'feedback' && noti.reference_id) {
       setSelectedReview({ id: noti.reference_id });
@@ -130,9 +127,7 @@ export default function AdminHeader({ setIsSidebarOpen }) {
     }
   };
 
-  // Các hàm toggle/delete giữ nguyên
   const handleToggleVisibility = async () => {
-    /* ... code cũ ... */
     if (!selectedReview) return;
     try {
       const token = sessionStorage.getItem('accessToken');
@@ -151,7 +146,6 @@ export default function AdminHeader({ setIsSidebarOpen }) {
   };
 
   const handleDelete = async () => {
-    /* ... code cũ ... */
     if (!selectedReview) return;
     if (!window.confirm('Xóa vĩnh viễn?')) return;
     try {
@@ -172,7 +166,6 @@ export default function AdminHeader({ setIsSidebarOpen }) {
   };
 
   const handleMarkRead = async () => {
-    /* ... code cũ ... */
     setShowNoti(!showNoti);
     if (unreadCount > 0 && !showNoti) {
       try {
@@ -194,8 +187,8 @@ export default function AdminHeader({ setIsSidebarOpen }) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex h-20 items-center justify-between border-b border-white/10 bg-[#121212]/80 px-6 backdrop-blur-xl transition-all">
-        {/* Left & Right Header Content (Giữ nguyên như cũ) */}
+      <header className="sticky top-0 z-40 flex h-18 items-center justify-between border-b border-white/10 bg-[#121212]/80 px-6 backdrop-blur-xl transition-all">
+        {/* Left & Right Header Content  */}
         <div className="flex items-center gap-4">
           <button
             onClick={() => setIsSidebarOpen(true)}
@@ -203,14 +196,14 @@ export default function AdminHeader({ setIsSidebarOpen }) {
           >
             <Menu size={24} />
           </button>
-          <div className="relative hidden md:block">
+          {/* <div className="relative hidden md:block">
             <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
             <input
               type="text"
               placeholder="Tìm kiếm..."
               className="h-10 w-64 rounded-full border border-white/10 bg-white/5 pr-4 pl-10 text-sm text-gray-300 focus:border-amber-500/50 focus:outline-none"
             />
-          </div>
+          </div> */}
         </div>
         <div className="flex items-center gap-4">
           <div className="relative">
@@ -274,7 +267,7 @@ export default function AdminHeader({ setIsSidebarOpen }) {
         </div>
       </header>
 
-      {/* --- POPUP MODAL CHI TIẾT & PHẢN HỒI --- */}
+      {/* POPUP MODAL CHI TIẾT PHẢN HỒI  */}
       {selectedReview && (
         <div
           className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
@@ -357,7 +350,7 @@ export default function AdminHeader({ setIsSidebarOpen }) {
                   </p>
                 </div>
 
-                {/* --- PHẦN PHẢN HỒI CỦA ADMIN (MỚI) --- */}
+                {/*  PHẦN PHẢN HỒI CỦA ADMIN  */}
                 <div className="mb-6 border-t border-white/10 pt-4">
                   <h4 className="mb-3 flex items-center gap-2 text-sm font-semibold text-amber-500">
                     <MessageCircle size={16} /> Phản hồi của Admin

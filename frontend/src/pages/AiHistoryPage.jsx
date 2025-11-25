@@ -33,9 +33,9 @@ const AiHistoryPage = () => {
     fetchHistory();
   }, []);
 
-  //  HÀM XÓA THỰC SỰ (GỌI API)
+  //  HÀM XÓA
   const handleDelete = async (e, id) => {
-    e.stopPropagation(); // Chặn click lan ra ngoài (không mở modal)
+    e.stopPropagation();
 
     if (!window.confirm('Bạn chắc chắn muốn xóa lịch sử này vĩnh viễn?')) return;
 

@@ -8,6 +8,7 @@ import { authenticateToken, admin } from '../middleware/auth.js';
 import {
   getAllUsers,
   getDashboardStats,
+  toggleUserBan,
   // Topics Controller
   getAllTopics,
   createTopicAdmin,

@@ -229,14 +229,12 @@ const ReviewsManager = () => {
                     alt={selectedReview.user.name}
                     className="h-14 w-14 rounded-full border-2 border-amber-500 object-cover shadow-lg"
                     onError={(e) => {
-                      // Nếu ảnh lỗi (link hỏng), tự động chuyển về hiển thị chữ cái đầu
                       e.target.style.display = 'none';
                       e.target.nextSibling.style.display = 'flex';
                     }}
                   />
                 ) : null}
 
-                {/* Fallback: Hiển thị chữ cái đầu nếu không có ảnh (hoặc ảnh lỗi) */}
                 <div
                   className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-orange-600 text-2xl font-bold text-white shadow-lg"
                   style={{ display: selectedReview.user?.picture ? 'none' : 'flex' }}

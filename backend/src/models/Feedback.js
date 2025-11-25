@@ -42,7 +42,6 @@ const Feedback = sequelize.define(
   }
 );
 
-// Thiết lập mối quan hệ
 Feedback.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
 
 export default Feedback;

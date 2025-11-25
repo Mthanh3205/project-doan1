@@ -6,6 +6,9 @@ import Flashcard from './Flashcard.js';
 import User from './User.js';
 import UserProgress from './UserProgress.js';
 import Favorite from './Favorite.js';
+import Feedback from './Feedback.js';
+import Notification from './Notification.js';
+import AiSession from './AiSession.js';
 
 //  Quan hệ giữa Flashcard và Topics
 Flashcard.belongsTo(Topics, {
@@ -39,4 +42,14 @@ Favorite.belongsTo(Topics, { foreignKey: 'deck_id', as: 'topic' });
 Flashcard.hasMany(Favorite, { foreignKey: 'card_id' });
 Favorite.belongsTo(Flashcard, { foreignKey: 'card_id', as: 'flashcard' });
 
-export { sequelize, Topics, Flashcard, User, UserProgress, Favorite };
+export {
+  sequelize,
+  Topics,
+  Flashcard,
+  User,
+  UserProgress,
+  Favorite,
+  Feedback,
+  Notification,
+  AiSession,
+};

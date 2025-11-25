@@ -1,7 +1,6 @@
+//Favorite
 import { DataTypes, Op } from 'sequelize';
 import sequelize from '../config/db.js';
-import Topics from './Topics.js';
-import Flashcard from './Flashcard.js';
 
 const Favorite = sequelize.define(
   'Favorite',

@@ -4,13 +4,17 @@ import { Link } from 'react-router-dom';
 import {
   LineChart,
   Line,
+  BarChart,
+  Bar,
+  AreaChart,
+  Area,
+  PieChart,
+  Pie,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
   Cell,
   Legend,
 } from 'recharts';
@@ -93,6 +97,25 @@ export default function DashboardOverview() {
 
   if (error) return <div className="p-6 text-red-500">Lỗi: {error}</div>;
 
+  const DATA_PERFORMANCE = [
+    { name: 'T2', nho: 40, quen: 24 },
+    { name: 'T3', nho: 30, quen: 13 },
+    { name: 'T4', nho: 20, quen: 58 },
+    { name: 'T5', nho: 27, quen: 39 },
+    { name: 'T6', nho: 18, quen: 48 },
+    { name: 'T7', nho: 23, quen: 38 },
+    { name: 'CN', nho: 34, quen: 43 },
+  ];
+
+  const DATA_AI_USAGE = [
+    { name: 'T2', sessions: 10 },
+    { name: 'T3', sessions: 15 },
+    { name: 'T4', sessions: 8 },
+    { name: 'T5', sessions: 25 },
+    { name: 'T6', sessions: 20 },
+    { name: 'T7', sessions: 35 },
+    { name: 'CN', sessions: 40 },
+  ];
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold text-white">Tổng quan hệ thống</h1>
@@ -216,9 +239,78 @@ export default function DashboardOverview() {
             )}
           </div>
         </div>
+
+        {/* 3. Hiệu quả ghi nhớ (Bar Chart - MỚI) */}
+        <div className="rounded-xl border border-white/10 bg-[#1a1a1a] p-6 shadow-lg">
+          <h2 className="mb-6 text-xl font-semibold text-white">Hiệu quả ghi nhớ (Đúng/Sai)</h2>
+          <div className="h-72 w-full">
+            <ResponsiveContainer>
+              <BarChart data={DATA_PERFORMANCE}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+                <XAxis dataKey="name" stroke="#9ca3af" />
+                <YAxis stroke="#9ca3af" />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#000', border: '1px solid #333' }}
+                  cursor={{ fill: 'transparent' }}
+                />
+                <Legend />
+                <Bar
+                  dataKey="nho"
+                  name="Đã thuộc"
+                  stackId="a"
+                  fill="#10b981"
+                  radius={[0, 0, 4, 4]}
+                />{' '}
+                {/* Xanh lá */}
+                <Bar
+                  dataKey="quen"
+                  name="Cần ôn lại"
+                  stackId="a"
+                  fill="#ef4444"
+                  radius={[4, 4, 0, 0]}
+                />{' '}
+                {/* Đỏ */}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* 4. Xu hướng sử dụng AI (Area Chart - MỚI) */}
+        <div className="rounded-xl border border-white/10 bg-[#1a1a1a] p-6 shadow-lg">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-white">Xu hướng sử dụng AI</h2>
+            <span className="rounded border border-purple-500/30 bg-purple-500/20 px-2 py-1 text-xs text-purple-400">
+              VIP Feature
+            </span>
+          </div>
+          <div className="h-72 w-full">
+            <ResponsiveContainer>
+              <AreaChart data={DATA_AI_USAGE}>
+                <defs>
+                  <linearGradient id="colorAi" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
+                <XAxis dataKey="name" stroke="#9ca3af" />
+                <YAxis stroke="#9ca3af" />
+                <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #333' }} />
+                <Area
+                  type="monotone"
+                  dataKey="sessions"
+                  name="Phiên chat"
+                  stroke="#8b5cf6"
+                  fillOpacity={1}
+                  fill="url(#colorAi)"
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
 
-      {/* 3. DANH SÁCH MỚI NHẤT */}
+      {/*  DANH SÁCH MỚI NHẤT */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Bảng Người dùng */}
         <div className="bg-[#1a1a1a] p-6 shadow-lg">

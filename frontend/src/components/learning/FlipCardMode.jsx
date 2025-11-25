@@ -48,7 +48,7 @@ export default function FlipCardMode({
               flipped ? '[transform:rotateY(180deg)]' : ''
             } ${isChanging ? 'duration-0' : 'duration-700'}`}
           >
-            {/* --- FRONT FACE --- */}
+            {/*  FRONT FACE  */}
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#121212] p-8 shadow-xl [backface-visibility:hidden] dark:from-white dark:to-stone-100">
               <span className="mb-4 bg-white/5 px-3 py-1 text-xs font-medium tracking-widest text-gray-500 uppercase dark:bg-black/5">
                 Term
@@ -66,7 +66,7 @@ export default function FlipCardMode({
               </div>
             </div>
 
-            {/* --- BACK FACE --- */}
+            {/*  BACK FACE  */}
             <div className="absolute inset-0 flex [transform:rotateY(180deg)] flex-col items-center justify-center bg-[#121212] p-8 shadow-xl [backface-visibility:hidden] dark:from-stone-50 dark:to-white">
               <span className="mb-4 bg-amber-500/10 px-3 py-1 text-xs font-medium tracking-widest text-amber-500 uppercase dark:bg-green-100 dark:text-green-700">
                 Definition

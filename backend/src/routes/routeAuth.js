@@ -94,15 +94,14 @@ router.post('/google', async (req, res) => {
 
     let user = await User.findOne({ where: { email } });
 
-    // KIỂM TRA KHÓA (NẾU USER ĐÃ TỒN TẠI)
+    // KIỂM TRA KHÓA
     if (user && user.isBanned) {
       return res.status(403).json({
         message: 'Tài khoản Google này đã bị vô hiệu hóa trong hệ thống.',
       });
     }
-    // -------------------------------------------------
+
     if (user) {
-      // Cập nhật googleId và picture nếu chưa có hoặc thay đổi
       if (!user.googleId && gId) user.googleId = gId;
       if (!user.picture && picture) user.picture = picture;
       await user.save();

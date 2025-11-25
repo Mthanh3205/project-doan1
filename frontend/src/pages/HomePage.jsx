@@ -190,7 +190,7 @@ const HomePage = () => {
 
           {/* Thống kê */}
           <section className="relative overflow-hidden border-y border-amber-500/20 bg-[#121212] py-16">
-            {/* Hiệu ứng nền trang trí mờ ảo */}
+            {/* Hiệu ứng nền trang trí mờ */}
             <div className="absolute top-0 left-1/4 -z-10 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl"></div>
             <div className="absolute right-1/4 bottom-0 -z-10 h-64 w-64 rounded-full bg-pink-500/10 blur-3xl"></div>
 
@@ -204,7 +204,6 @@ const HomePage = () => {
                   viewport={{ once: true }}
                   className="group relative flex flex-col items-center justify-center p-4"
                 >
-                  {/* Icon với hiệu ứng nền sáng lên khi hover */}
                   <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/10 text-amber-500 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-white">
                     {stat.icon}
                   </div>
@@ -219,7 +218,7 @@ const HomePage = () => {
                     {stat.label}
                   </div>
 
-                  {/* Đường gạch chân trang trí nhỏ */}
+                  {/* Đường gạch chân trang trí */}
                   <div className="mt-4 h-1 w-0 rounded-full bg-amber-500 transition-all duration-300 group-hover:w-12"></div>
                 </motion.div>
               ))}
