@@ -9,48 +9,51 @@ import Notification from '../models/Notification.js';
 import AiSession from '../models/AiSession.js';
 import UserProgress from '../models/UserProgress.js';
 
+// --- HÀM PHỤ TRỢ: SO SÁNH NGÀY (BỎ QUA GIỜ PHÚT) ---
+const isSameDay = (d1, d2) => {
+  const date1 = new Date(d1);
+  const date2 = new Date(d2);
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
+};
+
 // ==========================================
 // 1. DASHBOARD STATS (BẢN FIX LỖI 500)
 // ==========================================
 export const getDashboardStats = async (req, res) => {
   try {
-    console.log('--- Bắt đầu lấy thống kê Dashboard ---');
+    console.log('--- Đang tính toán thống kê ---');
 
-    // 1. Đếm tổng số lượng (Dùng try-catch từng cái để không sập cả trang)
-    const userCount = await User.count().catch((e) => 0);
-    const topicCount = await Topics.count().catch((e) => 0);
-    const wordCount = await Flashcard.count().catch((e) => 0);
-    const feedbackCount = await Feedback.count().catch((e) => 0);
+    // 1. Đếm tổng số lượng
+    const userCount = await User.count().catch(() => 0);
+    const topicCount = await Topics.count().catch(() => 0);
+    const wordCount = await Flashcard.count().catch(() => 0);
+    const feedbackCount = await Feedback.count().catch(() => 0);
 
-    // 2. Chuẩn bị dữ liệu 7 ngày qua
+    // 2. Lấy dữ liệu thô trong 7 ngày qua
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
 
-    // Lấy dữ liệu thô (Raw Data) - Nếu bảng chưa có thì trả về mảng rỗng
-    let progressLogs = [];
-    try {
-      progressLogs = await UserProgress.findAll({
-        where: { updatedAt: { [Op.gte]: sevenDaysAgo } },
-        attributes: ['updatedAt', 'is_memorized'],
-      });
-    } catch (e) {
-      console.log('⚠️ Bảng UserProgress chưa sẵn sàng hoặc rỗng');
-    }
+    // A. Lấy dữ liệu học tập (UserProgress)
+    // SỬA LỖI: Đảm bảo lấy cột 'is_learned' và 'updatedAt'
+    const progressLogs = await UserProgress.findAll({
+      where: { updatedAt: { [Op.gte]: sevenDaysAgo } },
+      attributes: ['updatedAt', 'is_learned'],
+    }).catch(() => []);
 
-    let aiSessions = [];
-    try {
-      aiSessions = await AiSession.findAll({
-        where: { created_at: { [Op.gte]: sevenDaysAgo } },
-        attributes: ['created_at'],
-      });
-    } catch (e) {
-      console.log('⚠️ Bảng AiSession chưa sẵn sàng hoặc rỗng');
-    }
+    // B. Lấy dữ liệu AI
+    const aiSessions = await AiSession.findAll({
+      where: { created_at: { [Op.gte]: sevenDaysAgo } },
+      attributes: ['created_at'],
+    }).catch(() => []);
 
-    // 3. Tính toán biểu đồ (Loop 7 ngày)
-    const userGrowthData = []; // Biểu đồ Đường
-    const performanceData = []; // Biểu đồ Cột
-    const aiUsageData = []; // Biểu đồ Vùng
+    // 3. Vòng lặp tính toán 7 ngày
+    const userGrowthData = []; // Dùng cho Biểu đồ đường (Tần suất học)
+    const performanceData = []; // Dùng cho Biểu đồ cột (Hiệu quả)
+    const aiUsageData = []; // Dùng cho Biểu đồ vùng (AI)
 
     const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
@@ -60,49 +63,46 @@ export const getDashboardStats = async (req, res) => {
       const dateStr = d.toISOString().split('T')[0];
       const dayLabel = daysOfWeek[d.getDay()];
 
-      // Lọc dữ liệu ngày đó
-      const isSameDay = (d1, d2) => {
-        const date1 = new Date(d1);
-        const date2 = new Date(d2);
-        return (
-          date1.getFullYear() === date2.getFullYear() &&
-          date1.getMonth() === date2.getMonth() &&
-          date1.getDate() === date2.getDate()
-        );
-      };
+      // Lọc dữ liệu của ngày 'd'
       const dailyStudy = progressLogs.filter((p) => isSameDay(p.updatedAt, d));
       const dailyAi = aiSessions.filter((s) => isSameDay(s.created_at, d));
-      // A. Tần suất học
+
+      // A. Biểu đồ Đường: Số lượt ôn tập
       userGrowthData.push({
         name: dayLabel,
         date: dateStr,
-        count: dailyStudy.length, // Số lượt học
+        count: dailyStudy.length, // Tổng số thẻ đã lật trong ngày
       });
 
-      // B. Hiệu quả
-      const learned = dailyStudy.filter((p) => p.is_memorized).length;
-      const reviewing = dailyStudy.length - learned;
-      performanceData.push({ name: dayLabel, nho: learned, quen: reviewing });
+      // B. Biểu đồ Cột: Hiệu quả (SỬA LỖI: Dùng p.is_learned)
+      const learned = dailyStudy.filter((p) => p.is_learned === true).length;
+      const reviewing = dailyStudy.filter((p) => p.is_learned === false).length;
 
-      // C. AI
-      aiUsageData.push({ name: dayLabel, sessions: dailyAi.length });
+      performanceData.push({
+        name: dayLabel,
+        nho: learned,
+        quen: reviewing,
+      });
+
+      // C. Biểu đồ AI
+      aiUsageData.push({
+        name: dayLabel,
+        sessions: dailyAi.length,
+      });
     }
 
-    // 4. Biểu đồ Tròn (Topic)
+    // 4. Biểu đồ Tròn (Top Chủ đề - Giữ nguyên)
     let pieData = [];
     try {
       const allCards = await Flashcard.findAll({ attributes: ['deck_id'] });
       const allTopics = await Topics.findAll({ attributes: ['deck_id', 'title'] });
-
       const topicMap = {};
       allCards.forEach((c) => {
         topicMap[c.deck_id] = (topicMap[c.deck_id] || 0) + 1;
       });
-
       pieData = allTopics.map((t) => ({ name: t.title, value: topicMap[t.deck_id] || 0 }));
       pieData.sort((a, b) => b.value - a.value);
       pieData = pieData.slice(0, 5);
-
       if (pieData.length === 0) pieData = [{ name: 'Chưa có dữ liệu', value: 1 }];
     } catch (e) {
       pieData = [{ name: 'Chưa có dữ liệu', value: 1 }];
@@ -125,7 +125,7 @@ export const getDashboardStats = async (req, res) => {
       wordCount,
       feedbackCount,
       chartData: {
-        userGrowth: userGrowthData,
+        userGrowth: userGrowthData, // Gán dữ liệu học tập vào đây
         performance: performanceData,
         aiUsage: aiUsageData,
         topicDist: pieData,
@@ -138,10 +138,6 @@ export const getDashboardStats = async (req, res) => {
     res.status(500).json({ message: 'Lỗi server: ' + error.message });
   }
 };
-
-// ==========================================
-// 2. CÁC HÀM QUẢN LÝ KHÁC
-// ==========================================
 
 export const getAllUsers = async (req, res) => {
   const { count, rows } = await User.findAndCountAll({ order: [['createdAt', 'DESC']] });
