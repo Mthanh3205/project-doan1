@@ -1,5 +1,5 @@
 import { Op } from 'sequelize';
-// Import từ index.js để đảm bảo có đủ Models
+
 import {
   User,
   Topics,
@@ -10,71 +10,92 @@ import {
   UserProgress,
 } from '../models/index.js';
 
-// ==========================================
-// 1. DASHBOARD STATS (LOGIC MỚI - CHẮC CHẮN CHẠY)
-// ==========================================
 export const getDashboardStats = async (req, res) => {
   try {
-    // A. Đếm tổng số lượng
+    // Đếm tổng số lượng
     const userCount = await User.count();
     const topicCount = await Topics.count();
     const wordCount = await Flashcard.count();
     const feedbackCount = await Feedback.count();
 
-    // B. Biểu đồ 1: Tăng trưởng User (7 ngày qua)
-    // (Dùng bảng User thay vì UserProgress để đảm bảo luôn có dữ liệu hiển thị)
+    // dữ liệu 7 ngày qua
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
 
+    //  Users mới
     const users = await User.findAll({
       where: { createdAt: { [Op.gte]: sevenDaysAgo } },
       attributes: ['createdAt'],
     });
 
-    const chartData = [];
+    //  Tiến độ học tập (Dựa vào UserProgress updated_at)
+    const progressLogs = await UserProgress.findAll({
+      where: { updatedAt: { [Op.gte]: sevenDaysAgo } },
+      attributes: ['updatedAt', 'is_memorized'],
+    });
+
+    // Phiên chat AI
+    const aiSessions = await AiSession.findAll({
+      where: { created_at: { [Op.gte]: sevenDaysAgo } },
+      attributes: ['created_at'],
+    });
+
+    //Xử lý vòng lặp tạo dữ liệu cho 3 biểu đồ
+    const userChartData = [];
+    const performanceData = [];
+    const aiChartData = [];
+
     const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0]; // YYYY-MM-DD
+      const dateStr = d.toISOString().split('T')[0];
+      const dayLabel = daysOfWeek[d.getDay()];
 
-      // Đếm trong JS
-      const count = users.filter((u) => u.createdAt.toISOString().startsWith(dateStr)).length;
+      // Biểu đồ User
+      const countUser = users.filter((u) => u.createdAt.toISOString().startsWith(dateStr)).length;
+      userChartData.push({
+        name: dayLabel,
+        count: countUser,
+      });
 
-      chartData.push({
-        name: daysOfWeek[d.getDay()],
-        date: dateStr,
-        count: count,
+      //  Biểu đồ Hiệu quả (Dựa trên số thẻ đã học trong ngày)
+      const dailyProgress = progressLogs.filter((p) =>
+        p.updatedAt.toISOString().startsWith(dateStr)
+      );
+      const learned = dailyProgress.filter((p) => p.is_memorized).length;
+      const reviewing = dailyProgress.filter((p) => !p.is_memorized).length;
+
+      performanceData.push({
+        name: dayLabel,
+        nho: learned,
+        quen: reviewing,
+      });
+
+      // Biểu đồ AI
+      const countAi = aiSessions.filter((s) =>
+        s.created_at.toISOString().startsWith(dateStr)
+      ).length;
+      aiChartData.push({
+        name: dayLabel,
+        sessions: countAi,
       });
     }
 
-    // C. Biểu đồ 2: Phân bố Từ vựng theo Chủ đề (Pie Chart)
-    // Lấy tất cả Topic và Flashcard về rồi tự đếm
+    // Biểu đồ Tròn (Pie Chart)
     const allCards = await Flashcard.findAll({ attributes: ['deck_id'] });
     const allTopics = await Topics.findAll({ attributes: ['deck_id', 'title'] });
-
-    const topicMap = {}; // { deck_id: count }
-
-    // Đếm số thẻ cho từng deck_id
+    const topicMap = {};
     allCards.forEach((card) => {
-      const id = card.deck_id;
-      topicMap[id] = (topicMap[id] || 0) + 1;
+      topicMap[card.deck_id] = (topicMap[card.deck_id] || 0) + 1;
     });
-
-    // Map tên chủ đề vào
-    let pieData = allTopics.map((t) => ({
-      name: t.title,
-      value: topicMap[t.deck_id] || 0,
-    }));
-
-    // Sắp xếp và lấy Top 5
+    let pieData = allTopics.map((t) => ({ name: t.title, value: topicMap[t.deck_id] || 0 }));
     pieData.sort((a, b) => b.value - a.value);
     pieData = pieData.slice(0, 5);
-
     if (pieData.length === 0) pieData = [{ name: 'Chưa có dữ liệu', value: 1 }];
 
-    // D. Danh sách mới nhất
+    //  List mới nhất
     const recentUsers = await User.findAll({
       limit: 5,
       order: [['createdAt', 'DESC']],
@@ -82,13 +103,18 @@ export const getDashboardStats = async (req, res) => {
     });
     const recentTopics = await Topics.findAll({ limit: 5, order: [['created_at', 'DESC']] });
 
+    // TRẢ VỀ JSON
     res.json({
       userCount,
       topicCount,
       wordCount,
       feedbackCount,
-      chartData,
-      pieData,
+      chartData: {
+        userGrowth: userChartData,
+        performance: performanceData,
+        aiUsage: aiChartData,
+        topicDist: pieData,
+      },
       recentUsers,
       recentTopics,
     });
@@ -97,11 +123,6 @@ export const getDashboardStats = async (req, res) => {
     res.status(500).json({ message: 'Lỗi server: ' + error.message });
   }
 };
-
-// ==========================================
-// 2. CÁC HÀM CRUD KHÁC (BỔ SUNG ĐẦY ĐỦ)
-// ==========================================
-
 export const getAllUsers = async (req, res) => {
   const { count, rows } = await User.findAndCountAll({ order: [['createdAt', 'DESC']] });
   res.json({ totalUsers: count, users: rows, totalPages: 1, currentPage: 1 });

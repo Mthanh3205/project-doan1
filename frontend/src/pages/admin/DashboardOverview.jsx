@@ -30,33 +30,28 @@ const StatCard = ({ icon, title, value, bgColor }) => (
     </div>
   </div>
 );
+
+// Custom Tooltip cho biểu đồ tròn
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const data = payload[0];
     return (
-      <div
-        style={{
-          backgroundColor: '#000',
-          border: '1px solid #333',
-          borderRadius: '8px',
-          padding: '10px',
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)',
-        }}
-      >
-        {/* Tên chủ đề*/}
-        <p style={{ color: '#fff', fontWeight: 'bold', marginBottom: '4px' }}>{data.name}</p>
-        {/*Số lượng*/}
-        <p style={{ color: '#fbbf24', margin: 0 }}>Số lượng : {data.value} từ</p>
+      <div className="rounded border border-gray-700 bg-black p-2 shadow-lg">
+        <p className="mb-1 font-bold text-white">{data.name}</p>
+        <p className="m-0 text-amber-400">Số lượng: {data.value} từ</p>
       </div>
     );
   }
   return null;
 };
+
 export default function DashboardOverview() {
   const [stats, setStats] = useState(null);
-  const [chartData, setChartData] = useState({
+  const [charts, setCharts] = useState({
     userGrowth: [],
     topicDist: [],
+    performance: [],
+    aiUsage: [],
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -76,9 +71,12 @@ export default function DashboardOverview() {
         const data = await res.json();
         setStats(data);
 
-        setChartData({
-          userGrowth: data.chartData || [],
-          topicDist: data.pieData || [],
+        // Cập nhật state Charts từ dữ liệu API trả về
+        setCharts({
+          userGrowth: data.chartData?.userGrowth || [],
+          topicDist: data.chartData?.topicDist || [],
+          performance: data.chartData?.performance || [], // Dữ liệu Bar Chart thật
+          aiUsage: data.chartData?.aiUsage || [], // Dữ liệu Area Chart thật
         });
       } catch (err) {
         setError(err.message);
@@ -97,30 +95,11 @@ export default function DashboardOverview() {
 
   if (error) return <div className="p-6 text-red-500">Lỗi: {error}</div>;
 
-  const DATA_PERFORMANCE = [
-    { name: 'T2', nho: 40, quen: 24 },
-    { name: 'T3', nho: 30, quen: 13 },
-    { name: 'T4', nho: 20, quen: 58 },
-    { name: 'T5', nho: 27, quen: 39 },
-    { name: 'T6', nho: 18, quen: 48 },
-    { name: 'T7', nho: 23, quen: 38 },
-    { name: 'CN', nho: 34, quen: 43 },
-  ];
-
-  const DATA_AI_USAGE = [
-    { name: 'T2', sessions: 10 },
-    { name: 'T3', sessions: 15 },
-    { name: 'T4', sessions: 8 },
-    { name: 'T5', sessions: 25 },
-    { name: 'T6', sessions: 20 },
-    { name: 'T7', sessions: 35 },
-    { name: 'CN', sessions: 40 },
-  ];
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-bold text-white">Tổng quan hệ thống</h1>
 
-      {/*THẺ THỐNG KÊ */}
+      {/* THẺ THỐNG KÊ */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={<Users size={28} className="text-amber-500" />}
@@ -150,18 +129,18 @@ export default function DashboardOverview() {
 
       {/* KHU VỰC BIỂU ĐỒ */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* BIỂU ĐỒ ĐƯỜNG */}
-        <div className="bg-[#1a1a1a] p-6 shadow-lg">
+        {/* 1. BIỂU ĐỒ ĐƯỜNG (User Growth) */}
+        <div className="rounded-xl border border-white/10 bg-[#1a1a1a] p-6 shadow-lg">
           <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-white">Tần suất học tập (7 ngày)</h2>
-            <span className="rounded bg-gray-800 px-2 py-1 text-xs text-gray-400">Số lượt ôn</span>
+            <h2 className="text-xl font-semibold text-white">Tần suất học tập (User mới)</h2>
+            <span className="rounded bg-gray-800 px-2 py-1 text-xs text-gray-400">7 ngày</span>
           </div>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartData.userGrowth}>
+              <LineChart data={charts.userGrowth}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.5} />
-                <XAxis dataKey="name" stroke="#9ca3af" tick={{ fill: '#9ca3af' }} />
-                <YAxis stroke="#9ca3af" tick={{ fill: '#9ca3af' }} allowDecimals={false} />
+                <XAxis dataKey="name" stroke="#9ca3af" />
+                <YAxis stroke="#9ca3af" allowDecimals={false} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: '#000',
@@ -170,7 +149,6 @@ export default function DashboardOverview() {
                     color: '#fff',
                   }}
                   itemStyle={{ color: '#fbbf24' }}
-                  formatter={(value) => [`${value} lượt`, 'Đã học']}
                 />
                 <Line
                   type="monotone"
@@ -185,72 +163,55 @@ export default function DashboardOverview() {
           </div>
         </div>
 
-        {/* BIỂU ĐỒ TRÒN */}
-        <div className="bg-[#1a1a1a] p-6 shadow-lg">
+        {/* 2. BIỂU ĐỒ TRÒN (Topic Dist) */}
+        <div className="rounded-xl border border-white/10 bg-[#1a1a1a] p-6 shadow-lg">
           <h2 className="mb-6 text-xl font-semibold text-white">Top Chủ đề (Theo số lượng từ)</h2>
           <div className="h-80 w-full">
-            {chartData.topicDist.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData.topicDist}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={5}
-                    dataKey="value"
-                    nameKey="name"
-                  >
-                    {chartData.topicDist.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                        stroke="none"
-                      />
-                    ))}
-                  </Pie>
-
-                  <Tooltip
-                    content={<CustomTooltip />}
-                    cursor={false}
-                    isAnimationActive={false}
-                    wrapperStyle={{
-                      transition: 'transform 0.5s ease-out',
-
-                      willChange: 'transform',
-
-                      pointerEvents: 'none',
-                      zIndex: 100,
-                    }}
-                    offset={20}
-                  />
-
-                  <Legend
-                    wrapperStyle={{ paddingTop: '20px' }}
-                    formatter={(value) => <span className="text-gray-300">{value}</span>}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="flex h-full flex-col items-center justify-center gap-2 text-gray-500">
-                <p>Chưa có dữ liệu chủ đề</p>
-              </div>
-            )}
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={charts.topicDist}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={5}
+                  dataKey="value"
+                  nameKey="name"
+                >
+                  {charts.topicDist.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={COLORS[index % COLORS.length]}
+                      stroke="none"
+                    />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} cursor={false} />
+                <Legend
+                  wrapperStyle={{ paddingTop: '20px' }}
+                  formatter={(value) => <span className="text-gray-300">{value}</span>}
+                />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
-        {/* 3. Hiệu quả ghi nhớ (Bar Chart - MỚI) */}
+        {/* 3. BIỂU ĐỒ CỘT (Performance - Hiệu quả ghi nhớ) */}
         <div className="rounded-xl border border-white/10 bg-[#1a1a1a] p-6 shadow-lg">
           <h2 className="mb-6 text-xl font-semibold text-white">Hiệu quả ghi nhớ (Đúng/Sai)</h2>
           <div className="h-72 w-full">
             <ResponsiveContainer>
-              <BarChart data={DATA_PERFORMANCE}>
+              <BarChart data={charts.performance}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
                 <XAxis dataKey="name" stroke="#9ca3af" />
-                <YAxis stroke="#9ca3af" />
+                <YAxis stroke="#9ca3af" allowDecimals={false} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#000', border: '1px solid #333' }}
+                  contentStyle={{
+                    backgroundColor: '#000',
+                    border: '1px solid #333',
+                    borderRadius: '8px',
+                  }}
                   cursor={{ fill: 'transparent' }}
                 />
                 <Legend />
@@ -260,22 +221,20 @@ export default function DashboardOverview() {
                   stackId="a"
                   fill="#10b981"
                   radius={[0, 0, 4, 4]}
-                />{' '}
-                {/* Xanh lá */}
+                />
                 <Bar
                   dataKey="quen"
                   name="Cần ôn lại"
                   stackId="a"
                   fill="#ef4444"
                   radius={[4, 4, 0, 0]}
-                />{' '}
-                {/* Đỏ */}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* 4. Xu hướng sử dụng AI (Area Chart - MỚI) */}
+        {/* BIỂU ĐỒ VÙNG (AI Usage - Xu hướng sử dụng AI) */}
         <div className="rounded-xl border border-white/10 bg-[#1a1a1a] p-6 shadow-lg">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-xl font-semibold text-white">Xu hướng sử dụng AI</h2>
@@ -285,7 +244,7 @@ export default function DashboardOverview() {
           </div>
           <div className="h-72 w-full">
             <ResponsiveContainer>
-              <AreaChart data={DATA_AI_USAGE}>
+              <AreaChart data={charts.aiUsage}>
                 <defs>
                   <linearGradient id="colorAi" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8} />
@@ -294,8 +253,14 @@ export default function DashboardOverview() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.3} />
                 <XAxis dataKey="name" stroke="#9ca3af" />
-                <YAxis stroke="#9ca3af" />
-                <Tooltip contentStyle={{ backgroundColor: '#000', border: '1px solid #333' }} />
+                <YAxis stroke="#9ca3af" allowDecimals={false} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#000',
+                    border: '1px solid #333',
+                    borderRadius: '8px',
+                  }}
+                />
                 <Area
                   type="monotone"
                   dataKey="sessions"
@@ -310,10 +275,10 @@ export default function DashboardOverview() {
         </div>
       </div>
 
-      {/*  DANH SÁCH MỚI NHẤT */}
+      {/* DANH SÁCH MỚI NHẤT */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Bảng Người dùng */}
-        <div className="bg-[#1a1a1a] p-6 shadow-lg">
+        <div className="rounded-xl border border-white/10 bg-[#1a1a1a] p-6 shadow-lg">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-white">Người dùng mới nhất</h2>
             <Link to="users" className="text-sm text-amber-500 hover:underline">
@@ -332,11 +297,11 @@ export default function DashboardOverview() {
                     <tr key={user.id}>
                       <td className="py-3 pr-4">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-gray-700 text-xs text-white">
+                          <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-gray-700 text-xs font-bold text-white">
                             {user.picture ? (
                               <img src={user.picture} alt="" />
                             ) : (
-                              user.name?.charAt(0)
+                              user.name?.charAt(0).toUpperCase()
                             )}
                           </div>
                           <div>
@@ -357,7 +322,7 @@ export default function DashboardOverview() {
         </div>
 
         {/* Bảng Chủ đề */}
-        <div className="bg-[#1a1a1a] p-6 shadow-lg">
+        <div className="rounded-xl border border-white/10 bg-[#1a1a1a] p-6 shadow-lg">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-white">Chủ đề mới nhất</h2>
             <Link to="topics" className="text-sm text-amber-500 hover:underline">
