@@ -71,12 +71,11 @@ export default function DashboardOverview() {
         const data = await res.json();
         setStats(data);
 
-        // Cập nhật state Charts từ dữ liệu API trả về
         setCharts({
           userGrowth: data.chartData?.userGrowth || [],
           topicDist: data.chartData?.topicDist || [],
-          performance: data.chartData?.performance || [], // Dữ liệu Bar Chart thật
-          aiUsage: data.chartData?.aiUsage || [], // Dữ liệu Area Chart thật
+          performance: data.chartData?.performance || [],
+          aiUsage: data.chartData?.aiUsage || [],
         });
       } catch (err) {
         setError(err.message);
@@ -129,7 +128,7 @@ export default function DashboardOverview() {
 
       {/* KHU VỰC BIỂU ĐỒ */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* 1. BIỂU ĐỒ ĐƯỜNG (User Growth) */}
+        {/*  BIỂU ĐỒ ĐƯỜNG  */}
         <div className="rounded-xl border border-white/10 bg-[#1a1a1a] p-6 shadow-lg">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-xl font-semibold text-white">Tần suất học tập (User mới)</h2>
@@ -163,7 +162,7 @@ export default function DashboardOverview() {
           </div>
         </div>
 
-        {/* 2. BIỂU ĐỒ TRÒN (Topic Dist) */}
+        {/*  BIỂU ĐỒ TRÒN Topic Dist */}
         <div className="rounded-xl border border-white/10 bg-[#1a1a1a] p-6 shadow-lg">
           <h2 className="mb-6 text-xl font-semibold text-white">Top Chủ đề (Theo số lượng từ)</h2>
           <div className="h-80 w-full">
@@ -197,7 +196,7 @@ export default function DashboardOverview() {
           </div>
         </div>
 
-        {/* 3. BIỂU ĐỒ CỘT (Performance - Hiệu quả ghi nhớ) */}
+        {/* BIỂU ĐỒ CỘT Performance  */}
         <div className="rounded-xl border border-white/10 bg-[#1a1a1a] p-6 shadow-lg">
           <h2 className="mb-6 text-xl font-semibold text-white">Hiệu quả ghi nhớ (Đúng/Sai)</h2>
           <div className="h-72 w-full">
@@ -234,7 +233,7 @@ export default function DashboardOverview() {
           </div>
         </div>
 
-        {/* BIỂU ĐỒ VÙNG (AI Usage - Xu hướng sử dụng AI) */}
+        {/* BIỂU ĐỒ VÙNG AI Usage */}
         <div className="rounded-xl border border-white/10 bg-[#1a1a1a] p-6 shadow-lg">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-xl font-semibold text-white">Xu hướng sử dụng AI</h2>
