@@ -70,7 +70,7 @@ const AiHistoryPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#121212] p-6 pt-24 text-white">
+    <div className="min-h-screen bg-[#121212] p-6 pt-20 text-white">
       <div className="mx-auto max-w-5xl">
         <div className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-3">

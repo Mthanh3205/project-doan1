@@ -134,13 +134,13 @@ const VocabularyPage = () => {
         <div className="mb-10 flex flex-wrap justify-center gap-4 text-2xl md:text-lg lg:text-xl xl:text-2xl">
           <button
             onClick={() => navigate(`/study/${deckId}/flip`)}
-            className="border border-amber-500 px-6 py-3 font-semibold transition-all duration-300 hover:scale-105 hover:bg-amber-500 hover:text-white dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
+            className="rounded-lg border border-amber-500 px-6 py-3 font-semibold shadow-lg shadow-amber-500/20 transition-all duration-300 hover:scale-105 hover:bg-amber-500 hover:text-white dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
           >
             Bắt đầu học ngay
           </button>
           <button
             onClick={() => navigate(`/study/${deckId}/quiz`)}
-            className="border border-amber-500 px-6 py-3 font-semibold transition-all duration-300 hover:scale-105 hover:bg-amber-500 hover:text-white dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
+            className="rounded-lg border border-amber-500 px-6 py-3 font-semibold shadow-lg shadow-amber-500/20 transition-all duration-300 hover:scale-105 hover:bg-amber-500 hover:text-white dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
           >
             Thêm vào lớp học
           </button>

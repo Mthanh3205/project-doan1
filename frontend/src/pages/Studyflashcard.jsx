@@ -218,7 +218,7 @@ export default function StudyFlashcard() {
             <div className="mt-2 flex items-center justify-center">
               <Link
                 to="/topics"
-                className="flex w-50 justify-center rounded-full border bg-black px-6 py-3 font-semibold text-zinc-100 transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
+                className="flex w-50 justify-center rounded-lg border bg-black px-6 py-3 font-semibold text-zinc-100 shadow-lg shadow-amber-500/20 transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
               >
                 Chọn chủ đề khác
               </Link>

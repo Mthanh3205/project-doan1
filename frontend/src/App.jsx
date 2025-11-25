@@ -16,6 +16,8 @@ import CreateVocabulary from './pages/CreateVocabulary';
 import FavoritesPage from './pages/FavoritesPage';
 import StudyFavoriteFlashcard from './pages/StudyFavoriteFlashcard';
 import ProgressPage from './pages/ProgressPage';
+import AiRoleplayPage from './pages/AiRoleplayPage';
+import AiHistoryPage from './pages/AiHistoryPage';
 // import AdminPage from './pages/AdminPage';
 
 import { DeckProvider } from './context/DeckContext';
@@ -26,8 +28,8 @@ import ManageUsers from './pages/admin/ManageUsers';
 import ManageTopics from './pages/admin/ManageTopics';
 import AdminSettings from './pages/admin/AdminSettings';
 import ManageWords from './pages/admin/ManageWords';
-import AiRoleplayPage from './pages/AiRoleplayPage';
-import AiHistoryPage from './pages/AiHistoryPage';
+import AiSessionsManager from './pages/admin/AiSessionsManager';
+
 //Login thì mới cho sử dụng chức năng trong web
 import ProtectedRoute from './components/ProtectedRoute';
 //Route bảo vệ admin
@@ -123,6 +125,7 @@ function AppContent() {
                 <Route path="words" element={<ManageWords />} />
                 <Route path="settings" element={<AdminSettings />} />
                 <Route path="reviews" element={<ReviewsManager />} />
+                <Route path="ai-sessions" element={<AiSessionsManager />} />
               </Route>
             </Route>
           </Routes>

@@ -2,6 +2,7 @@
 import express from 'express';
 const router = express.Router();
 import Notification from '../models/Notification.js';
+import AiSession from '../models/AiSession.js';
 import { toggleUserBan } from '../controllers/adminController.js';
 import { authenticateToken, admin } from '../middleware/auth.js';
 import {
@@ -152,4 +153,30 @@ router.patch('/notifications/read-all', authenticateToken, admin, async (req, re
 //Ban user
 router.patch('/users/:id/toggle-ban', authenticateToken, admin, toggleUserBan);
 
+//Phiên học AI
+router.get('/ai-sessions', authenticateToken, admin, async (req, res) => {
+  try {
+    const sessions = await AiSession.findAll({
+      order: [['created_at', 'DESC']],
+      limit: 100, // Giới hạn 100 phiên mới nhất
+      include: [
+        { model: User, as: 'user', attributes: ['name', 'email', 'picture'] }, // Lấy thông tin người học
+      ],
+    });
+    res.json(sessions);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Lỗi server' });
+  }
+});
+
+//ADMIN: XÓA PHIÊN HỌC
+router.delete('/ai-sessions/:id', authenticateToken, admin, async (req, res) => {
+  try {
+    await AiSession.destroy({ where: { id: req.params.id } });
+    res.json({ success: true, message: 'Đã xóa phiên học' });
+  } catch (error) {
+    res.status(500).json({ message: 'Lỗi xóa' });
+  }
+});
 export default router;

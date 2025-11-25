@@ -104,13 +104,13 @@ const HomePage = () => {
               <div className="mt-8 flex justify-center gap-4">
                 <a
                   href="/topics"
-                  className="rounded-full border px-6 py-3 font-semibold transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
+                  className="rounded-lg border px-6 py-3 font-semibold shadow-lg shadow-amber-500/20 transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
                 >
                   Bắt đầu học ngay
                 </a>
                 <a
                   href="/courses"
-                  className="rounded-full border px-6 py-3 font-semibold transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
+                  className="rounded-lg border px-6 py-3 font-semibold shadow-lg shadow-amber-500/20 transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:text-white dark:hover:bg-white dark:hover:text-black"
                 >
                   Xem các khóa học
                 </a>
@@ -257,7 +257,7 @@ const HomePage = () => {
             </p>
             <a
               href="/Auth"
-              className="rounded-full border px-6 py-3 font-semibold text-white transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:hover:bg-white dark:hover:text-black"
+              className="rounded-lg border px-6 py-3 font-semibold text-white shadow-lg shadow-amber-500/20 transition-all duration-300 hover:scale-105 hover:bg-amber-500 dark:bg-gray-900 dark:hover:bg-white dark:hover:text-black"
             >
               Đăng ký ngay
             </a>

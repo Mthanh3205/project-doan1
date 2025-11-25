@@ -491,56 +491,58 @@ const AiRoleplayPage = () => {
                 msOverflowStyle: 'none',
               }}
             >
-              <h2 className="mb-6 inline-flex w-full items-center justify-center gap-2 text-center text-2xl font-bold text-white">
-                <ChartColumnIcon /> Kết quả Phiên học
-              </h2>
+              <div className="rounded-3xl">
+                <h2 className="mb-6 inline-flex w-full items-center justify-center gap-2 text-center text-2xl font-bold text-white">
+                  <ChartColumnIcon /> Kết quả Phiên học
+                </h2>
 
-              {/* Điểm số to đùng */}
-              <div className="mb-6 flex justify-center">
-                <div className="flex h-32 w-32 flex-col items-center justify-center rounded-full border-4 border-amber-500 bg-amber-500/10 shadow-[0_0_30px_rgba(245,158,11,0.3)]">
-                  <span className="text-4xl font-extrabold text-white">{reportData.score}</span>
-                  <span className="text-xs tracking-widest text-amber-300 uppercase">Điểm</span>
+                {/* Điểm số to đùng */}
+                <div className="mb-6 flex justify-center">
+                  <div className="flex h-32 w-32 flex-col items-center justify-center rounded-full border-4 border-amber-500 bg-amber-500/10 shadow-[0_0_30px_rgba(245,158,11,0.3)]">
+                    <span className="text-4xl font-extrabold text-white">{reportData.score}</span>
+                    <span className="text-xs tracking-widest text-amber-300 uppercase">Điểm</span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Nhận xét */}
-              <div className="mb-6 rounded-xl border border-white/10 bg-white/5 p-4">
-                <h4 className="mb-2 flex items-center gap-2 text-sm font-bold text-amber-500">
-                  <Bot size={16} /> Nhận xét của AI:
-                </h4>
-                <p className="text-sm text-gray-300 italic">"{reportData.feedback}"</p>
-              </div>
-
-              {/* Lỗi sai & Từ hay */}
-              <div className="mb-6 grid grid-cols-2 gap-4">
-                <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-3">
-                  <h4 className="mb-2 text-xs font-bold text-red-400 uppercase">Cần khắc phục</h4>
-                  <ul className="list-inside list-disc space-y-1 text-xs text-gray-400">
-                    {reportData.mistakes?.map((m, i) => (
-                      <li key={i}>{m}</li>
-                    ))}
-                  </ul>
+                {/* Nhận xét */}
+                <div className="mb-6 rounded-xl border border-white/10 bg-white/5 p-4">
+                  <h4 className="mb-2 flex items-center gap-2 text-sm font-bold text-amber-500">
+                    <Bot size={16} /> Nhận xét của AI:
+                  </h4>
+                  <p className="text-sm text-gray-300 italic">"{reportData.feedback}"</p>
                 </div>
-                <div className="rounded-xl border border-green-500/20 bg-green-500/5 p-3">
-                  <h4 className="mb-2 text-xs font-bold text-green-400 uppercase">Từ vựng tốt</h4>
-                  <ul className="list-inside list-disc space-y-1 text-xs text-gray-400">
-                    {reportData.best_words?.map((w, i) => (
-                      <li key={i}>{w}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
 
-              {/* Nút đóng */}
-              <button
-                onClick={() => {
-                  setShowReport(false);
-                  navigate('/topics');
-                }}
-                className="w-full rounded-xl bg-amber-500 py-3 font-bold text-white shadow-lg transition-transform hover:scale-[1.02]"
-              >
-                Hoàn thành & Quay về
-              </button>
+                {/* Lỗi sai & Từ hay */}
+                <div className="mb-6 grid grid-cols-2 gap-4">
+                  <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-3">
+                    <h4 className="mb-2 text-xs font-bold text-red-400 uppercase">Cần khắc phục</h4>
+                    <ul className="list-inside list-disc space-y-1 text-xs text-gray-400">
+                      {reportData.mistakes?.map((m, i) => (
+                        <li key={i}>{m}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="rounded-xl border border-green-500/20 bg-green-500/5 p-3">
+                    <h4 className="mb-2 text-xs font-bold text-green-400 uppercase">Từ vựng tốt</h4>
+                    <ul className="list-inside list-disc space-y-1 text-xs text-gray-400">
+                      {reportData.best_words?.map((w, i) => (
+                        <li key={i}>{w}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Nút đóng */}
+                <button
+                  onClick={() => {
+                    setShowReport(false);
+                    navigate('/topics');
+                  }}
+                  className="w-full rounded-xl bg-amber-500 py-3 font-bold text-white shadow-lg transition-transform hover:scale-[1.02]"
+                >
+                  Hoàn thành & Quay về
+                </button>
+              </div>
             </div>
           </div>
         </div>

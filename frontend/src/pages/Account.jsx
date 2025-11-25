@@ -424,7 +424,7 @@ const Account = () => {
 
                 <div className="mt-10 flex justify-end gap-4 border-t border-white/10 pt-6 dark:border-gray-200/60">
                   <button
-                    className="px-6 py-3 text-sm font-semibold text-gray-200 transition-colors hover:bg-white/10 hover:text-white dark:text-gray-500 dark:hover:bg-gray-100/50 dark:hover:text-gray-900"
+                    className="rounded-lg px-6 py-3 text-sm font-semibold text-gray-200 transition-colors hover:bg-white/10 hover:text-white dark:text-gray-500 dark:hover:bg-gray-100/50 dark:hover:text-gray-900"
                     onClick={() => window.location.reload()}
                   >
                     Hủy bỏ
@@ -433,7 +433,7 @@ const Account = () => {
                   <button
                     onClick={handleSave}
                     disabled={isLoading}
-                    className="group relative flex items-center gap-2 overflow-hidden bg-gradient-to-r from-amber-400 to-orange-500 px-8 py-3 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-1 hover:shadow-amber-500/50 disabled:cursor-not-allowed disabled:opacity-70"
+                    className="group relative flex items-center gap-2 overflow-hidden rounded-lg bg-gradient-to-r from-amber-400 to-orange-500 px-8 py-3 text-sm font-bold text-white shadow-lg shadow-amber-500/20 transition-all duration-300 hover:-translate-y-1 hover:shadow-amber-500/50 disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full"></div>
                     {isLoading ? (

@@ -158,6 +158,7 @@ export const getUserHistory = async (req, res) => {
     const history = await AiSession.findAll({
       where: { user_id: userId },
       order: [['created_at', 'DESC']],
+      //limit: 20, lấy 20 bản ghi mới nhất
       attributes: ['id', 'topic_title', 'score', 'created_at', 'report_card'],
     });
 

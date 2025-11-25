@@ -163,7 +163,7 @@ export default function MultipleChoiceMode({ card, flashcards, index, nextCard, 
       >
         <button
           onClick={handleNext}
-          className="w-50 rounded-full border bg-[#121212] py-4 font-bold text-white transition-all hover:scale-[1.02] dark:from-green-500 dark:to-teal-600"
+          className="w-50 rounded-lg border bg-[#121212] py-4 font-bold text-white shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02] dark:from-green-500 dark:to-teal-600"
         >
           Tiếp theo
         </button>

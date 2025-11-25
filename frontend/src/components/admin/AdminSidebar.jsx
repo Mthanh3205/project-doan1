@@ -10,6 +10,7 @@ import {
   ChevronRight,
   X,
   Snowflake,
+  Bot,
 } from 'lucide-react';
 import { NavLink, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -56,6 +57,7 @@ export default function AdminSidebar({ isOpen, setIsOpen, isCollapsed, setIsColl
     { icon: <Users size={20} />, text: 'Người dùng', to: '/admin/users' },
     { icon: <BookCopy size={20} />, text: 'Chủ đề', to: '/admin/topics' },
     { icon: <FileText size={20} />, text: 'Từ vựng', to: '/admin/words' },
+    { icon: <Bot size={20} />, text: 'Phiên học AI', to: '/admin/ai-sessions' },
     { icon: <Star size={20} />, text: 'Đánh giá & Góp ý', to: '/admin/reviews' },
   ];
 

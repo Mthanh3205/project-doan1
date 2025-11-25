@@ -142,7 +142,7 @@ function TypingMode({ card, index, nextCard, userId }) {
             placeholder="Nhập câu trả lời của bạn..."
             autoFocus
             disabled={isChecked && isCorrect}
-            className={`w-full bg-black/20 px-6 py-4 text-xl text-white placeholder-gray-500 backdrop-blur-md transition-all focus:ring-2 focus:outline-none dark:bg-white/50 dark:text-black dark:placeholder-gray-500 ${
+            className={`w-full rounded-lg bg-black/40 px-6 py-4 text-xl text-white placeholder-gray-500 backdrop-blur-md transition-all focus:ring-2 focus:outline-none dark:bg-white/50 dark:text-black dark:placeholder-gray-500 ${
               isChecked
                 ? isCorrect
                   ? 'border-green-500/50 bg-green-500/10 focus:ring-green-500/20'
@@ -171,7 +171,7 @@ function TypingMode({ card, index, nextCard, userId }) {
         {!isChecked ? (
           <button
             onClick={checkAnswer}
-            className="w-50 rounded-full border bg-[#121212] py-3.5 font-bold text-white transition-all hover:bg-amber-500 dark:bg-gray-200 dark:text-gray-900 dark:hover:bg-green-500 dark:hover:text-white"
+            className="w-50 rounded-lg border bg-[#121212] py-3.5 font-bold text-white shadow-lg shadow-amber-500/20 transition-all hover:bg-amber-500 dark:bg-gray-200 dark:text-gray-900 dark:hover:bg-green-500 dark:hover:text-white"
           >
             Kiểm tra (Enter)
           </button>
@@ -180,14 +180,14 @@ function TypingMode({ card, index, nextCard, userId }) {
             {!isCorrect && (
               <button
                 onClick={() => setShowAnswer(true)}
-                className="flex-1 bg-white/5 py-3.5 font-semibold text-gray-300 hover:bg-white/10 hover:text-white dark:text-gray-600 dark:hover:bg-gray-100"
+                className="flex-1 rounded-lg bg-white/5 py-3.5 font-semibold text-gray-300 shadow-lg shadow-black/40 hover:bg-white/10 hover:text-white dark:text-gray-600 dark:hover:bg-gray-100"
               >
                 Xem đáp án
               </button>
             )}
             <button
               onClick={handleNext}
-              className="flex-1 bg-gradient-to-r from-amber-500 to-orange-600 py-3.5 font-bold text-white transition-all hover:-translate-y-0.5 dark:from-green-500 dark:to-teal-600"
+              className="flex-1 rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 py-3.5 font-bold text-white shadow-lg shadow-amber-500/20 transition-all hover:-translate-y-0.5 dark:from-green-500 dark:to-teal-600"
             >
               Tiếp theo (Enter)
             </button>

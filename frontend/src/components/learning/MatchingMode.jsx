@@ -235,7 +235,7 @@ export default function MatchingMode({ flashcards, userId }) {
 
           <button
             onClick={handleNextLevel}
-            className="flex items-center gap-2 rounded-full bg-[#1d1d1d] px-8 py-3 font-bold text-white transition-transform hover:scale-105 dark:from-green-500 dark:to-teal-600"
+            className="flex items-center gap-2 rounded-full bg-[#1d1d1d] px-8 py-3 font-bold text-white shadow-lg shadow-amber-500/20 transition-transform hover:scale-105 dark:from-green-500 dark:to-teal-600"
           >
             {isMasterWin ? (
               <>
