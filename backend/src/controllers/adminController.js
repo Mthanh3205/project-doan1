@@ -1,99 +1,128 @@
-// Admin CRUD Controller
 import { Op, Sequelize } from 'sequelize';
-// Import tất cả models từ index.js để đảm bảo quan hệ (associations) được nạp
-import {
-  User,
-  Topics,
-  Flashcard,
-  Feedback,
-  Notification,
-  AiSession,
-  UserProgress,
-} from '../models/index.js';
+
+// --- IMPORT TRỰC TIẾP TỪNG FILE (CHO AN TOÀN) ---
+import User from '../models/User.js';
+import Topics from '../models/Topics.js';
+import Flashcard from '../models/Flashcard.js';
+import Feedback from '../models/Feedback.js';
+import Notification from '../models/Notification.js';
+import AiSession from '../models/AiSession.js';
+import UserProgress from '../models/UserProgress.js';
 
 // ==========================================
-// 1. DASHBOARD STATS (Thống kê)
+// 1. DASHBOARD STATS (BẢN FIX LỖI 500)
 // ==========================================
 export const getDashboardStats = async (req, res) => {
   try {
-    // A. Đếm tổng
-    const userCount = await User.count();
-    const topicCount = await Topics.count();
-    const wordCount = await Flashcard.count();
-    const feedbackCount = await Feedback.count();
+    console.log('--- Bắt đầu lấy thống kê Dashboard ---');
 
-    // B. Biểu đồ 1: Tăng trưởng User (7 ngày qua)
+    // 1. Đếm tổng số lượng (Dùng try-catch từng cái để không sập cả trang)
+    const userCount = await User.count().catch((e) => 0);
+    const topicCount = await Topics.count().catch((e) => 0);
+    const wordCount = await Flashcard.count().catch((e) => 0);
+    const feedbackCount = await Feedback.count().catch((e) => 0);
+
+    // 2. Chuẩn bị dữ liệu 7 ngày qua
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
 
-    const users = await User.findAll({
-      where: { createdAt: { [Op.gte]: sevenDaysAgo } },
-      attributes: ['createdAt'],
-    });
+    // Lấy dữ liệu thô (Raw Data) - Nếu bảng chưa có thì trả về mảng rỗng
+    let progressLogs = [];
+    try {
+      progressLogs = await UserProgress.findAll({
+        where: { updatedAt: { [Op.gte]: sevenDaysAgo } },
+        attributes: ['updatedAt', 'is_memorized'],
+      });
+    } catch (e) {
+      console.log('⚠️ Bảng UserProgress chưa sẵn sàng hoặc rỗng');
+    }
 
-    const chartData = [];
+    let aiSessions = [];
+    try {
+      aiSessions = await AiSession.findAll({
+        where: { created_at: { [Op.gte]: sevenDaysAgo } },
+        attributes: ['created_at'],
+      });
+    } catch (e) {
+      console.log('⚠️ Bảng AiSession chưa sẵn sàng hoặc rỗng');
+    }
+
+    // 3. Tính toán biểu đồ (Loop 7 ngày)
+    const userGrowthData = []; // Biểu đồ Đường
+    const performanceData = []; // Biểu đồ Cột
+    const aiUsageData = []; // Biểu đồ Vùng
+
     const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
-      const count = users.filter((u) => u.createdAt.toISOString().startsWith(dateStr)).length;
+      const dayLabel = daysOfWeek[d.getDay()];
 
-      chartData.push({
-        name: daysOfWeek[d.getDay()],
+      // Lọc dữ liệu ngày đó
+      const dailyStudy = progressLogs.filter((p) => p.updatedAt.toISOString().startsWith(dateStr));
+      const dailyAi = aiSessions.filter(
+        (s) => s.created_at && s.created_at.toISOString().startsWith(dateStr)
+      );
+
+      // A. Tần suất học
+      userGrowthData.push({
+        name: dayLabel,
         date: dateStr,
-        count: count,
+        count: dailyStudy.length, // Số lượt học
       });
+
+      // B. Hiệu quả
+      const learned = dailyStudy.filter((p) => p.is_memorized).length;
+      const reviewing = dailyStudy.length - learned;
+      performanceData.push({ name: dayLabel, nho: learned, quen: reviewing });
+
+      // C. AI
+      aiUsageData.push({ name: dayLabel, sessions: dailyAi.length });
     }
 
-    // C. Biểu đồ 2: Phân bố Từ vựng (Pie Chart)
-    const allCards = await Flashcard.findAll({ attributes: ['deck_id'] });
-    const allTopics = await Topics.findAll({ attributes: ['deck_id', 'title'] });
+    // 4. Biểu đồ Tròn (Topic)
+    let pieData = [];
+    try {
+      const allCards = await Flashcard.findAll({ attributes: ['deck_id'] });
+      const allTopics = await Topics.findAll({ attributes: ['deck_id', 'title'] });
 
-    const topicMap = {};
-    allCards.forEach((card) => {
-      topicMap[card.deck_id] = (topicMap[card.deck_id] || 0) + 1;
-    });
+      const topicMap = {};
+      allCards.forEach((c) => {
+        topicMap[c.deck_id] = (topicMap[c.deck_id] || 0) + 1;
+      });
 
-    let pieData = allTopics.map((t) => ({
-      name: t.title,
-      value: topicMap[t.deck_id] || 0,
-    }));
+      pieData = allTopics.map((t) => ({ name: t.title, value: topicMap[t.deck_id] || 0 }));
+      pieData.sort((a, b) => b.value - a.value);
+      pieData = pieData.slice(0, 5);
 
-    pieData.sort((a, b) => b.value - a.value);
-    pieData = pieData.slice(0, 5);
-    if (pieData.length === 0) pieData = [{ name: 'Chưa có dữ liệu', value: 1 }];
+      if (pieData.length === 0) pieData = [{ name: 'Chưa có dữ liệu', value: 1 }];
+    } catch (e) {
+      pieData = [{ name: 'Chưa có dữ liệu', value: 1 }];
+    }
 
-    // D. Dữ liệu giả lập cho biểu đồ phụ (Hiệu quả & AI)
-    const performanceData = chartData.map((d) => ({
-      name: d.name,
-      nho: Math.floor(Math.random() * 10),
-      quen: Math.floor(Math.random() * 5),
-    }));
-    const aiUsageData = chartData.map((d) => ({
-      name: d.name,
-      sessions: Math.floor(Math.random() * 20),
-    }));
-
-    // E. Danh sách mới nhất
+    // 5. List mới nhất
     const recentUsers = await User.findAll({
       limit: 5,
       order: [['createdAt', 'DESC']],
       attributes: { exclude: ['password'] },
-    });
-    const recentTopics = await Topics.findAll({ limit: 5, order: [['created_at', 'DESC']] });
+    }).catch(() => []);
+    const recentTopics = await Topics.findAll({ limit: 5, order: [['created_at', 'DESC']] }).catch(
+      () => []
+    );
 
+    // TRẢ VỀ KẾT QUẢ
     res.json({
       userCount,
       topicCount,
       wordCount,
       feedbackCount,
       chartData: {
-        userGrowth: chartData,
-        topicDist: pieData,
+        userGrowth: userGrowthData,
         performance: performanceData,
         aiUsage: aiUsageData,
+        topicDist: pieData,
       },
       recentUsers,
       recentTopics,
@@ -105,205 +134,113 @@ export const getDashboardStats = async (req, res) => {
 };
 
 // ==========================================
-// 2. QUẢN LÝ USER
+// 2. CÁC HÀM QUẢN LÝ KHÁC
 // ==========================================
+
 export const getAllUsers = async (req, res) => {
-  try {
-    const { count, rows } = await User.findAndCountAll({ order: [['createdAt', 'DESC']] });
-    res.json({ totalUsers: count, users: rows, totalPages: 1, currentPage: 1 });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
+  const { count, rows } = await User.findAndCountAll({ order: [['createdAt', 'DESC']] });
+  res.json({ totalUsers: count, users: rows, totalPages: 1, currentPage: 1 });
 };
-
 export const toggleUserBan = async (req, res) => {
-  try {
-    const user = await User.findByPk(req.params.id);
-    if (user) {
-      user.isBanned = !user.isBanned;
-      await user.save();
-    }
-    res.json({ message: 'Thành công' });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
+  const user = await User.findByPk(req.params.id);
+  if (user) {
+    user.isBanned = !user.isBanned;
+    await user.save();
   }
+  res.json({ message: 'Thành công' });
 };
 
-// ==========================================
-// 3. QUẢN LÝ TOPICS (CHỦ ĐỀ)
-// ==========================================
+// Topics
 export const getAllTopics = async (req, res) => {
-  try {
-    const { count, rows } = await Topics.findAndCountAll({ order: [['created_at', 'DESC']] });
-    res.json({ topics: rows, totalTopics: count, totalPages: 1, currentPage: 1 });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
+  const { count, rows } = await Topics.findAndCountAll({ order: [['created_at', 'DESC']] });
+  res.json({ topics: rows, totalTopics: count, totalPages: 1, currentPage: 1 });
 };
 export const createTopicAdmin = async (req, res) => {
-  try {
-    const t = await Topics.create({ ...req.body, user_id: req.user.id });
-    res.json(t);
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
+  const t = await Topics.create({ ...req.body, user_id: req.user.id });
+  res.json(t);
 };
 export const updateTopicAdmin = async (req, res) => {
-  try {
-    await Topics.update(req.body, { where: { deck_id: req.params.id } });
-    res.json({ message: 'Updated' });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
+  await Topics.update(req.body, { where: { deck_id: req.params.id } });
+  res.json({ message: 'Updated' });
 };
 export const deleteTopicAdmin = async (req, res) => {
-  try {
-    await Flashcard.destroy({ where: { deck_id: req.params.id } });
-    await Topics.destroy({ where: { deck_id: req.params.id } });
-    res.json({ message: 'Deleted' });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
+  await Flashcard.destroy({ where: { deck_id: req.params.id } });
+  await Topics.destroy({ where: { deck_id: req.params.id } });
+  res.json({ message: 'Deleted' });
 };
 
-// ==========================================
-// 4. QUẢN LÝ WORDS (TỪ VỰNG)
-// ==========================================
+// Words
 export const getAllWords = async (req, res) => {
-  try {
-    const { count, rows } = await Flashcard.findAndCountAll({ order: [['card_id', 'DESC']] });
-    res.json({ words: rows, totalWords: count, totalPages: 1, currentPage: 1 });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
+  const { count, rows } = await Flashcard.findAndCountAll({ order: [['card_id', 'DESC']] });
+  res.json({ words: rows, totalWords: count, totalPages: 1, currentPage: 1 });
 };
 export const createWordAdmin = async (req, res) => {
-  try {
-    const w = await Flashcard.create(req.body);
-    res.json(w);
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
+  const w = await Flashcard.create(req.body);
+  res.json(w);
 };
 export const updateWordAdmin = async (req, res) => {
-  try {
-    await Flashcard.update(req.body, { where: { card_id: req.params.id } });
-    res.json({ message: 'Updated' });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
+  await Flashcard.update(req.body, { where: { card_id: req.params.id } });
+  res.json({ message: 'Updated' });
 };
 export const deleteWordAdmin = async (req, res) => {
-  try {
-    await Flashcard.destroy({ where: { card_id: req.params.id } });
-    res.json({ message: 'Deleted' });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
+  await Flashcard.destroy({ where: { card_id: req.params.id } });
+  res.json({ message: 'Deleted' });
 };
 
-// ==========================================
-// 5. QUẢN LÝ REVIEWS (ĐÁNH GIÁ)
-// ==========================================
+// Reviews
 export const getAllReviews = async (req, res) => {
-  try {
-    const data = await Feedback.findAll({
-      include: [{ model: User, as: 'user', attributes: ['name', 'email', 'picture'] }],
-      order: [['createdAt', 'DESC']],
-    });
-    res.json(data);
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
+  const data = await Feedback.findAll({
+    include: [{ model: User, as: 'user', attributes: ['name', 'email', 'picture'] }],
+    order: [['createdAt', 'DESC']],
+  });
+  res.json(data);
 };
-
 export const getReviewDetail = async (req, res) => {
-  try {
-    const data = await Feedback.findByPk(req.params.id, {
-      include: [{ model: User, as: 'user', attributes: ['name', 'email', 'picture'] }],
-    });
-    if (!data) return res.status(404).json({ message: 'Not found' });
-    res.json(data);
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
+  const data = await Feedback.findByPk(req.params.id, {
+    include: [{ model: User, as: 'user', attributes: ['name', 'email', 'picture'] }],
+  });
+  if (!data) return res.status(404).json({ message: 'Not found' });
+  res.json(data);
 };
-
 export const deleteReview = async (req, res) => {
-  try {
-    await Feedback.destroy({ where: { id: req.params.id } });
-    res.json({ success: true });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
+  await Feedback.destroy({ where: { id: req.params.id } });
+  res.json({ success: true });
 };
-
 export const toggleReviewVisibility = async (req, res) => {
-  try {
-    const r = await Feedback.findByPk(req.params.id);
-    r.isVisible = !r.isVisible;
-    await r.save();
-    res.json({ success: true });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
+  const r = await Feedback.findByPk(req.params.id);
+  r.isVisible = !r.isVisible;
+  await r.save();
+  res.json({ success: true });
 };
-
 export const replyReview = async (req, res) => {
-  try {
-    const r = await Feedback.findByPk(req.params.id);
-    r.admin_reply = req.body.replyText;
-    r.replied_at = new Date();
-    await r.save();
-    res.json({ success: true });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
+  const r = await Feedback.findByPk(req.params.id);
+  r.admin_reply = req.body.replyText;
+  r.replied_at = new Date();
+  await r.save();
+  res.json({ success: true });
 };
 
-// ==========================================
-// 6. QUẢN LÝ NOTIFICATIONS (THÔNG BÁO)
-// ==========================================
+// Notifications
 export const getNotifications = async (req, res) => {
-  try {
-    const data = await Notification.findAll({ limit: 5, order: [['createdAt', 'DESC']] });
-    const unread = await Notification.count({ where: { isRead: false } });
-    res.json({ data, unread });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
+  const data = await Notification.findAll({ limit: 5, order: [['createdAt', 'DESC']] });
+  const unread = await Notification.count({ where: { isRead: false } });
+  res.json({ data, unread });
 };
-
 export const markAllRead = async (req, res) => {
-  try {
-    await Notification.update({ isRead: true }, { where: { isRead: false } });
-    res.json({ success: true });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
+  await Notification.update({ isRead: true }, { where: { isRead: false } });
+  res.json({ success: true });
 };
 
-// ==========================================
-// 7. QUẢN LÝ AI SESSIONS (PHIÊN HỌC AI) - ĐÂY LÀ PHẦN BẠN THIẾU
-// ==========================================
+// AI Sessions
 export const getAllAiSessions = async (req, res) => {
-  try {
-    const list = await AiSession.findAll({
-      limit: 100,
-      order: [['created_at', 'DESC']],
-      include: [{ model: User, as: 'user', attributes: ['name', 'email', 'picture'] }],
-    });
-    res.json(list);
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
+  const data = await AiSession.findAll({
+    limit: 100,
+    order: [['created_at', 'DESC']],
+    include: [{ model: User, as: 'user', attributes: ['name', 'email', 'picture'] }],
+  });
+  res.json(data);
 };
-
 export const deleteAiSession = async (req, res) => {
-  try {
-    await AiSession.destroy({ where: { id: req.params.id } });
-    res.json({ success: true });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
+  await AiSession.destroy({ where: { id: req.params.id } });
+  res.json({ success: true });
 };
