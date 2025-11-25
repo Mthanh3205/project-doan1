@@ -38,93 +38,70 @@ export const getAllUsers = async (req, res) => {
 
 export const getDashboardStats = async (req, res) => {
   try {
-    // 1Đếm tổng số lượng
+    //  Đếm tổng
     const userCount = await User.count();
     const topicCount = await Topics.count();
     const wordCount = await Flashcard.count();
     const feedbackCount = await Feedback.count();
 
-    //  Biểu đồ 1: Tần suất học tập (7 ngày qua - Dựa trên UserProgress)
+    // BIỂU ĐỒ USER
+    // Lấy số user tạo trong 7 ngày qua
+    const [userGrowth] = await sequelize.query(`
+      SELECT DATE(createdAt) as date, COUNT(*) as count 
+      FROM users 
+      WHERE createdAt >= NOW() - INTERVAL 7 DAY 
+      GROUP BY DATE(createdAt) 
+      ORDER BY date ASC
+    `);
 
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-
-    const usersByDate = await User.findAll({
-      where: { createdAt: { [Op.gte]: sevenDaysAgo } },
-      attributes: [
-        [Sequelize.fn('DATE', Sequelize.col('createdAt')), 'date'],
-        [Sequelize.fn('COUNT', 'id'), 'count'],
-      ],
-      group: ['date'],
-      order: [['date', 'ASC']],
-      raw: true,
-    });
-
+    // Map dữ liệu User ra 7 ngày gần nhất (để lấp đầy ngày trống)
     const chartData = [];
     const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
-      const record = usersByDate.find((u) => u.date === dateStr);
+      const dateString = d.toISOString().split('T')[0];
+
+      const found = userGrowth.find(
+        (u) => u.date === dateString || u.date.toString() === dateString
+      );
 
       chartData.push({
         name: daysOfWeek[d.getDay()],
-        date: dateStr,
-        count: record ? parseInt(record.count) : 0,
+        date: dateString,
+        count: found ? parseInt(found.count) : 0,
       });
     }
 
-    //  Biểu đồ 2: Top 5 Chủ đề nhiều từ vựng nhất (Pie Chart)
-    const topicStats = await Topics.findAll({
-      attributes: [
-        'title',
-        [Sequelize.fn('COUNT', Sequelize.col('flashcards.card_id')), 'wordCount'],
-      ],
-      include: [
-        {
-          model: Flashcard,
-          as: 'flashcards',
-          attributes: [],
-        },
-      ],
-      group: ['Topics.deck_id'],
-      order: [[Sequelize.literal('wordCount'), 'DESC']],
-      limit: 5,
-      raw: true,
-    });
+    //  BIỂU ĐỒ TRÒN
+    // Đếm số flashcard theo deck_id, join với bảng decks để lấy tên title
+    const [topicDist] = await sequelize.query(`
+      SELECT d.title as name, COUNT(f.card_id) as value
+      FROM decks d
+      LEFT JOIN flashcards f ON d.deck_id = f.deck_id
+      GROUP BY d.deck_id, d.title
+      HAVING value > 0
+      ORDER BY value DESC
+      LIMIT 5
+    `);
 
-    const pieData = topicStats.map((t) => ({
-      name: t.title,
-      value: parseInt(t.wordCount),
-    }));
+    // List mới nhất
+    const recentUsers = await User.findAll({ limit: 5, order: [['createdAt', 'DESC']] });
+    const recentTopics = await Topics.findAll({ limit: 5, order: [['created_at', 'DESC']] });
 
-    // Dữ liệu bảng danh sách mới nhất
-    const recentUsers = await User.findAll({
-      limit: 5,
-      order: [['createdAt', 'DESC']],
-      attributes: { exclude: ['password', 'googleId'] },
-    });
-
-    const recentTopics = await Topics.findAll({
-      limit: 5,
-      order: [['created_at', 'DESC']],
-    });
-
-    // Trả về JSON
     res.json({
       userCount,
       topicCount,
       wordCount,
       feedbackCount,
-      chartData, // Dữ liệu biểu đồ đường
-      pieData: pieData.length > 0 ? pieData : [{ name: 'Chưa có dữ liệu', value: 1 }],
+      chartData, // Biểu đồ đường
+      pieData: topicDist.length ? topicDist : [{ name: 'Chưa có dữ liệu', value: 1 }], // Biểu đồ tròn
       recentUsers,
       recentTopics,
     });
   } catch (error) {
     console.error('Lỗi Dashboard:', error);
-    res.status(500).json({ message: 'Lỗi server lấy thống kê' });
+    res.status(500).json({ message: 'Lỗi server: ' + error.message });
   }
 };
 
