@@ -7,7 +7,6 @@ import {
   UserProgress,
   Notification,
   AiSession,
-  toggleUserBan,
   sequelize,
 } from '../models/index.js';
 import { Op, Sequelize } from 'sequelize';
