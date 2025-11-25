@@ -16,67 +16,89 @@ import {
 // ==========================================
 export const getDashboardStats = async (req, res) => {
   try {
-    // A. Đếm tổng
+    // 1. Đếm tổng số lượng (Cards trên cùng)
     const userCount = await User.count();
     const topicCount = await Topics.count();
     const wordCount = await Flashcard.count();
     const feedbackCount = await Feedback.count();
 
-    // B. Biểu đồ 1: Tăng trưởng User (7 ngày qua)
+    // 2. LẤY DỮ LIỆU TRONG 7 NGÀY QUA
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
 
-    const users = await User.findAll({
-      where: { createdAt: { [Op.gte]: sevenDaysAgo } },
-      attributes: ['createdAt'],
+    // A. Lấy dữ liệu Tiến độ học tập (UserProgress)
+    // Đây là bảng lưu: Ai đã học thẻ nào, vào lúc nào, thuộc hay chưa
+    const progressLogs = await UserProgress.findAll({
+      where: { updatedAt: { [Op.gte]: sevenDaysAgo } },
+      attributes: ['updatedAt', 'is_memorized'],
     });
 
-    const chartData = [];
+    // B. Lấy dữ liệu Phiên chat AI (AiSession)
+    const aiSessions = await AiSession.findAll({
+      where: { created_at: { [Op.gte]: sevenDaysAgo } },
+      attributes: ['created_at'],
+    });
+
+    // 3. TÍNH TOÁN BIỂU ĐỒ
+    const learningFrequency = []; // Biểu đồ đường (Số lượt học)
+    const performanceData = []; // Biểu đồ cột (Hiệu quả)
+    const aiUsageData = []; // Biểu đồ vùng (AI)
+
     const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
-      const count = users.filter((u) => u.createdAt.toISOString().startsWith(dateStr)).length;
+      const dateStr = d.toISOString().split('T')[0]; // YYYY-MM-DD
+      const dayLabel = daysOfWeek[d.getDay()];
 
-      chartData.push({
-        name: daysOfWeek[d.getDay()],
+      // --- LỌC DỮ LIỆU THEO NGÀY ---
+
+      // Lọc các lượt học trong ngày này
+      const dailyStudy = progressLogs.filter((p) => p.updatedAt.toISOString().startsWith(dateStr));
+
+      // Lọc các phiên chat AI trong ngày này
+      const dailyAi = aiSessions.filter((s) => s.created_at.toISOString().startsWith(dateStr));
+
+      // --- ĐẨY VÀO MẢNG DỮ LIỆU ---
+
+      // 1. Biểu đồ Đường: Tần suất học (Tổng số lượt tương tác thẻ trong ngày)
+      learningFrequency.push({
+        name: dayLabel,
         date: dateStr,
-        count: count,
+        count: dailyStudy.length, // <--- GIỜ NÓ ĐẾM SỐ LƯỢT HỌC, KHÔNG ĐẾM USER NỮA
+      });
+
+      // 2. Biểu đồ Cột: Hiệu quả ghi nhớ
+      const learned = dailyStudy.filter((p) => p.is_memorized).length;
+      const reviewing = dailyStudy.length - learned;
+
+      performanceData.push({
+        name: dayLabel,
+        nho: learned,
+        quen: reviewing,
+      });
+
+      // 3. Biểu đồ AI
+      aiUsageData.push({
+        name: dayLabel,
+        sessions: dailyAi.length,
       });
     }
 
-    // C. Biểu đồ 2: Phân bố Từ vựng (Pie Chart)
+    // 4. Biểu đồ Tròn (Top Chủ đề) - Giữ nguyên
     const allCards = await Flashcard.findAll({ attributes: ['deck_id'] });
     const allTopics = await Topics.findAll({ attributes: ['deck_id', 'title'] });
-
     const topicMap = {};
     allCards.forEach((card) => {
       topicMap[card.deck_id] = (topicMap[card.deck_id] || 0) + 1;
     });
-
-    let pieData = allTopics.map((t) => ({
-      name: t.title,
-      value: topicMap[t.deck_id] || 0,
-    }));
-
+    let pieData = allTopics.map((t) => ({ name: t.title, value: topicMap[t.deck_id] || 0 }));
     pieData.sort((a, b) => b.value - a.value);
     pieData = pieData.slice(0, 5);
     if (pieData.length === 0) pieData = [{ name: 'Chưa có dữ liệu', value: 1 }];
 
-    // D. Dữ liệu giả lập cho biểu đồ phụ (Hiệu quả & AI)
-    const performanceData = chartData.map((d) => ({
-      name: d.name,
-      nho: Math.floor(Math.random() * 10),
-      quen: Math.floor(Math.random() * 5),
-    }));
-    const aiUsageData = chartData.map((d) => ({
-      name: d.name,
-      sessions: Math.floor(Math.random() * 20),
-    }));
-
-    // E. Danh sách mới nhất
+    // 5. List mới nhất
     const recentUsers = await User.findAll({
       limit: 5,
       order: [['createdAt', 'DESC']],
@@ -84,16 +106,17 @@ export const getDashboardStats = async (req, res) => {
     });
     const recentTopics = await Topics.findAll({ limit: 5, order: [['created_at', 'DESC']] });
 
+    // TRẢ VỀ JSON
     res.json({
       userCount,
       topicCount,
       wordCount,
       feedbackCount,
       chartData: {
-        userGrowth: chartData,
-        topicDist: pieData,
+        userGrowth: learningFrequency, // Frontend đang dùng key này cho biểu đồ đường
         performance: performanceData,
         aiUsage: aiUsageData,
+        topicDist: pieData,
       },
       recentUsers,
       recentTopics,
