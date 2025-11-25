@@ -1,6 +1,9 @@
 //Admin CRUD
-
-import { User, Topics, Flashcard, Feedback, UserProgress } from '../models/index.js';
+import User from '../models/User.js';
+import Topics from '../models/Topics.js';
+import Flashcard from '../models/Flashcard.js';
+import Feedback from '../models/Feedback.js';
+import UserProgress from '../models/UserProgress.js';
 import { Op, Sequelize } from 'sequelize';
 
 export const getAllUsers = async (req, res) => {
