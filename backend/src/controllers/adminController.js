@@ -178,6 +178,7 @@ export const toggleUserBan = async (req, res) => {
 };
 
 // Topics
+
 export const getAllTopics = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
@@ -185,9 +186,10 @@ export const getAllTopics = async (req, res) => {
     const offset = (page - 1) * limit;
     const search = req.query.search || '';
 
+    // Logic tìm kiếm theo Tiêu đề (title)
     const whereCondition = search
       ? {
-          title: { [Op.like]: `%${search}%` }, // Tìm theo tiêu đề
+          title: { [Op.like]: `%${search}%` },
         }
       : {};
 
@@ -222,6 +224,7 @@ export const deleteTopicAdmin = async (req, res) => {
 };
 
 // Words
+
 export const getAllWords = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
@@ -231,12 +234,15 @@ export const getAllWords = async (req, res) => {
     const deckId = req.query.deck_id; // Lọc theo bộ thẻ
 
     const whereCondition = {};
+
+    // Logic tìm kiếm từ vựng (Mặt trước hoặc Mặt sau)
     if (search) {
       whereCondition[Op.or] = [
         { front_text: { [Op.like]: `%${search}%` } },
         { back_text: { [Op.like]: `%${search}%` } },
       ];
     }
+    // Logic lọc theo ID bộ thẻ
     if (deckId) {
       whereCondition.deck_id = deckId;
     }
@@ -276,6 +282,7 @@ export const getAllReviews = async (req, res) => {
   try {
     const search = req.query.search || '';
 
+    // Tìm kiếm trong nội dung đánh giá
     const whereCondition = search
       ? {
           comment: { [Op.like]: `%${search}%` },
