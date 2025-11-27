@@ -27,23 +27,14 @@ export default function ManageTopics() {
     setDebouncedSearch(searchTerm);
   };
 
-  const clearSearch = () => {
-    setSearchTerm('');
-    setDebouncedSearch('');
-    setPage(1);
-  };
-
-  const fetchTopics = async () => {
+  const fetchTopics = async (searchQuery = '') => {
     setLoading(true);
     try {
       const token = sessionStorage.getItem('accessToken');
-      if (!token) throw new Error('Không tìm thấy token');
-
+      // Gửi search query lên server
       const res = await fetch(
-        `https://project-doan1-backend.onrender.com/api/admin/topics?page=${page}&search=${encodeURIComponent(debouncedSearch)}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        `https://project-doan1-backend.onrender.com/api/admin/topics?page=${page}&search=${encodeURIComponent(searchQuery)}`,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (!res.ok) throw new Error('Lỗi tải dữ liệu');
@@ -54,6 +45,26 @@ export default function ManageTopics() {
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchTopics(debouncedSearch);
+  }, [page, debouncedSearch]);
+
+  // Xử lý khi gõ vào ô tìm kiếm (Debounce 0.5s)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1);
+      setDebouncedSearch(searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Xóa tìm kiếm
+  const clearSearch = () => {
+    setSearchTerm('');
+    setDebouncedSearch('');
+    setPage(1);
   };
 
   useEffect(() => {

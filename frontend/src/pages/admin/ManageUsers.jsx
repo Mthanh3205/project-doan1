@@ -11,9 +11,8 @@ export default function ManageUsers() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
-  const [searchTerm, setSearchTerm] = useState(''); // State lưu từ khóa tìm kiếm
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // STATE CHO MODAL CHI TIẾT
   const [selectedUser, setSelectedUser] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -37,15 +36,13 @@ export default function ManageUsers() {
     }
   };
 
-  // 1. Gọi API khi chuyển trang
   useEffect(() => {
     fetchUsers(searchTerm);
   }, [page]);
 
-  // 2. Xử lý Tìm kiếm (Debounce: Đợi người dùng ngừng gõ 0.5s mới gọi API)
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      setPage(1); // Reset về trang 1 khi tìm kiếm
+      setPage(1);
       fetchUsers(searchTerm);
     }, 500);
 
@@ -191,7 +188,7 @@ export default function ManageUsers() {
       </div>
 
       {/* Bảng Danh sách */}
-      <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
+      <div className="w-full overflow-hidden">
         <div className="overflow-x-auto bg-[#1a1a1a]">
           <table className="min-w-full divide-y divide-gray-800">
             <thead className="bg-white/5">

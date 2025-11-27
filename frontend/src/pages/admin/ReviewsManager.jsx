@@ -6,14 +6,18 @@ const ReviewsManager = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedReview, setSelectedReview] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   //HÀM LẤY DỮ LIỆU
   const fetchReviews = async () => {
     try {
       const token = sessionStorage.getItem('accessToken');
-      const res = await fetch('https://project-doan1-backend.onrender.com/api/admin/reviews', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `https://project-doan1-backend.onrender.com/api/admin/reviews?search=${encodeURIComponent(query)}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       const data = await res.json();
       if (res.ok) {
         setReviews(data);
@@ -25,6 +29,12 @@ const ReviewsManager = () => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchReviews(searchTerm);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   useEffect(() => {
     fetchReviews();
@@ -84,6 +94,8 @@ const ReviewsManager = () => {
           <input
             placeholder="Tìm kiếm..."
             className="w-48 bg-transparent text-sm text-white outline-none"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>

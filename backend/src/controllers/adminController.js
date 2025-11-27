@@ -38,7 +38,7 @@ export const getDashboardStats = async (req, res) => {
       attributes: ['updatedAt', 'is_learned'],
     }).catch(() => []);
 
-    // B. Lấy dữ liệu AI
+    //Lấy dữ liệu AI
     const aiSessions = await AiSession.findAll({
       where: { created_at: { [Op.gte]: sevenDaysAgo } },
       attributes: ['created_at'],
@@ -154,7 +154,7 @@ export const getAllUsers = async (req, res) => {
       attributes: { exclude: ['password'] },
       limit: limit,
       offset: offset,
-      order: [['createdAt', 'DESC']], // Mới nhất lên đầu
+      order: [['createdAt', 'DESC']],
     });
 
     res.json({
@@ -179,8 +179,33 @@ export const toggleUserBan = async (req, res) => {
 
 // Topics
 export const getAllTopics = async (req, res) => {
-  const { count, rows } = await Topics.findAndCountAll({ order: [['created_at', 'DESC']] });
-  res.json({ topics: rows, totalTopics: count, totalPages: 1, currentPage: 1 });
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = 10;
+    const offset = (page - 1) * limit;
+    const search = req.query.search || '';
+
+    const whereCondition = search
+      ? {
+          title: { [Op.like]: `%${search}%` }, // Tìm theo tiêu đề
+        }
+      : {};
+
+    const { count, rows } = await Topics.findAndCountAll({
+      where: whereCondition,
+      limit,
+      offset,
+      order: [['created_at', 'DESC']],
+    });
+    res.json({
+      topics: rows,
+      totalTopics: count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page,
+    });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
 };
 export const createTopicAdmin = async (req, res) => {
   const t = await Topics.create({ ...req.body, user_id: req.user.id });
@@ -198,8 +223,39 @@ export const deleteTopicAdmin = async (req, res) => {
 
 // Words
 export const getAllWords = async (req, res) => {
-  const { count, rows } = await Flashcard.findAndCountAll({ order: [['card_id', 'DESC']] });
-  res.json({ words: rows, totalWords: count, totalPages: 1, currentPage: 1 });
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = 10;
+    const offset = (page - 1) * limit;
+    const search = req.query.search || '';
+    const deckId = req.query.deck_id; // Lọc theo bộ thẻ
+
+    const whereCondition = {};
+    if (search) {
+      whereCondition[Op.or] = [
+        { front_text: { [Op.like]: `%${search}%` } },
+        { back_text: { [Op.like]: `%${search}%` } },
+      ];
+    }
+    if (deckId) {
+      whereCondition.deck_id = deckId;
+    }
+
+    const { count, rows } = await Flashcard.findAndCountAll({
+      where: whereCondition,
+      limit,
+      offset,
+      order: [['card_id', 'DESC']],
+    });
+    res.json({
+      words: rows,
+      totalWords: count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page,
+    });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
 };
 export const createWordAdmin = async (req, res) => {
   const w = await Flashcard.create(req.body);
@@ -215,12 +271,26 @@ export const deleteWordAdmin = async (req, res) => {
 };
 
 // Reviews
+
 export const getAllReviews = async (req, res) => {
-  const data = await Feedback.findAll({
-    include: [{ model: User, as: 'user', attributes: ['name', 'email', 'picture'] }],
-    order: [['createdAt', 'DESC']],
-  });
-  res.json(data);
+  try {
+    const search = req.query.search || '';
+
+    const whereCondition = search
+      ? {
+          comment: { [Op.like]: `%${search}%` },
+        }
+      : {};
+
+    const list = await Feedback.findAll({
+      where: whereCondition,
+      include: [{ model: User, as: 'user', attributes: ['name', 'email', 'picture'] }],
+      order: [['createdAt', 'DESC']],
+    });
+    res.json(list);
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
 };
 export const getReviewDetail = async (req, res) => {
   const data = await Feedback.findByPk(req.params.id, {
