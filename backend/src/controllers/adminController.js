@@ -1,6 +1,4 @@
 import { Op, Sequelize } from 'sequelize';
-
-// --- IMPORT TRỰC TIẾP TỪNG FILE (CHO AN TOÀN) ---
 import User from '../models/User.js';
 import Topics from '../models/Topics.js';
 import Flashcard from '../models/Flashcard.js';
@@ -9,7 +7,7 @@ import Notification from '../models/Notification.js';
 import AiSession from '../models/AiSession.js';
 import UserProgress from '../models/UserProgress.js';
 
-// --- HÀM PHỤ TRỢ: SO SÁNH NGÀY (BỎ QUA GIỜ PHÚT) ---
+// SO SÁNH NGÀY (BỎ QUA GIỜ PHÚT)
 const isSameDay = (d1, d2) => {
   const date1 = new Date(d1);
   const date2 = new Date(d2);
@@ -20,25 +18,21 @@ const isSameDay = (d1, d2) => {
   );
 };
 
-// ==========================================
-// 1. DASHBOARD STATS (BẢN FIX LỖI 500)
-// ==========================================
 export const getDashboardStats = async (req, res) => {
   try {
     console.log('--- Đang tính toán thống kê ---');
 
-    // 1. Đếm tổng số lượng
+    // Đếm tổng số lượng
     const userCount = await User.count().catch(() => 0);
     const topicCount = await Topics.count().catch(() => 0);
     const wordCount = await Flashcard.count().catch(() => 0);
     const feedbackCount = await Feedback.count().catch(() => 0);
 
-    // 2. Lấy dữ liệu thô trong 7 ngày qua
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
 
-    // A. Lấy dữ liệu học tập (UserProgress)
-    // SỬA LỖI: Đảm bảo lấy cột 'is_learned' và 'updatedAt'
+    //  Lấy dữ liệu học tập (UserProgress)
+
     const progressLogs = await UserProgress.findAll({
       where: { updatedAt: { [Op.gte]: sevenDaysAgo } },
       attributes: ['updatedAt', 'is_learned'],
@@ -50,10 +44,10 @@ export const getDashboardStats = async (req, res) => {
       attributes: ['created_at'],
     }).catch(() => []);
 
-    // 3. Vòng lặp tính toán 7 ngày
-    const userGrowthData = []; // Dùng cho Biểu đồ đường (Tần suất học)
-    const performanceData = []; // Dùng cho Biểu đồ cột (Hiệu quả)
-    const aiUsageData = []; // Dùng cho Biểu đồ vùng (AI)
+    // Vòng lặp tính toán 7 ngày
+    const userGrowthData = [];
+    const performanceData = [];
+    const aiUsageData = [];
 
     const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
@@ -63,18 +57,17 @@ export const getDashboardStats = async (req, res) => {
       const dateStr = d.toISOString().split('T')[0];
       const dayLabel = daysOfWeek[d.getDay()];
 
-      // Lọc dữ liệu của ngày 'd'
       const dailyStudy = progressLogs.filter((p) => isSameDay(p.updatedAt, d));
       const dailyAi = aiSessions.filter((s) => isSameDay(s.created_at, d));
 
-      // A. Biểu đồ Đường: Số lượt ôn tập
+      //  Biểu đồ Đường: Số lượt ôn tập
       userGrowthData.push({
         name: dayLabel,
         date: dateStr,
         count: dailyStudy.length, // Tổng số thẻ đã lật trong ngày
       });
 
-      // B. Biểu đồ Cột: Hiệu quả (SỬA LỖI: Dùng p.is_learned)
+      // Biểu đồ Cột: Hiệu quả
       const learned = dailyStudy.filter((p) => p.is_learned === true).length;
       const reviewing = dailyStudy.filter((p) => p.is_learned === false).length;
 
@@ -84,14 +77,14 @@ export const getDashboardStats = async (req, res) => {
         quen: reviewing,
       });
 
-      // C. Biểu đồ AI
+      // Biểu đồ AI
       aiUsageData.push({
         name: dayLabel,
         sessions: dailyAi.length,
       });
     }
 
-    // 4. Biểu đồ Tròn (Top Chủ đề - Giữ nguyên)
+    //  Biểu đồ Tròn (Top Chủ đề - Giữ nguyên)
     let pieData = [];
     try {
       const allCards = await Flashcard.findAll({ attributes: ['deck_id'] });
@@ -108,7 +101,7 @@ export const getDashboardStats = async (req, res) => {
       pieData = [{ name: 'Chưa có dữ liệu', value: 1 }];
     }
 
-    // 5. List mới nhất
+    // List mới nhất
     const recentUsers = await User.findAll({
       limit: 5,
       order: [['createdAt', 'DESC']],
@@ -125,7 +118,7 @@ export const getDashboardStats = async (req, res) => {
       wordCount,
       feedbackCount,
       chartData: {
-        userGrowth: userGrowthData, // Gán dữ liệu học tập vào đây
+        userGrowth: userGrowthData,
         performance: performanceData,
         aiUsage: aiUsageData,
         topicDist: pieData,
@@ -140,8 +133,40 @@ export const getDashboardStats = async (req, res) => {
 };
 
 export const getAllUsers = async (req, res) => {
-  const { count, rows } = await User.findAndCountAll({ order: [['createdAt', 'DESC']] });
-  res.json({ totalUsers: count, users: rows, totalPages: 1, currentPage: 1 });
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const offset = (page - 1) * limit;
+    const search = req.query.search || ''; // Lấy từ khóa tìm kiếm
+
+    // Tạo điều kiện lọc
+    const whereCondition = search
+      ? {
+          [Op.or]: [
+            { name: { [Op.like]: `%${search}%` } }, // Tìm theo tên (gần đúng)
+            { email: { [Op.like]: `%${search}%` } }, // Tìm theo email
+          ],
+        }
+      : {};
+
+    const { count, rows } = await User.findAndCountAll({
+      where: whereCondition, // Áp dụng bộ lọc
+      attributes: { exclude: ['password'] },
+      limit: limit,
+      offset: offset,
+      order: [['createdAt', 'DESC']], // Mới nhất lên đầu
+    });
+
+    res.json({
+      totalUsers: count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page,
+      users: rows,
+    });
+  } catch (error) {
+    console.error('Lỗi lấy user:', error);
+    res.status(500).json({ message: 'Lỗi server' });
+  }
 };
 export const toggleUserBan = async (req, res) => {
   const user = await User.findByPk(req.params.id);

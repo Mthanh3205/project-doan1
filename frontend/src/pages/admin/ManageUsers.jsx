@@ -11,18 +11,20 @@ export default function ManageUsers() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState(''); // State lưu từ khóa tìm kiếm
 
-  //  STATE CHO MODAL CHI TIẾT
+  // STATE CHO MODAL CHI TIẾT
   const [selectedUser, setSelectedUser] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  //  LẤY DỮ LIỆU
-  const fetchUsers = async () => {
+  // HÀM GỌI API
+  const fetchUsers = async (searchQuery = '') => {
     setLoading(true);
     try {
       const token = sessionStorage.getItem('accessToken');
+      // Gửi thêm tham số search lên server
       const res = await fetch(
-        `https://project-doan1-backend.onrender.com/api/admin/users?page=${page}`,
+        `https://project-doan1-backend.onrender.com/api/admin/users?page=${page}&search=${searchQuery}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!res.ok) throw new Error('Lỗi tải danh sách');
@@ -35,34 +37,28 @@ export default function ManageUsers() {
     }
   };
 
+  // 1. Gọi API khi chuyển trang
   useEffect(() => {
-    fetchUsers();
+    fetchUsers(searchTerm);
   }, [page]);
-  //Tìm kiếm
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filteredSessions, setFilteredSessions] = useState([]);
-  const [sessions, setSessions] = useState([]);
-  useEffect(() => {
-    const lowerTerm = searchTerm.toLowerCase();
-    const filtered = sessions.filter(
-      (s) =>
-        s.user?.name?.toLowerCase().includes(lowerTerm) ||
-        s.user?.email?.toLowerCase().includes(lowerTerm) ||
-        s.topic_title?.toLowerCase().includes(lowerTerm)
-    );
-    setFilteredSessions(filtered);
-  }, [searchTerm, sessions]);
 
-  //  XỬ LÝ KHÓA / MỞ KHÓA TÀI KHOẢN
+  // 2. Xử lý Tìm kiếm (Debounce: Đợi người dùng ngừng gõ 0.5s mới gọi API)
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      setPage(1); // Reset về trang 1 khi tìm kiếm
+      fetchUsers(searchTerm);
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
+
+  // HÀM TOGGLE BAN
   const handleToggleBan = async (userId, currentStatus) => {
-    // currentStatus: true là đang bị ban -> cần mở (false)
-    // currentStatus: false là đang hoạt động -> cần ban (true)
     const actionText = currentStatus ? 'Mở khóa' : 'Khóa';
     if (!window.confirm(`Bạn có chắc muốn ${actionText} tài khoản này?`)) return;
 
     try {
       const token = sessionStorage.getItem('accessToken');
-      // Gọi API backend (Bạn cần viết API này ở Bước 2)
       const res = await fetch(
         `https://project-doan1-backend.onrender.com/api/admin/users/${userId}/toggle-ban`,
         {
@@ -75,13 +71,11 @@ export default function ManageUsers() {
 
       toast.success(`Đã ${actionText} tài khoản thành công!`);
 
-      // Cập nhật lại danh sách ngay lập tức mà không cần load lại trang
       setData((prev) => ({
         ...prev,
         users: prev.users.map((u) => (u.id === userId ? { ...u, isBanned: !currentStatus } : u)),
       }));
 
-      // Nếu đang mở modal của user này thì cũng cập nhật state modal
       if (selectedUser && selectedUser.id === userId) {
         setSelectedUser((prev) => ({ ...prev, isBanned: !currentStatus }));
       }
@@ -90,20 +84,17 @@ export default function ManageUsers() {
     }
   };
 
-  //  MỞ MODAL
   const handleViewDetails = (user) => {
     setSelectedUser(user);
     setIsModalOpen(true);
   };
 
-  //  COMPONENT MODAL
+  // COMPONENT MODAL
   const UserDetailModal = () => {
     if (!isModalOpen || !selectedUser) return null;
-
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-        <div className="animate-in fade-in zoom-in w-full max-w-lg overflow-hidden rounded-xl bg-[#1d1d1d] shadow-2xl duration-200">
-          {/* Header */}
+        <div className="animate-in fade-in zoom-in w-full max-w-lg overflow-hidden rounded-xl border border-white/10 bg-[#1d1d1d] shadow-2xl duration-200">
           <div className="flex items-center justify-between border-b border-gray-700 p-4">
             <h3 className="text-xl font-bold text-white">Thông tin chi tiết</h3>
             <button
@@ -113,40 +104,41 @@ export default function ManageUsers() {
               <X size={24} />
             </button>
           </div>
-
-          {/* Body */}
           <div className="space-y-4 p-6">
             <div className="mb-6 flex justify-center">
-              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-2 bg-gray-600 text-2xl font-bold text-white">
+              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-2 border-amber-500 bg-gray-600 text-2xl font-bold text-white">
                 {selectedUser.picture ? (
-                  <img src={selectedUser.picture} className="h-full w-full object-cover" />
+                  <img
+                    src={selectedUser.picture}
+                    className="h-full w-full object-cover"
+                    alt="avt"
+                  />
                 ) : (
-                  selectedUser.name.charAt(0)
+                  selectedUser.name.charAt(0).toUpperCase()
                 )}
               </div>
             </div>
-
-            <div className="grid grid-cols-2 gap-4 text-sm">
+            <div className="grid grid-cols-2 gap-4 text-sm text-gray-300">
               <div>
-                <p className="text-gray-400">Họ tên:</p>
+                <p className="text-gray-500">Họ tên:</p>
                 <p className="text-lg font-medium text-white">{selectedUser.name}</p>
               </div>
               <div>
-                <p className="text-gray-400">ID:</p>
+                <p className="text-gray-500">ID:</p>
                 <p className="font-mono text-white">{selectedUser.id}</p>
               </div>
               <div className="col-span-2">
-                <p className="text-gray-400">Email:</p>
+                <p className="text-gray-500">Email:</p>
                 <p className="font-medium text-white">{selectedUser.email}</p>
               </div>
               <div>
-                <p className="text-gray-400">Ngày tham gia:</p>
+                <p className="text-gray-500">Ngày tham gia:</p>
                 <p className="text-white">
                   {new Date(selectedUser.createdAt).toLocaleDateString('vi-VN')}
                 </p>
               </div>
               <div>
-                <p className="text-gray-400">Trạng thái:</p>
+                <p className="text-gray-500">Trạng thái:</p>
                 <span
                   className={`rounded px-2 py-1 text-xs font-bold ${selectedUser.isBanned ? 'bg-red-500/20 text-red-500' : 'bg-green-500/20 text-green-500'}`}
                 >
@@ -155,19 +147,13 @@ export default function ManageUsers() {
               </div>
             </div>
           </div>
-
-          {/* Footer Actions */}
           <div className="flex justify-end gap-3 border-t border-gray-700 bg-[#121212] p-4">
             <button
               onClick={() => handleToggleBan(selectedUser.id, selectedUser.isBanned)}
-              className={`flex items-center gap-2 rounded px-4 py-2 font-bold text-white transition-colors ${
-                selectedUser.isBanned
-                  ? 'bg-green-600 hover:bg-green-700'
-                  : 'bg-amber-500 hover:bg-red-700'
-              }`}
+              className={`flex items-center gap-2 rounded px-4 py-2 font-bold text-white transition-colors ${selectedUser.isBanned ? 'bg-green-600 hover:bg-green-700' : 'bg-amber-500 hover:bg-red-700'}`}
             >
               {selectedUser.isBanned ? <Unlock size={18} /> : <Lock size={18} />}
-              {selectedUser.isBanned ? 'Mở khóa tài khoản' : 'Khóa tài khoản'}
+              {selectedUser.isBanned ? 'Mở khóa' : 'Khóa'}
             </button>
             <button
               onClick={() => setIsModalOpen(false)}
@@ -181,91 +167,113 @@ export default function ManageUsers() {
     );
   };
 
-  //  RENDER CHÍNH
-  if (error) return <div className="text-red-500">Lỗi: {error}</div>;
+  if (error) return <div className="p-6 text-red-500">Lỗi: {error}</div>;
 
   return (
     <div className="space-y-6">
+      {/* Header & Search */}
       <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-        <div className="mb-4 text-lg dark:text-gray-300">
+        <div className="text-lg font-medium text-gray-300">
           Tổng số tài khoản:{' '}
-          <span className="ml-2 font-bold text-amber-500">{loading ? '--' : data.totalUsers}</span>
+          <span className="ml-2 font-bold text-amber-500">{loading ? '...' : data.totalUsers}</span>
         </div>
 
-        <div className="relative w-full md:w-64">
+        <div className="relative w-full md:w-72">
           <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-500" />
           <input
             type="text"
-            placeholder="Tìm người dùng..."
+            placeholder="Tìm theo tên hoặc email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="h-10 w-full rounded-xl border border-white/10 bg-[#1a1a1a] pr-4 pl-10 text-sm text-gray-300 focus:border-amber-500/50 focus:outline-none"
+            className="h-10 w-full rounded-xl border border-white/10 bg-[#1a1a1a] pr-4 pl-10 text-sm text-white placeholder-gray-500 transition-all focus:border-amber-500 focus:ring-1 focus:ring-amber-500 focus:outline-none"
           />
         </div>
       </div>
 
-      <div className="w-full overflow-hidden shadow-md">
-        <div className="overflow-x-auto bg-[#1a1a1a] dark:bg-white">
-          <table className="min-w-full divide-y divide-gray-700">
+      {/* Bảng Danh sách */}
+      <div className="w-full overflow-hidden rounded-xl border border-white/10 shadow-lg">
+        <div className="overflow-x-auto bg-[#1a1a1a]">
+          <table className="min-w-full divide-y divide-gray-800">
             <thead className="bg-white/5">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-amber-600 uppercase">
-                  Tên
+                <th className="px-6 py-4 text-left text-xs font-bold tracking-wider text-amber-500 uppercase">
+                  Người dùng
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-amber-600 uppercase">
+                <th className="px-6 py-4 text-left text-xs font-bold tracking-wider text-amber-500 uppercase">
                   Email
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-amber-600 uppercase">
+                <th className="px-6 py-4 text-left text-xs font-bold tracking-wider text-amber-500 uppercase">
                   Trạng thái
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-amber-600 uppercase">
+                <th className="px-6 py-4 text-right text-xs font-bold tracking-wider text-amber-500 uppercase">
                   Hành động
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-700 dark:divide-gray-700">
+            <tbody className="divide-y divide-gray-800 text-sm text-gray-300">
               {loading ? (
                 <tr>
-                  <td colSpan="4" className="p-4 text-center">
-                    Đang tải...
+                  <td colSpan="4" className="p-8 text-center text-gray-500">
+                    Đang tải dữ liệu...
+                  </td>
+                </tr>
+              ) : data.users.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="p-8 text-center text-gray-500">
+                    Không tìm thấy người dùng nào.
                   </td>
                 </tr>
               ) : (
                 data.users.map((user) => (
                   <tr
                     key={user.id}
-                    className={`transition-colors hover:bg-[#2a2a2a] ${user.isBanned ? 'bg-red-900/10 opacity-50' : ''}`}
+                    className={`transition-colors hover:bg-white/5 ${user.isBanned ? 'bg-red-500/5' : ''}`}
                   >
-                    <td className="px-6 py-4 font-medium whitespace-nowrap">{user.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
+                    <td className="flex items-center gap-3 px-6 py-4 font-medium whitespace-nowrap text-white">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 text-xs font-bold">
+                        {user.picture ? (
+                          <img
+                            src={user.picture}
+                            className="h-full w-full rounded-full object-cover"
+                            alt=""
+                          />
+                        ) : (
+                          user.name.charAt(0).toUpperCase()
+                        )}
+                      </div>
+                      {user.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-gray-400">{user.email}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {user.isBanned ? (
-                        <span className="flex items-center gap-1 text-xs font-bold text-red-500">
-                          <Lock size={12} /> Bị khóa
+                        <span className="inline-flex items-center gap-1 rounded-full border border-red-500/20 bg-red-500/10 px-2 py-1 text-xs font-medium text-red-400">
+                          <Lock size={10} /> Bị khóa
                         </span>
                       ) : (
-                        <span className="text-xs font-bold text-green-500">Hoạt động</span>
+                        <span className="inline-flex items-center gap-1 rounded-full border border-green-500/20 bg-green-500/10 px-2 py-1 text-xs font-medium text-green-400">
+                          Hoạt động
+                        </span>
                       )}
                     </td>
-                    <td className="flex justify-end gap-2 px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
-                      <button
-                        onClick={() => handleViewDetails(user)}
-                        className="p-1 text-blue-400 hover:text-blue-300"
-                        title="Xem chi tiết"
-                      >
-                        <Eye size={18} />
-                      </button>
-
-                      {/* Nút Khóa nhanh */}
-                      {user.id !== 1 && ( // Không cho phép khóa Admin chính (ID=1)
+                    <td className="px-6 py-4 text-right whitespace-nowrap">
+                      <div className="flex justify-end gap-2">
                         <button
-                          onClick={() => handleToggleBan(user.id, user.isBanned)}
-                          className={`${user.isBanned ? 'text-green-500 hover:text-green-400' : 'text-red-500 hover:text-red-400'} p-1`}
-                          title={user.isBanned ? 'Mở khóa' : 'Khóa tài khoản'}
+                          onClick={() => handleViewDetails(user)}
+                          className="rounded p-2 text-gray-500 transition hover:bg-blue-500/10 hover:text-blue-400"
+                          title="Xem chi tiết"
                         >
-                          {user.isBanned ? <Unlock size={18} /> : <Lock size={18} />}
+                          <Eye size={18} />
                         </button>
-                      )}
+                        {user.id !== 1 && (
+                          <button
+                            onClick={() => handleToggleBan(user.id, user.isBanned)}
+                            className={`rounded p-2 transition ${user.isBanned ? 'text-gray-500 hover:bg-green-500/10 hover:text-green-400' : 'text-gray-500 hover:bg-red-500/10 hover:text-red-400'}`}
+                            title={user.isBanned ? 'Mở khóa' : 'Khóa'}
+                          >
+                            {user.isBanned ? <Unlock size={18} /> : <Lock size={18} />}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -274,28 +282,29 @@ export default function ManageUsers() {
           </table>
         </div>
 
-        <div className="flex items-center justify-between bg-[#121212] px-4 py-3 dark:bg-gray-800">
+        {/* Phân trang */}
+        <div className="flex items-center justify-between border-t border-white/10 bg-[#1a1a1a] px-4 py-3">
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="rounded bg-gray-700 px-3 py-1 text-white disabled:opacity-50"
+            className="rounded-lg bg-white/5 px-3 py-1.5 text-white transition hover:bg-white/10 disabled:opacity-30"
           >
-            <ChevronLeft />
+            <ChevronLeft size={16} />
           </button>
-          <span className="text-gray-300">
-            Trang {data.currentPage} / {data.totalPages}
+          <span className="text-sm text-gray-400">
+            Trang <span className="font-bold text-white">{data.currentPage}</span> /{' '}
+            {data.totalPages}
           </span>
           <button
             onClick={() => setPage((p) => Math.min(data.totalPages, p + 1))}
             disabled={page === data.totalPages}
-            className="rounded bg-gray-700 px-3 py-1 text-white disabled:opacity-50"
+            className="rounded-lg bg-white/5 px-3 py-1.5 text-white transition hover:bg-white/10 disabled:opacity-30"
           >
-            <ChevronRight />
+            <ChevronRight size={16} />
           </button>
         </div>
       </div>
 
-      {/* HIỂN THỊ MODAL */}
       <UserDetailModal />
     </div>
   );

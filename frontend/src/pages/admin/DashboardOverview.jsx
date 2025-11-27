@@ -22,7 +22,7 @@ import {
 const COLORS = ['#f59e0b', '#f97316', '#eab308', '#ef4444', '#84cc16', '#22c55e'];
 
 const StatCard = ({ icon, title, value, bgColor }) => (
-  <div className={`flex items-center space-x-4 bg-[#1a1a1a] p-6 shadow-lg`}>
+  <div className={`flex items-center space-x-4 bg-[#1a1a1a] p-6`}>
     <div className={`p-3 ${bgColor} bg-opacity-20`}>{icon}</div>
     <div>
       <p className="text-sm font-medium text-gray-400">{title}</p>
@@ -36,7 +36,7 @@ const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const data = payload[0];
     return (
-      <div className="rounded border border-gray-700 bg-black p-2 shadow-lg">
+      <div className="rounded border border-gray-700 bg-black p-2">
         <p className="mb-1 font-bold text-white">{data.name}</p>
         <p className="m-0 text-amber-400">Số lượng: {data.value} từ</p>
       </div>
@@ -129,7 +129,7 @@ export default function DashboardOverview() {
       {/* KHU VỰC BIỂU ĐỒ */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/*  BIỂU ĐỒ ĐƯỜNG  */}
-        <div className="rounded-xl border border-white/10 bg-[#1a1a1a] p-6 shadow-lg">
+        <div className="bg-[#1a1a1a] p-6">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-xl font-semibold text-white">Tần suất học tập (User mới)</h2>
             <span className="rounded bg-gray-800 px-2 py-1 text-xs text-gray-400">7 ngày</span>
@@ -163,7 +163,7 @@ export default function DashboardOverview() {
         </div>
 
         {/*  BIỂU ĐỒ TRÒN Topic Dist */}
-        <div className="rounded-xl border border-white/10 bg-[#1a1a1a] p-6 shadow-lg">
+        <div className="bg-[#1a1a1a] p-6">
           <h2 className="mb-6 text-xl font-semibold text-white">Top Chủ đề (Theo số lượng từ)</h2>
           <div className="h-80 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -197,7 +197,7 @@ export default function DashboardOverview() {
         </div>
 
         {/* BIỂU ĐỒ CỘT Performance  */}
-        <div className="rounded-xl border border-white/10 bg-[#1a1a1a] p-6 shadow-lg">
+        <div className="bg-[#1a1a1a] p-6">
           <h2 className="mb-6 text-xl font-semibold text-white">Hiệu quả ghi nhớ (Đúng/Sai)</h2>
           <div className="h-72 w-full">
             <ResponsiveContainer>
@@ -234,7 +234,7 @@ export default function DashboardOverview() {
         </div>
 
         {/* BIỂU ĐỒ VÙNG AI Usage */}
-        <div className="rounded-xl border border-white/10 bg-[#1a1a1a] p-6 shadow-lg">
+        <div className="bg-[#1a1a1a] p-6">
           <div className="mb-6 flex items-center justify-between">
             <h2 className="text-xl font-semibold text-white">Xu hướng sử dụng AI</h2>
             <span className="rounded border border-purple-500/30 bg-purple-500/20 px-2 py-1 text-xs text-purple-400">
@@ -277,7 +277,7 @@ export default function DashboardOverview() {
       {/* DANH SÁCH MỚI NHẤT */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Bảng Người dùng */}
-        <div className="rounded-xl border border-white/10 bg-[#1a1a1a] p-6 shadow-lg">
+        <div className="bg-[#1a1a1a] p-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-white">Người dùng mới nhất</h2>
             <Link to="users" className="text-sm text-amber-500 hover:underline">
@@ -321,7 +321,7 @@ export default function DashboardOverview() {
         </div>
 
         {/* Bảng Chủ đề */}
-        <div className="rounded-xl border border-white/10 bg-[#1a1a1a] p-6 shadow-lg">
+        <div className="bg-[#1a1a1a] p-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-white">Chủ đề mới nhất</h2>
             <Link to="topics" className="text-sm text-amber-500 hover:underline">
