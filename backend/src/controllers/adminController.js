@@ -7,7 +7,7 @@ import Notification from '../models/Notification.js';
 import AiSession from '../models/AiSession.js';
 import UserProgress from '../models/UserProgress.js';
 
-// SO SÁNH NGÀY (BỎ QUA GIỜ PHÚT)
+// SO SÁNH NGÀY
 const isSameDay = (d1, d2) => {
   const date1 = new Date(d1);
   const date2 = new Date(d2);

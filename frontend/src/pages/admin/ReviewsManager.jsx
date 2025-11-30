@@ -9,11 +9,12 @@ const ReviewsManager = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   //HÀM LẤY DỮ LIỆU
-  const fetchReviews = async () => {
+
+  const fetchReviews = async (searchQuery = '') => {
     try {
       const token = sessionStorage.getItem('accessToken');
       const res = await fetch(
-        `https://project-doan1-backend.onrender.com/api/admin/reviews?search=${encodeURIComponent(query)}`,
+        `https://project-doan1-backend.onrender.com/api/admin/reviews?search=${encodeURIComponent(searchQuery)}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -35,10 +36,6 @@ const ReviewsManager = () => {
     }, 500);
     return () => clearTimeout(timer);
   }, [searchTerm]);
-
-  useEffect(() => {
-    fetchReviews();
-  }, []);
 
   //  HÀM XÓA
   const handleDelete = async (id) => {
