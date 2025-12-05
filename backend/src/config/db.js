@@ -1,13 +1,13 @@
 import { Sequelize } from 'sequelize';
 
 const sequelize = new Sequelize(
-  'postgresql://myprojectdb_imcy_user:zanNoCItPhTH2JEBsychJvbervWR2aqa@dpg-d44qsj6mcj7s7392nmhg-a.singapore-postgres.render.com/myprojectdb_imcy',
+  'postgresql://db_1_45sv_user:uYsNj2azUaINA8LXIi3Q8PK8reVa5Pge@dpg-d4p3m7m3jp1c73drgqfg-a.singapore-postgres.render.com/db_1_45sv',
   {
     dialect: 'postgres',
     logging: false,
     dialectOptions: {
       ssl: {
-        require: true, // bắt buộc với Render
+        require: true,
         rejectUnauthorized: false,
       },
     },

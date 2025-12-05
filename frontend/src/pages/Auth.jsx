@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, Mail, Lock, User, Home, Snowflake } from 'lucide-react';
 import GoogleButton from '@/components/ui/GoogleButton';
-import { useNavigate } from 'react-router-dom'; // Import hook chuyển trang
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Auth = () => {

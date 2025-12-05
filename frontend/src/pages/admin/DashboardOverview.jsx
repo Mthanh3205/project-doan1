@@ -131,7 +131,7 @@ export default function DashboardOverview() {
         {/*  BIỂU ĐỒ ĐƯỜNG  */}
         <div className="bg-[#1a1a1a] p-6">
           <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-white">Tần suất học tập (User mới)</h2>
+            <h2 className="text-xl font-semibold text-white">Tần suất học tập</h2>
             <span className="rounded bg-gray-800 px-2 py-1 text-xs text-gray-400">7 ngày</span>
           </div>
           <div className="h-80 w-full">
